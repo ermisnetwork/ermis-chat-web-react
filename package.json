@@ -1,5 +1,5 @@
 {
-  "name": "ermis-chat",
+  "name": "ermis-chat-web-react",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -24,7 +24,7 @@
     "dayjs": "^1.11.10",
     "emoji-mart": "^5.2.2",
     "env-cmd": "^10.1.0",
-    "ermis-chat-js-sdk": "^1.6.0",
+    "ermis-chat-js-sdk": "^1.6.1",
     "event-source-polyfill": "^1.0.31",
     "flatted": "^3.3.1",
     "framer-motion": "^7.5.3",
@@ -68,14 +68,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "dev:staging": "vite --mode staging",
-    "dev:internal": "vite --mode internal",
-    "dev:prod": "vite --mode product",
+    "dev:example": "vite --mode example",
     "preview": "vite preview",
     "build": "vite build",
-    "build:staging": "vite build --mode staging",
-    "build:internal": "vite build --mode internal",
-    "build:prod": "vite build --mode product"
+    "build:example": "vite build --mode example"
   },
   "eslintConfig": {
     "extends": [

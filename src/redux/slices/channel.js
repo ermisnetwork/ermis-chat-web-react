@@ -11,7 +11,6 @@ import { handleError, myRoleInChannel, splitChannelId } from '../../utils/common
 import { CapabilitiesName } from '../../constants/capabilities-const';
 import { setSidebar } from './app';
 import { ClientEvents } from '../../constants/events-const';
-import { TOKEN_GATE_CHANNEL_ID, TOKEN_GATE_PROJECT_ID } from '../../config';
 import { FetchAllMembers } from './member';
 
 const initialState = {
@@ -276,17 +275,6 @@ export function FetchChannels(params) {
       .queryChannels(filter, sort, options)
       .then(async response => {
         dispatch(FetchAllMembers());
-
-        if (projectId === TOKEN_GATE_PROJECT_ID) {
-          // add thêm channel token gate vào list channel
-          const exists = response.some(item => item.id === TOKEN_GATE_CHANNEL_ID);
-          if (!exists) {
-            const channel = client.channel('team', TOKEN_GATE_CHANNEL_ID);
-            const messages = { limit: 25 };
-            await channel.query({ messages });
-            response.push(channel);
-          }
-        }
 
         const sortedArray = response.sort((a, b) => {
           const dateA = a.state.last_message_at ? new Date(a.state.last_message_at) : new Date(a.data.created_at);
