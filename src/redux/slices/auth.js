@@ -1,10 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import axiosInstance from '../../utils/axios';
 import { SetUserLogin, UpdateIsLoading, setIsResetEmailSent, showSnackbar } from './app';
 import { client } from '../../client';
 import axiosWalletInstance from '../../utils/axiosWallet';
-import { handleError, isStagingDomain } from '../../utils/commons';
+import { handleError } from '../../utils/commons';
 import { API_KEY } from '../../config';
 import { LocalStorageKey } from '../../constants/localStorage-const';
 import { LoginType } from '../../constants/commons-const';
@@ -66,7 +65,7 @@ export function LoginUserByWallet(data) {
               isLoggedIn: true,
               user_id: user_id,
               project_id_ermis: project_id,
-              openDialogPlatform: isStagingDomain(),
+              openDialogPlatform: false,
               loginType: LoginType.Wallet,
             }),
           );
@@ -155,7 +154,7 @@ export function LoginUserByEmail(data) {
               isLoggedIn: true,
               user_id: user_id,
               project_id_ermis: project_id,
-              openDialogPlatform: isStagingDomain(),
+              openDialogPlatform: false,
               loginType: LoginType.Email,
             }),
           );
