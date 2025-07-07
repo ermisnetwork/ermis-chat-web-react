@@ -1,0 +1,1567 @@
+{
+  "title": "Mono Meme",
+  "id": "tg-4543296330755211265",
+  "telegram": { "short_name": "MonoMemeee", "hash": "-1346078340" },
+  "stickers": [
+    {
+      "url": "packs/thumbnails/6165846546102355085.webp",
+      "width": 256,
+      "height": 256,
+      "size": 90255,
+      "body": "😆",
+      "id": "tg-6165846546102355085",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165846546102355085",
+        "emoticons": ["😆"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165468923987756728.webp",
+      "width": 256,
+      "height": 256,
+      "size": 155215,
+      "body": "😂",
+      "id": "tg-6165468923987756728",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165468923987756728",
+        "emoticons": ["😂"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165512101293982858.webp",
+      "width": 256,
+      "height": 219,
+      "size": 74733,
+      "body": "😙",
+      "id": "tg-6165512101293982858",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165512101293982858",
+        "emoticons": ["😙"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6163627937795933049.webp",
+      "width": 256,
+      "height": 256,
+      "size": 152658,
+      "body": "😡",
+      "id": "tg-6163627937795933049",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6163627937795933049",
+        "emoticons": ["😡"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165875562901406727.webp",
+      "width": 256,
+      "height": 256,
+      "size": 104546,
+      "body": "🤬",
+      "id": "tg-6165875562901406727",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165875562901406727",
+        "emoticons": ["🤬"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6163664058470892561.webp",
+      "width": 256,
+      "height": 256,
+      "size": 154397,
+      "body": "🤯",
+      "id": "tg-6163664058470892561",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6163664058470892561",
+        "emoticons": ["🤯"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165667226922779481.webp",
+      "width": 256,
+      "height": 256,
+      "size": 188516,
+      "body": "😡",
+      "id": "tg-6165667226922779481",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165667226922779481",
+        "emoticons": ["😡"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165692498510349351.webp",
+      "width": 256,
+      "height": 256,
+      "size": 106864,
+      "body": "🤬",
+      "id": "tg-6165692498510349351",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165692498510349351",
+        "emoticons": ["🤬"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165606779553055850.webp",
+      "width": 256,
+      "height": 256,
+      "size": 109869,
+      "body": "🤯",
+      "id": "tg-6165606779553055850",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165606779553055850",
+        "emoticons": ["🤯"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165732523310581023.webp",
+      "width": 256,
+      "height": 256,
+      "size": 139857,
+      "body": "🥶",
+      "id": "tg-6165732523310581023",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165732523310581023",
+        "emoticons": ["🥶"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165764215874258421.webp",
+      "width": 256,
+      "height": 256,
+      "size": 93866,
+      "body": "😭",
+      "id": "tg-6165764215874258421",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165764215874258421",
+        "emoticons": ["😭"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165944527191278822.webp",
+      "width": 256,
+      "height": 256,
+      "size": 172877,
+      "body": "😢",
+      "id": "tg-6165944527191278822",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165944527191278822",
+        "emoticons": ["😢"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165619462591481024.webp",
+      "width": 256,
+      "height": 256,
+      "size": 111383,
+      "body": "😒",
+      "id": "tg-6165619462591481024",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165619462591481024",
+        "emoticons": ["😒"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165695474922685437.webp",
+      "width": 256,
+      "height": 256,
+      "size": 227945,
+      "body": "😏",
+      "id": "tg-6165695474922685437",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165695474922685437",
+        "emoticons": ["😏"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6168151715179660292.webp",
+      "width": 256,
+      "height": 256,
+      "size": 101459,
+      "body": "😭",
+      "id": "tg-6168151715179660292",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6168151715179660292",
+        "emoticons": ["😭"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167863046132729140.webp",
+      "width": 256,
+      "height": 256,
+      "size": 275702,
+      "body": "🥲",
+      "id": "tg-6167863046132729140",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167863046132729140",
+        "emoticons": ["🥲"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167857844927333532.webp",
+      "width": 256,
+      "height": 256,
+      "size": 99582,
+      "body": "🤨",
+      "id": "tg-6167857844927333532",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167857844927333532",
+        "emoticons": ["🤨"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167788902112298075.webp",
+      "width": 256,
+      "height": 256,
+      "size": 126196,
+      "body": "😍",
+      "id": "tg-6167788902112298075",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167788902112298075",
+        "emoticons": ["😍"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167977571435676760.webp",
+      "width": 256,
+      "height": 256,
+      "size": 262993,
+      "body": "😩",
+      "id": "tg-6167977571435676760",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167977571435676760",
+        "emoticons": ["😩"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167999256725554092.webp",
+      "width": 256,
+      "height": 256,
+      "size": 93348,
+      "body": "😘",
+      "id": "tg-6167999256725554092",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167999256725554092",
+        "emoticons": ["😘"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167913460458849495.webp",
+      "width": 252,
+      "height": 256,
+      "size": 190333,
+      "body": "🤬",
+      "id": "tg-6167913460458849495",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167913460458849495",
+        "emoticons": ["🤬"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167781862660899736.webp",
+      "width": 256,
+      "height": 256,
+      "size": 94612,
+      "body": "😠",
+      "id": "tg-6167781862660899736",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167781862660899736",
+        "emoticons": ["😠"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167989300991362196.webp",
+      "width": 256,
+      "height": 256,
+      "size": 108430,
+      "body": "😋",
+      "id": "tg-6167989300991362196",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167989300991362196",
+        "emoticons": ["😋"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167808753451140391.webp",
+      "width": 252,
+      "height": 256,
+      "size": 115306,
+      "body": "🙂",
+      "id": "tg-6167808753451140391",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167808753451140391",
+        "emoticons": ["🙂"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167957415154156397.webp",
+      "width": 256,
+      "height": 256,
+      "size": 67328,
+      "body": "🧐",
+      "id": "tg-6167957415154156397",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167957415154156397",
+        "emoticons": ["🧐"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6168186607493973025.webp",
+      "width": 256,
+      "height": 256,
+      "size": 117755,
+      "body": "😏",
+      "id": "tg-6168186607493973025",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6168186607493973025",
+        "emoticons": ["😏"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6168155924247610598.webp",
+      "width": 228,
+      "height": 256,
+      "size": 83701,
+      "body": "🤨",
+      "id": "tg-6168155924247610598",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6168155924247610598",
+        "emoticons": ["🤨"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6168046767653782694.webp",
+      "width": 256,
+      "height": 188,
+      "size": 112899,
+      "body": "🥲",
+      "id": "tg-6168046767653782694",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6168046767653782694",
+        "emoticons": ["🥲"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167797608011007662.webp",
+      "width": 256,
+      "height": 256,
+      "size": 137173,
+      "body": "😩",
+      "id": "tg-6167797608011007662",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167797608011007662",
+        "emoticons": ["😩"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6168006261817214077.webp",
+      "width": 256,
+      "height": 256,
+      "size": 95207,
+      "body": "😒",
+      "id": "tg-6168006261817214077",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6168006261817214077",
+        "emoticons": ["😒"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6165787876849091555.webp",
+      "width": 256,
+      "height": 225,
+      "size": 153010,
+      "body": "😎",
+      "id": "tg-6165787876849091555",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6165787876849091555",
+        "emoticons": ["😎"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167754340510466926.webp",
+      "width": 256,
+      "height": 256,
+      "size": 122931,
+      "body": "😁",
+      "id": "tg-6167754340510466926",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167754340510466926",
+        "emoticons": ["😁"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6168079877556667393.webp",
+      "width": 256,
+      "height": 256,
+      "size": 208824,
+      "body": "😘",
+      "id": "tg-6168079877556667393",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6168079877556667393",
+        "emoticons": ["😘"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167880973326222153.webp",
+      "width": 256,
+      "height": 256,
+      "size": 168929,
+      "body": "😭",
+      "id": "tg-6167880973326222153",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167880973326222153",
+        "emoticons": ["😭"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6168063281803035804.webp",
+      "width": 251,
+      "height": 256,
+      "size": 241701,
+      "body": "😱",
+      "id": "tg-6168063281803035804",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6168063281803035804",
+        "emoticons": ["😱"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6167935459281339653.webp",
+      "width": 256,
+      "height": 243,
+      "size": 123389,
+      "body": "😳",
+      "id": "tg-6167935459281339653",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6167935459281339653",
+        "emoticons": ["😳"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176852468517831905.webp",
+      "width": 256,
+      "height": 256,
+      "size": 90283,
+      "body": "😤",
+      "id": "tg-6176852468517831905",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176852468517831905",
+        "emoticons": ["😤"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176814067215238476.webp",
+      "width": 256,
+      "height": 256,
+      "size": 62169,
+      "body": "🙄",
+      "id": "tg-6176814067215238476",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176814067215238476",
+        "emoticons": ["🙄"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176861079927260162.webp",
+      "width": 256,
+      "height": 256,
+      "size": 69001,
+      "body": "😕",
+      "id": "tg-6176861079927260162",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176861079927260162",
+        "emoticons": ["😕"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177230932446020801.webp",
+      "width": 256,
+      "height": 256,
+      "size": 72411,
+      "body": "😳",
+      "id": "tg-6177230932446020801",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177230932446020801",
+        "emoticons": ["😳"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176912722614027595.webp",
+      "width": 256,
+      "height": 220,
+      "size": 225413,
+      "body": "🙄",
+      "id": "tg-6176912722614027595",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176912722614027595",
+        "emoticons": ["🙄"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176941039333409827.webp",
+      "width": 256,
+      "height": 256,
+      "size": 123625,
+      "body": "😓",
+      "id": "tg-6176941039333409827",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176941039333409827",
+        "emoticons": ["😓"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6174919544256070834.webp",
+      "width": 256,
+      "height": 256,
+      "size": 81399,
+      "body": "🧐",
+      "id": "tg-6174919544256070834",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6174919544256070834",
+        "emoticons": ["🧐"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177226027593368751.webp",
+      "width": 256,
+      "height": 256,
+      "size": 405542,
+      "body": "😓",
+      "id": "tg-6177226027593368751",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177226027593368751",
+        "emoticons": ["😓"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176731719807271903.webp",
+      "width": 256,
+      "height": 256,
+      "size": 350294,
+      "body": "😳",
+      "id": "tg-6176731719807271903",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176731719807271903",
+        "emoticons": ["😳"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176771671593059327.webp",
+      "width": 256,
+      "height": 256,
+      "size": 102297,
+      "body": "🧐",
+      "id": "tg-6176771671593059327",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176771671593059327",
+        "emoticons": ["🧐"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6174577274017285144.webp",
+      "width": 256,
+      "height": 245,
+      "size": 153343,
+      "body": "😕",
+      "id": "tg-6174577274017285144",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6174577274017285144",
+        "emoticons": ["😕"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176965245769090433.webp",
+      "width": 256,
+      "height": 256,
+      "size": 85415,
+      "body": "🧐",
+      "id": "tg-6176965245769090433",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176965245769090433",
+        "emoticons": ["🧐"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176694572635128976.webp",
+      "width": 256,
+      "height": 256,
+      "size": 89794,
+      "body": "🤨",
+      "id": "tg-6176694572635128976",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176694572635128976",
+        "emoticons": ["🤨"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177031946611197001.webp",
+      "width": 256,
+      "height": 256,
+      "size": 189529,
+      "body": "😡",
+      "id": "tg-6177031946611197001",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177031946611197001",
+        "emoticons": ["😡"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177085225680503920.webp",
+      "width": 256,
+      "height": 256,
+      "size": 126562,
+      "body": "😭",
+      "id": "tg-6177085225680503920",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177085225680503920",
+        "emoticons": ["😭"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177036228693590977.webp",
+      "width": 256,
+      "height": 235,
+      "size": 211280,
+      "body": "😂",
+      "id": "tg-6177036228693590977",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177036228693590977",
+        "emoticons": ["😂"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6174496640301270275.webp",
+      "width": 256,
+      "height": 256,
+      "size": 218349,
+      "body": "🥲",
+      "id": "tg-6174496640301270275",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6174496640301270275",
+        "emoticons": ["🥲"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6174490477023200533.webp",
+      "width": 256,
+      "height": 256,
+      "size": 93370,
+      "body": "😭",
+      "id": "tg-6174490477023200533",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6174490477023200533",
+        "emoticons": ["😭"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177090121943221364.webp",
+      "width": 256,
+      "height": 256,
+      "size": 159418,
+      "body": "😫",
+      "id": "tg-6177090121943221364",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177090121943221364",
+        "emoticons": ["😫"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176739493698077810.webp",
+      "width": 256,
+      "height": 256,
+      "size": 164929,
+      "body": "😭",
+      "id": "tg-6176739493698077810",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176739493698077810",
+        "emoticons": ["😭"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6174523492436804917.webp",
+      "width": 256,
+      "height": 256,
+      "size": 266160,
+      "body": "🤪",
+      "id": "tg-6174523492436804917",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6174523492436804917",
+        "emoticons": ["🤪"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176909737611756644.webp",
+      "width": 256,
+      "height": 256,
+      "size": 254464,
+      "body": "🤑",
+      "id": "tg-6176909737611756644",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176909737611756644",
+        "emoticons": ["🤑"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176832325121213716.webp",
+      "width": 256,
+      "height": 256,
+      "size": 168467,
+      "body": "🤪",
+      "id": "tg-6176832325121213716",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176832325121213716",
+        "emoticons": ["🤪"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176694143138399189.webp",
+      "width": 256,
+      "height": 256,
+      "size": 169753,
+      "body": "🤩",
+      "id": "tg-6176694143138399189",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176694143138399189",
+        "emoticons": ["🤩"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176725960256128016.webp",
+      "width": 256,
+      "height": 256,
+      "size": 136033,
+      "body": "😂",
+      "id": "tg-6176725960256128016",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176725960256128016",
+        "emoticons": ["😂"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177049388473386148.webp",
+      "width": 256,
+      "height": 256,
+      "size": 134677,
+      "body": "🥵",
+      "id": "tg-6177049388473386148",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177049388473386148",
+        "emoticons": ["🥵"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177166538001351894.webp",
+      "width": 256,
+      "height": 256,
+      "size": 116417,
+      "body": "😢",
+      "id": "tg-6177166538001351894",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177166538001351894",
+        "emoticons": ["😢"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176966864971760922.webp",
+      "width": 256,
+      "height": 256,
+      "size": 101988,
+      "body": "😥",
+      "id": "tg-6176966864971760922",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176966864971760922",
+        "emoticons": ["😥"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177117257546597408.webp",
+      "width": 251,
+      "height": 256,
+      "size": 129229,
+      "body": "🙏",
+      "id": "tg-6177117257546597408",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177117257546597408",
+        "emoticons": ["🙏"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6179228358526632975.webp",
+      "width": 256,
+      "height": 256,
+      "size": 86157,
+      "body": "🙏",
+      "id": "tg-6179228358526632975",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6179228358526632975",
+        "emoticons": ["🙏"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176836736052626643.webp",
+      "width": 256,
+      "height": 256,
+      "size": 411881,
+      "body": "🙏",
+      "id": "tg-6176836736052626643",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176836736052626643",
+        "emoticons": ["🙏"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177193918417863843.webp",
+      "width": 256,
+      "height": 256,
+      "size": 370326,
+      "body": "🙏",
+      "id": "tg-6177193918417863843",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177193918417863843",
+        "emoticons": ["🙏"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176841456221684827.webp",
+      "width": 255,
+      "height": 256,
+      "size": 150387,
+      "body": "😵‍💫",
+      "id": "tg-6176841456221684827",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176841456221684827",
+        "emoticons": ["😵‍💫"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176687460169286796.webp",
+      "width": 256,
+      "height": 256,
+      "size": 90435,
+      "body": "☠️",
+      "id": "tg-6176687460169286796",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176687460169286796",
+        "emoticons": ["☠"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177043732001457206.webp",
+      "width": 256,
+      "height": 256,
+      "size": 75673,
+      "body": "🙂",
+      "id": "tg-6177043732001457206",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177043732001457206",
+        "emoticons": ["🙂"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176691248330441936.webp",
+      "width": 256,
+      "height": 256,
+      "size": 119427,
+      "body": "😙",
+      "id": "tg-6176691248330441936",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176691248330441936",
+        "emoticons": ["😙"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6179485549758252553.webp",
+      "width": 256,
+      "height": 256,
+      "size": 166232,
+      "body": "😓",
+      "id": "tg-6179485549758252553",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6179485549758252553",
+        "emoticons": ["😓"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176788318886299059.webp",
+      "width": 256,
+      "height": 256,
+      "size": 253543,
+      "body": "🙏",
+      "id": "tg-6176788318886299059",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176788318886299059",
+        "emoticons": ["🙏"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177124086544598322.webp",
+      "width": 256,
+      "height": 253,
+      "size": 138451,
+      "body": "😌",
+      "id": "tg-6177124086544598322",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177124086544598322",
+        "emoticons": ["😌"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176912353246839750.webp",
+      "width": 256,
+      "height": 256,
+      "size": 264666,
+      "body": "😒",
+      "id": "tg-6176912353246839750",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176912353246839750",
+        "emoticons": ["😒"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6179494423160685532.webp",
+      "width": 256,
+      "height": 256,
+      "size": 176555,
+      "body": "😩",
+      "id": "tg-6179494423160685532",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6179494423160685532",
+        "emoticons": ["😩"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176845446246303021.webp",
+      "width": 256,
+      "height": 256,
+      "size": 145322,
+      "body": "😠",
+      "id": "tg-6176845446246303021",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176845446246303021",
+        "emoticons": ["😠"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6177170841558582677.webp",
+      "width": 256,
+      "height": 256,
+      "size": 148722,
+      "body": "❌",
+      "id": "tg-6177170841558582677",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6177170841558582677",
+        "emoticons": ["❌"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176836469764654309.webp",
+      "width": 256,
+      "height": 256,
+      "size": 151299,
+      "body": "😆",
+      "id": "tg-6176836469764654309",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176836469764654309",
+        "emoticons": ["😆"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176769829052089370.webp",
+      "width": 256,
+      "height": 256,
+      "size": 156174,
+      "body": "🥲",
+      "id": "tg-6176769829052089370",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176769829052089370",
+        "emoticons": ["🥲"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6176909836396004474.webp",
+      "width": 256,
+      "height": 256,
+      "size": 114675,
+      "body": "😭",
+      "id": "tg-6176909836396004474",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6176909836396004474",
+        "emoticons": ["😭"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6179305199786526261.webp",
+      "width": 256,
+      "height": 256,
+      "size": 231278,
+      "body": "🤣",
+      "id": "tg-6179305199786526261",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6179305199786526261",
+        "emoticons": ["🤣"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181258542322812071.webp",
+      "width": 256,
+      "height": 256,
+      "size": 183411,
+      "body": "😂",
+      "id": "tg-6181258542322812071",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181258542322812071",
+        "emoticons": ["😂"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181618378977838139.webp",
+      "width": 256,
+      "height": 241,
+      "size": 117003,
+      "body": "😗",
+      "id": "tg-6181618378977838139",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181618378977838139",
+        "emoticons": ["😗"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181728274306040730.webp",
+      "width": 256,
+      "height": 256,
+      "size": 277597,
+      "body": "😭",
+      "id": "tg-6181728274306040730",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181728274306040730",
+        "emoticons": ["😭"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181292519809090924.webp",
+      "width": 256,
+      "height": 256,
+      "size": 182034,
+      "body": "🤪",
+      "id": "tg-6181292519809090924",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181292519809090924",
+        "emoticons": ["🤪"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181384518008570859.webp",
+      "width": 256,
+      "height": 256,
+      "size": 218248,
+      "body": "😈",
+      "id": "tg-6181384518008570859",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181384518008570859",
+        "emoticons": ["😈"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181666087474562511.webp",
+      "width": 256,
+      "height": 256,
+      "size": 133222,
+      "body": "😮",
+      "id": "tg-6181666087474562511",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181666087474562511",
+        "emoticons": ["😮"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181285536192267504.webp",
+      "width": 256,
+      "height": 256,
+      "size": 111013,
+      "body": "😳",
+      "id": "tg-6181285536192267504",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181285536192267504",
+        "emoticons": ["😳"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181682498544600302.webp",
+      "width": 256,
+      "height": 256,
+      "size": 81961,
+      "body": "🤣",
+      "id": "tg-6181682498544600302",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181682498544600302",
+        "emoticons": ["🤣"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6179331446331671651.webp",
+      "width": 256,
+      "height": 256,
+      "size": 100460,
+      "body": "🤨",
+      "id": "tg-6179331446331671651",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6179331446331671651",
+        "emoticons": ["🤨"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181565198692781136.webp",
+      "width": 256,
+      "height": 256,
+      "size": 150017,
+      "body": "😝",
+      "id": "tg-6181565198692781136",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181565198692781136",
+        "emoticons": ["😝"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6178996919918920629.webp",
+      "width": 256,
+      "height": 256,
+      "size": 88241,
+      "body": "😏",
+      "id": "tg-6178996919918920629",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6178996919918920629",
+        "emoticons": ["😏"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181691238803048014.webp",
+      "width": 256,
+      "height": 256,
+      "size": 96885,
+      "body": "😩",
+      "id": "tg-6181691238803048014",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181691238803048014",
+        "emoticons": ["😩"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181336130907014050.webp",
+      "width": 256,
+      "height": 256,
+      "size": 96867,
+      "body": "🙄",
+      "id": "tg-6181336130907014050",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181336130907014050",
+        "emoticons": ["🙄"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181376421995218944.webp",
+      "width": 256,
+      "height": 240,
+      "size": 190706,
+      "body": "😖",
+      "id": "tg-6181376421995218944",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181376421995218944",
+        "emoticons": ["😖"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181455969084507218.webp",
+      "width": 256,
+      "height": 222,
+      "size": 102208,
+      "body": "😕",
+      "id": "tg-6181455969084507218",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181455969084507218",
+        "emoticons": ["😕"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181558631687783410.webp",
+      "width": 256,
+      "height": 256,
+      "size": 109921,
+      "body": "😮‍💨",
+      "id": "tg-6181558631687783410",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181558631687783410",
+        "emoticons": ["😮‍💨"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181434202190250940.webp",
+      "width": 256,
+      "height": 210,
+      "size": 68726,
+      "body": "😏",
+      "id": "tg-6181434202190250940",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181434202190250940",
+        "emoticons": ["😏"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6181667474748998739.webp",
+      "width": 256,
+      "height": 256,
+      "size": 106446,
+      "body": "🥲",
+      "id": "tg-6181667474748998739",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6181667474748998739",
+        "emoticons": ["🥲"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192886977298170897.webp",
+      "width": 256,
+      "height": 228,
+      "size": 75559,
+      "body": "😮‍💨",
+      "id": "tg-6192886977298170897",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192886977298170897",
+        "emoticons": ["😮‍💨"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192673328444998883.webp",
+      "width": 256,
+      "height": 199,
+      "size": 115399,
+      "body": "😕",
+      "id": "tg-6192673328444998883",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192673328444998883",
+        "emoticons": ["😕"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192544994822194825.webp",
+      "width": 256,
+      "height": 256,
+      "size": 70904,
+      "body": "😢",
+      "id": "tg-6192544994822194825",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192544994822194825",
+        "emoticons": ["😢"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6194797559140057972.webp",
+      "width": 256,
+      "height": 206,
+      "size": 65473,
+      "body": "😔",
+      "id": "tg-6194797559140057972",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6194797559140057972",
+        "emoticons": ["😔"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192671640522851637.webp",
+      "width": 256,
+      "height": 256,
+      "size": 120337,
+      "body": "🥰",
+      "id": "tg-6192671640522851637",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192671640522851637",
+        "emoticons": ["🥰"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192490925478905119.webp",
+      "width": 256,
+      "height": 180,
+      "size": 117178,
+      "body": "😘",
+      "id": "tg-6192490925478905119",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192490925478905119",
+        "emoticons": ["😘"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192532900194289307.webp",
+      "width": 256,
+      "height": 256,
+      "size": 159598,
+      "body": "😜",
+      "id": "tg-6192532900194289307",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192532900194289307",
+        "emoticons": ["😜"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192532595251610665.webp",
+      "width": 256,
+      "height": 256,
+      "size": 112551,
+      "body": "😳",
+      "id": "tg-6192532595251610665",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192532595251610665",
+        "emoticons": ["😳"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192843688322794948.webp",
+      "width": 256,
+      "height": 256,
+      "size": 245515,
+      "body": "😗",
+      "id": "tg-6192843688322794948",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192843688322794948",
+        "emoticons": ["😗"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192612447283577742.webp",
+      "width": 256,
+      "height": 256,
+      "size": 113033,
+      "body": "😖",
+      "id": "tg-6192612447283577742",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192612447283577742",
+        "emoticons": ["😖"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192839745542816562.webp",
+      "width": 256,
+      "height": 256,
+      "size": 101772,
+      "body": "😋",
+      "id": "tg-6192839745542816562",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192839745542816562",
+        "emoticons": ["😋"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192812094543365459.webp",
+      "width": 256,
+      "height": 256,
+      "size": 57685,
+      "body": "😌",
+      "id": "tg-6192812094543365459",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192812094543365459",
+        "emoticons": ["😌"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6194991897820267598.webp",
+      "width": 256,
+      "height": 256,
+      "size": 143699,
+      "body": "😏",
+      "id": "tg-6194991897820267598",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6194991897820267598",
+        "emoticons": ["😏"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192655289582355570.webp",
+      "width": 256,
+      "height": 256,
+      "size": 122688,
+      "body": "🤩",
+      "id": "tg-6192655289582355570",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192655289582355570",
+        "emoticons": ["🤩"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6192889283695608887.webp",
+      "width": 256,
+      "height": 256,
+      "size": 96406,
+      "body": "😠",
+      "id": "tg-6192889283695608887",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6192889283695608887",
+        "emoticons": ["😠"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6194796004361897024.webp",
+      "width": 256,
+      "height": 256,
+      "size": 84508,
+      "body": "😕",
+      "id": "tg-6194796004361897024",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6194796004361897024",
+        "emoticons": ["😕"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6197102083972268844.webp",
+      "width": 256,
+      "height": 256,
+      "size": 108107,
+      "body": "🤪",
+      "id": "tg-6197102083972268844",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6197102083972268844",
+        "emoticons": ["🤪"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6197284130456077317.webp",
+      "width": 256,
+      "height": 256,
+      "size": 188808,
+      "body": "😲",
+      "id": "tg-6197284130456077317",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6197284130456077317",
+        "emoticons": ["😲"]
+      }
+    },
+    {
+      "url": "packs/thumbnails/6197104450499249420.webp",
+      "width": 256,
+      "height": 256,
+      "size": 149793,
+      "body": "😚",
+      "id": "tg-6197104450499249420",
+      "telegram": {
+        "pack": { "id": "4543296330755211265", "short_name": "MonoMemeee" },
+        "id": "6197104450499249420",
+        "emoticons": ["😚"]
+      }
+    }
+  ]
+}

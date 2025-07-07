@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["EKF7MCB3S2.network.ermis.ermischat"],
+        "components": [
+          {
+            "/": "/login/",
+            "comment": "Matches any URL with a path that starts with /login/."
+          },
+          {
+            "/": "/channels/*",
+            "comment": "Matches any URL with a path that starts with /channels/."
+          }
+        ]
+      }
+    ]
+  }
+}

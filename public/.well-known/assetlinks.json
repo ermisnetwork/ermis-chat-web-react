@@ -1,0 +1,44 @@
+[
+    {
+      "relation": [
+        "delegate_permission/common.handle_all_urls"
+      ],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "network.app.ermis",
+        "sha256_cert_fingerprints": [
+          "87:80:30:8D:F5:38:5E:E6:3B:5D:1F:D7:16:BF:6F:0D:90:55:C8:C9:96:B9:E3:41:CA:A2:5D:04:34:0F:9E:AB",
+          "E0:23:6C:A2:08:E4:6A:FF:C1:49:86:3C:9B:88:73:D9:61:B9:BE:45:F7:41:F7:89:5E:9D:A2:66:CF:B6:DE:ED",
+          "8F:FF:40:8A:6E:73:D6:35:D3:4A:88:AC:E5:86:30:F5:B4:21:62:21:A1:89:48:42:6F:DA:BD:36:18:13:8F:87"
+        ]
+      }
+    },
+    {
+      "relation": [
+        "delegate_permission/common.handle_all_urls"
+      ],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.chat.ermis",
+        "sha256_cert_fingerprints": [
+          "87:80:30:8D:F5:38:5E:E6:3B:5D:1F:D7:16:BF:6F:0D:90:55:C8:C9:96:B9:E3:41:CA:A2:5D:04:34:0F:9E:AB",
+          "E0:23:6C:A2:08:E4:6A:FF:C1:49:86:3C:9B:88:73:D9:61:B9:BE:45:F7:41:F7:89:5E:9D:A2:66:CF:B6:DE:ED",
+          "8F:FF:40:8A:6E:73:D6:35:D3:4A:88:AC:E5:86:30:F5:B4:21:62:21:A1:89:48:42:6F:DA:BD:36:18:13:8F:87"
+        ]
+      }
+    },
+    {
+      "relation": [
+        "delegate_permission/common.handle_all_urls"
+      ],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.chat.ermis.debug",
+        "sha256_cert_fingerprints": [
+          "87:80:30:8D:F5:38:5E:E6:3B:5D:1F:D7:16:BF:6F:0D:90:55:C8:C9:96:B9:E3:41:CA:A2:5D:04:34:0F:9E:AB",
+          "E0:23:6C:A2:08:E4:6A:FF:C1:49:86:3C:9B:88:73:D9:61:B9:BE:45:F7:41:F7:89:5E:9D:A2:66:CF:B6:DE:ED",
+          "8F:FF:40:8A:6E:73:D6:35:D3:4A:88:AC:E5:86:30:F5:B4:21:62:21:A1:89:48:42:6F:DA:BD:36:18:13:8F:87"
+        ]
+      }
+    }
+  ]
