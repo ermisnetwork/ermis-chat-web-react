@@ -5,7 +5,7 @@ import { useTheme } from '@mui/material';
 import { User } from 'phosphor-react';
 import { AvatarShape } from '../constants/commons-const';
 
-const AvatarDefault = ({ name, width, height, shape }) => {
+const AvatarDefault = ({ name, width, height, shape = 'circle' }) => {
   const theme = useTheme();
 
   const getFontSizeAvatar = size => {

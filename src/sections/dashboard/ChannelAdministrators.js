@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { Box, Button, IconButton, Stack, Typography, Radio } from '@mui/material';
 import { ArrowLeft, Plus } from 'phosphor-react';
-import useResponsive from '../../hooks/useResponsive';
 import { useDispatch, useSelector } from 'react-redux';
 import { UpdateSidebarType } from '../../redux/slices/app';
 import { ConfirmType, RoleMember, SidebarType } from '../../constants/commons-const';
@@ -11,6 +10,7 @@ import { MemberElement } from '../../components/MemberElement';
 import { ClientEvents } from '../../constants/events-const';
 import { LoadingButton } from '@mui/lab';
 import { setChannelConfirm } from '../../redux/slices/dialog';
+import { client } from '../../client';
 
 const ListMember = ({ setIsShow, members }) => {
   const theme = useTheme();
@@ -132,10 +132,8 @@ const ListMember = ({ setIsShow, members }) => {
 
 const ChannelAdministrators = () => {
   const dispatch = useDispatch();
-  const theme = useTheme();
-  const isDesktop = useResponsive('up', 'md');
   const { currentChannel } = useSelector(state => state.channel);
-  const { all_members } = useSelector(state => state.member);
+  const users = client.state.users ? Object.values(client.state.users) : [];
 
   const [administrators, setAdministrators] = useState([]); // channel_role is owner, moder
   const [members, setMembers] = useState([]); // channel_role is member
@@ -143,12 +141,12 @@ const ChannelAdministrators = () => {
 
   useEffect(() => {
     if (currentChannel) {
-      const members = getChannelMembers(currentChannel, all_members);
+      const members = getChannelMembers(currentChannel, users);
       setAdministrators(members.filter(item => [RoleMember.OWNER, RoleMember.MOD].includes(item.channel_role)));
       setMembers(members.filter(item => item.channel_role === RoleMember.MEMBER && !item.banned));
 
       const handleMemberPromoted = event => {
-        const memberInfoInChannel = getMemberInfoInChannel(event.member, all_members);
+        const memberInfoInChannel = getMemberInfoInChannel(event.member, users);
 
         setAdministrators(prev => {
           return [...prev, memberInfoInChannel];
@@ -160,7 +158,7 @@ const ChannelAdministrators = () => {
       };
 
       const handleMemberDemoted = event => {
-        const memberInfoInChannel = getMemberInfoInChannel(event.member, all_members);
+        const memberInfoInChannel = getMemberInfoInChannel(event.member, users);
         setAdministrators(prev => {
           return prev.filter(item => item.id !== event.member.user_id);
         });
@@ -178,7 +176,7 @@ const ChannelAdministrators = () => {
         currentChannel.off(ClientEvents.MemberDemoted, handleMemberDemoted);
       };
     }
-  }, [currentChannel, all_members]);
+  }, [currentChannel]);
 
   const onRemoveModer = data => {
     const payload = {

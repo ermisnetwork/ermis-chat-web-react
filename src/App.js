@@ -10,7 +10,9 @@ import ThemeProvider from './theme';
 import Router from './routes';
 import { closeSnackBar } from './redux/slices/app';
 import AutoUpdate from './components/AutoUpdate';
-import 'lightbox.js-react/dist/index.css';
+import './assets/css/libs/lightbox.css';
+import './assets/css/libs/slick.min.css';
+import './assets/css/libs/slick-theme.min.css';
 import './assets/css/index.css';
 
 const vertical = 'bottom';

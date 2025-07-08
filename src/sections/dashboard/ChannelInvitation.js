@@ -3,7 +3,7 @@ import { Stack, styled, useTheme, Typography, Button } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import ChannelAvatar from '../../components/ChannelAvatar';
 import { formatString, handleError, isPublicChannel } from '../../utils/commons';
-import { ChatType, RoleMember } from '../../constants/commons-const';
+import { AvatarShape, ChatType, RoleMember } from '../../constants/commons-const';
 import AvatarComponent from '../../components/AvatarComponent';
 import { useNavigate } from 'react-router-dom';
 
@@ -86,6 +86,7 @@ const ChannelInvitation = () => {
             height={100}
             isPublic={isPublic}
             openLightbox={true}
+            shape={AvatarShape.Round}
           />
         ) : (
           <ChannelAvatar channel={currentChannel} width={100} height={100} openLightbox={true} />

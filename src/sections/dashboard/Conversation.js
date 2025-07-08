@@ -29,14 +29,8 @@ import {
   PushPin,
   PushPinSimpleSlash,
 } from 'phosphor-react';
-import {
-  checkPermissionDeleteMessage,
-  downloadFile,
-  formatString,
-  getMemberInfo,
-  handleError,
-} from '../../utils/commons';
-import { CallType, EMOJI_QUICK, MessageType } from '../../constants/commons-const';
+import { checkPermissionDeleteMessage, downloadFile, formatString, getMemberInfo } from '../../utils/commons';
+import { CallType, MessageType } from '../../constants/commons-const';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   onDeleteMessage,
@@ -57,7 +51,7 @@ import ImageCanvas from '../../components/ImageCanvas';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { setPollResult } from '../../redux/slices/dialog';
-import { ForwardIcon, LikeIcon, QuoteDownIcon, ThreeDotsIcon } from '../../components/Icons';
+import { ForwardIcon, QuoteDownIcon, ThreeDotsIcon } from '../../components/Icons';
 
 const StyledIconButton = styled(IconButton)(({ theme }) => ({
   backgroundColor: theme.palette.background.neutral,
@@ -66,132 +60,6 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
   padding: '0px',
   color: theme.palette.text.primary,
 }));
-
-const QuickReaction = ({ message, setIsOpen }) => {
-  const dispatch = useDispatch();
-  const theme = useTheme();
-  const { user_id } = useSelector(state => state.auth);
-
-  const { currentChannel } = useSelector(state => state.channel);
-  const { canReactMessage } = useSelector(state => state.channel.channelPermissions);
-
-  const [anchorEl, setAnchorEl] = useState(null);
-  const isMyMessage = message.isMyMessage;
-
-  const onReactMessage = async type => {
-    try {
-      const messageID = message.id;
-
-      const response = await currentChannel.sendReaction(messageID, type);
-      if (response) {
-        setIsOpen(false);
-        setAnchorEl(null);
-      }
-    } catch (error) {
-      setIsOpen(false);
-      setAnchorEl(null);
-      handleError(dispatch, error);
-    }
-  };
-
-  const my_reactions = message.latest_reactions
-    ? message.latest_reactions.filter(item => item.user_id === user_id).map(item => item.type)
-    : [];
-
-  return (
-    <>
-      <Button
-        variant="contained"
-        color="inherit"
-        sx={{
-          minWidth: 'auto',
-          height: 'auto',
-          backgroundColor: theme.palette.background.paper,
-          borderRadius: '16px',
-          padding: '2px 8px',
-          boxShadow: theme.shadows[6],
-          position: 'absolute',
-          bottom: '-10px',
-          left: isMyMessage ? '5px' : 'auto',
-          right: isMyMessage ? 'auto' : '5px',
-          zIndex: 1,
-        }}
-        onClick={event => {
-          if (!canReactMessage) {
-            dispatch(
-              showSnackbar({
-                severity: 'error',
-                message: 'You do not have permission to react message in this channel',
-              }),
-            );
-            return;
-          }
-
-          setAnchorEl(event.currentTarget);
-          setIsOpen(true);
-        }}
-      >
-        <LikeIcon color={theme.palette.text.icon} />
-      </Button>
-      {/* <IconButton
-        sx={{ order: orderEmotion }}
-        onClick={event => {
-          if (!canReactMessage) {
-            dispatch(
-              showSnackbar({
-                severity: 'error',
-                message: 'You do not have permission to react message in this channel',
-              }),
-            );
-            return;
-          }
-
-          setAnchorEl(event.currentTarget);
-          setIsOpen(true);
-        }}
-      >
-        <Smiley size={18} />
-      </IconButton> */}
-      <Popover
-        id={Boolean(anchorEl) ? 'reaction-popover' : undefined}
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={() => {
-          setAnchorEl(null);
-          setIsOpen(false);
-        }}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        sx={{
-          '& .MuiPaper-root': {
-            borderRadius: '30px',
-          },
-        }}
-      >
-        <Stack direction="row" alignItems="center" sx={{ padding: '5px' }}>
-          {EMOJI_QUICK.map(item => {
-            return (
-              <IconButton
-                key={item.type}
-                sx={{ fontSize: 14, width: 35, height: 35 }}
-                onClick={() => onReactMessage(item.type)}
-                disabled={my_reactions.includes(item.type)}
-              >
-                {item.value}
-              </IconButton>
-            );
-          })}
-        </Stack>
-      </Popover>
-    </>
-  );
-};
 
 const MoreOptions = ({ message, setIsOpen, orderMore, isMyMessage }) => {
   const dispatch = useDispatch();
@@ -447,7 +315,6 @@ const MessageOption = ({ isMyMessage, message }) => {
 
   return (
     <Box className={`messageActions ${isOpen ? 'open' : ''}`} sx={{ visibility: 'hidden' }}>
-      <QuickReaction message={message} setIsOpen={setIsOpen} />
       <Stack
         direction="row"
         alignItems="center"

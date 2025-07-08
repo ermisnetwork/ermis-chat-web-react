@@ -31,14 +31,12 @@ import Channels from './Channels';
 const LeftPanel = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  console.log('----theme----', theme);
 
   const navigate = useNavigate();
   const { tab } = useSelector(state => state.app);
   const { activeChannels, pendingChannels, mutedChannels } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
-  const { all_members } = useSelector(state => state.member);
-  const { projectCurrent } = useSelector(state => state.wallet);
+  const users = client.state.users ? Object.values(client.state.users) : [];
 
   useEffect(() => {
     dispatch(FetchChannels());
@@ -116,10 +114,10 @@ const LeftPanel = () => {
 
   function notifyUser(notiData) {
     const { type, message, senderId, channel } = notiData;
-    const senderInfo = getMemberInfo(senderId, all_members);
+    const senderInfo = getMemberInfo(senderId, users);
     const senderName = senderInfo ? senderInfo.name : '';
     const channelData = client.channel(channel.type, channel.id);
-    const channelName = getChannelName(channelData, all_members);
+    const channelName = getChannelName(channelData, users);
     const isDirect = channel.type === ChatType.MESSAGING;
     const isNotify = true;
 
@@ -127,14 +125,14 @@ const LeftPanel = () => {
     switch (type) {
       case ClientEvents.MessageNew:
         const replaceMentionsWithNames = inputValue => {
-          all_members.forEach(user => {
+          users.forEach(user => {
             inputValue = inputValue.replaceAll(`@${user.id}`, `@${user.name}`);
           });
           return inputValue;
         };
 
         if (message.type === MessageType.System) {
-          notiText = convertMessageSystem(message.text, all_members, isDirect, isNotify);
+          notiText = convertMessageSystem(message.text, users, isDirect, isNotify);
         } else {
           if (message.attachments) {
             const getAttachmentMessage = attachments => {
@@ -189,7 +187,7 @@ const LeftPanel = () => {
       case ClientEvents.MessageUpdated:
         notiText =
           message.type === MessageType.System
-            ? convertMessageSystem(message.text, all_members, isDirect, isNotify)
+            ? convertMessageSystem(message.text, users, isDirect, isNotify)
             : message.type === MessageType.Signal
               ? convertLastMessageSignal(message.text)
               : message.text;
@@ -482,8 +480,6 @@ const LeftPanel = () => {
       </>
     );
   }, [tab]);
-
-  if (!projectCurrent) return null;
 
   return (
     <>

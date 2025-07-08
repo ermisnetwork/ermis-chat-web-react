@@ -52,7 +52,7 @@ const ERROR = {
 
 const GREY = {
   0: '#FFFFFF',
-  100: '#F9FAFB',
+  100: '#F9F9F9',
   200: '#EAEAEA',
   300: '#DFE3E8',
   400: '#C4CDD5',
@@ -115,14 +115,14 @@ const palette = {
     ...COMMON,
     mode: 'light',
     text: { primary: GREY[800], secondary: GREY[600], disabled: GREY[500] },
-    background: { paper: '#fff', default: '#fff', neutral: GREY[200] },
+    background: { paper: '#fff', default: '#fff', neutral: GREY[100], secondary: GREY[200] },
     action: { active: GREY[600], ...COMMON.action },
   },
   dark: {
     ...COMMON,
     mode: 'dark',
     text: { primary: '#fff', secondary: GREY[500], disabled: GREY[600] },
-    background: { paper: GREY[800], default: GREY[900], neutral: GREY[700] },
+    background: { paper: GREY[800], default: GREY[900], neutral: GREY[700], secondary: GREY[700] },
     action: { active: GREY[500], ...COMMON.action },
   },
 };

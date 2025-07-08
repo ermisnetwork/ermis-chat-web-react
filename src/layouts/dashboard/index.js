@@ -6,9 +6,8 @@ import SideNav from './SideNav';
 import { useDispatch, useSelector } from 'react-redux';
 import { client, connectUser } from '../../client';
 import { FetchUserProfile } from '../../redux/slices/member';
-import { ERMIS_PROJECT_ID } from '../../config';
+import { CHAT_PROJECT_ID } from '../../config';
 import { ClientEvents } from '../../constants/events-const';
-import { FetchProjectCurrent } from '../../redux/slices/wallet';
 import { LocalStorageKey } from '../../constants/localStorage-const';
 import CreateChannel from '../../sections/dashboard/CreateChannel';
 import NewDirectMessage from '../../sections/dashboard/NewDirectMessage';
@@ -19,6 +18,7 @@ import useFaviconBadge from '../../hooks/useFaviconBadge';
 import { AddUnreadChannel, RemoveUnreadChannel, UpdateUnreadChannel } from '../../redux/slices/channel';
 import CallDirectDialog2 from '../../sections/dashboard/CallDirectDialog2';
 import Header from './Header';
+import { SetIsUserConnected } from '../../redux/slices/app';
 
 const DashboardLayout = () => {
   const dispatch = useDispatch();
@@ -35,8 +35,21 @@ const DashboardLayout = () => {
   useFaviconBadge(unreadChannels);
 
   useEffect(() => {
+    // Lưu lại overflow cũ để khôi phục khi unmount
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
     if (isLoggedIn) {
-      connectUser(ERMIS_PROJECT_ID, user_id, accessToken, dispatch);
+      const onConnectUser = async () => {
+        const response = await connectUser(CHAT_PROJECT_ID, user_id, accessToken, dispatch);
+        dispatch(SetIsUserConnected(response));
+      };
+      onConnectUser();
       fetchDataInitial();
     }
   }, [isLoggedIn]);
@@ -73,7 +86,7 @@ const DashboardLayout = () => {
   }, [client, unreadChannels, user_id]);
 
   const fetchDataInitial = async () => {
-    await Promise.all([dispatch(FetchUserProfile()), dispatch(FetchProjectCurrent())]);
+    await Promise.all([dispatch(FetchUserProfile())]);
   };
 
   if (!isLoggedIn) {

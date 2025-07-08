@@ -302,6 +302,13 @@ export function isGuestInPublicChannel(channel) {
   return false;
 }
 
+export function isStagingDomain() {
+  const domain = window.location.origin;
+
+  return domain.includes('chat-staging.ermis.network');
+  // return domain === 'https://chat-staging.ermis.network';
+}
+
 export async function processImageFile(file) {
   const isImage = file.type.startsWith('image/');
   if (['image/svg+xml', 'image/gif'].includes(file.type) || !isImage) {

@@ -7,7 +7,7 @@ import AvatarComponent from '../../components/AvatarComponent';
 import ChannelAvatar from '../../components/ChannelAvatar';
 import { MagnifyingGlass, X } from 'phosphor-react';
 import { Search, SearchIconWrapper, StyledInputBase } from '../../components/Search';
-import { ChatType } from '../../constants/commons-const';
+import { AvatarShape, ChatType } from '../../constants/commons-const';
 import { showSnackbar } from '../../redux/slices/app';
 import { formatString } from '../../utils/commons';
 
@@ -74,15 +74,15 @@ const ForwardMessageDialog = () => {
       const payload = {
         cid: channel.cid,
         forward_cid: message.cid,
-      }
+      };
 
-      if (message.sticker_url &&
+      if (
+        message.sticker_url &&
         (!message.text || message.text === '') &&
         (!message.attachments || (Array.isArray(message.attachments) && message.attachments.length === 0))
       ) {
         payload.sticker_url = message.sticker_url;
         payload.text = message.text;
-
       } else {
         payload.text = message.text || '';
         if (message.attachments && message.attachments.length > 0) {
@@ -159,9 +159,10 @@ const ForwardMessageDialog = () => {
                           width={30}
                           height={30}
                           isPublic={isPublic}
+                          shape={AvatarShape.Round}
                         />
                       ) : (
-                        <ChannelAvatar channel={channel} width={30} height={30} />
+                        <ChannelAvatar channel={channel} width={30} height={30} shape={AvatarShape.Round} />
                       )}
                       <Typography
                         variant="subtitle2"

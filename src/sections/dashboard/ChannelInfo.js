@@ -32,7 +32,7 @@ import {
   isPublicChannel,
   myRoleInChannel,
 } from '../../utils/commons';
-import { ConfirmType, RoleMember, SidebarType } from '../../constants/commons-const';
+import { AvatarShape, ConfirmType, RoleMember, SidebarType } from '../../constants/commons-const';
 import ClipboardCopy from '../../components/ClipboardCopy';
 import { LoadingButton } from '@mui/lab';
 import FormProvider from '../../components/hook-form/FormProvider';
@@ -408,9 +408,16 @@ const ChannelInfo = () => {
                   height={80}
                   isPublic={isPublic}
                   openLightbox={true}
+                  shape={AvatarShape.Round}
                 />
               ) : (
-                <ChannelAvatar channel={currentChannel} width={80} height={80} openLightbox={true} />
+                <ChannelAvatar
+                  channel={currentChannel}
+                  width={80}
+                  height={80}
+                  openLightbox={true}
+                  shape={AvatarShape.Round}
+                />
               )}
               <Stack direction="column" alignItems="center">
                 <Typography variant="article" fontWeight={600} sx={styleChannelName}>

@@ -10,6 +10,7 @@ import { getChannelMembers, getMemberInfoInChannel, handleError } from '../../ut
 import { MemberElement } from '../../components/MemberElement';
 import { LoadingButton } from '@mui/lab';
 import { ClientEvents } from '../../constants/events-const';
+import { client } from '../../client';
 
 const ListMember = ({ setIsShow, members }) => {
   const theme = useTheme();
@@ -139,21 +140,20 @@ const ListMember = ({ setIsShow, members }) => {
 const ChannelBannedUsers = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isDesktop = useResponsive('up', 'md');
   const { currentChannel } = useSelector(state => state.channel);
-  const { all_members } = useSelector(state => state.member);
   const [members, setMembers] = useState([]); // channel_role is member and banned is false
   const [bannedMembers, setBannedMembers] = useState([]); // channel_role is member and banned is true
   const [isShow, setIsShow] = useState(false);
+  const users = client.state.users ? Object.values(client.state.users) : [];
 
   useEffect(() => {
     if (currentChannel) {
-      const members = getChannelMembers(currentChannel, all_members);
+      const members = getChannelMembers(currentChannel, users);
       setBannedMembers(members.filter(item => item.channel_role === RoleMember.MEMBER && item.banned));
       setMembers(members.filter(item => item.channel_role === RoleMember.MEMBER && !item.banned));
 
       const handleMemberBanned = event => {
-        const memberInfoInChannel = getMemberInfoInChannel(event.member, all_members);
+        const memberInfoInChannel = getMemberInfoInChannel(event.member, users);
 
         setBannedMembers(prev => {
           return [...prev, memberInfoInChannel];
@@ -165,7 +165,7 @@ const ChannelBannedUsers = () => {
       };
 
       const handleMemberUnBanned = event => {
-        const memberInfoInChannel = getMemberInfoInChannel(event.member, all_members);
+        const memberInfoInChannel = getMemberInfoInChannel(event.member, users);
         setBannedMembers(prev => {
           return prev.filter(item => item.id !== event.member.user_id);
         });
@@ -183,7 +183,7 @@ const ChannelBannedUsers = () => {
         currentChannel.off(ClientEvents.MemberUnBanned, handleMemberUnBanned);
       };
     }
-  }, [currentChannel, all_members]);
+  }, [currentChannel]);
 
   const onUnbanMember = async data => {
     try {

@@ -96,18 +96,3 @@ export const CHAINS = [
     logo: LogoAurora,
   },
 ];
-
-export const PlatformType = {
-  Ermis: 1,
-  Sdk: 2,
-};
-
-export const PLATFORMS = [
-  { value: PlatformType.Ermis, label: 'Ermis', logo: LogoErmis },
-  { value: PlatformType.Sdk, label: 'SDKs', logo: LogoSdk },
-];
-
-export const TabIndexSdk = {
-  YourProjects: 0,
-  NewProjects: 2,
-};

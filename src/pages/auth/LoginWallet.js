@@ -11,6 +11,7 @@ import { LocalStorageKey } from '../../constants/localStorage-const';
 import LogoCoinbase from '../../assets/Images/logo-coinbase.webp';
 import { BASE_URL_PROFILE } from '../../config';
 import { LoginType } from '../../constants/commons-const';
+import { isStagingDomain } from '../../utils/commons';
 import uuidv4 from '../../utils/uuidv4';
 
 // ----------------------------------------------------------------------
@@ -109,8 +110,8 @@ export default function LoginWallet({ setIsWalletConnected }) {
               logIn({
                 isLoggedIn: true,
                 user_id: user_id,
-                project_id_ermis: project_id,
-                openDialogPlatform: false,
+                chat_project_id: project_id,
+                openDialogPlatform: isStagingDomain(),
                 loginType: LoginType.Wallet,
               }),
             );

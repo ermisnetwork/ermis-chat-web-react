@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { CaretLeft, MagnifyingGlass, Phone, VideoCamera } from 'phosphor-react';
@@ -6,16 +6,10 @@ import useResponsive from '../../hooks/useResponsive';
 import { setSidebar, showSnackbar } from '../../redux/slices/app';
 import { useDispatch, useSelector } from 'react-redux';
 import ChannelAvatar from '../ChannelAvatar';
-import {
-  formatString,
-  handleError,
-  isChannelDirect,
-  isGuestInPublicChannel,
-  isPublicChannel,
-} from '../../utils/commons';
-import { CallType, CurrentChannelStatus, SidebarType } from '../../constants/commons-const';
+import { handleError, isChannelDirect, isPublicChannel } from '../../utils/commons';
+import { AvatarShape, CallType, CurrentChannelStatus, SidebarType } from '../../constants/commons-const';
 import { LoadingButton } from '@mui/lab';
-import { FetchChannels, setCurrentChannel, setCurrentChannelStatus, SetIsGuest } from '../../redux/slices/channel';
+import { setCurrentChannel, setCurrentChannelStatus, SetIsGuest } from '../../redux/slices/channel';
 import AvatarComponent from '../AvatarComponent';
 import useOnlineStatus from '../../hooks/useOnlineStatus';
 import { callClient } from '../../client';
@@ -44,16 +38,6 @@ const ChatHeader = ({ currentChannel, isBlocked }) => {
   const otherMemberId = otherMember?.user_id;
 
   const onlineStatus = useOnlineStatus(isDirect ? otherMemberId : '');
-
-  const getReceiverId = () => {
-    const members = Object.values(currentChannel.state.members);
-    const receiverInfo = members.find(member => member.user_id !== user_id);
-    if (receiverInfo) {
-      return receiverInfo.user.id;
-    } else {
-      return '';
-    }
-  };
 
   const onStartCall = async callType => {
     await callClient.createCall(callType, currentChannel.cid);
@@ -118,9 +102,16 @@ const ChatHeader = ({ currentChannel, isBlocked }) => {
                     height={40}
                     isPublic={isPublic}
                     openLightbox={true}
+                    shape={AvatarShape.Round}
                   />
                 ) : (
-                  <ChannelAvatar channel={currentChannel} width={40} height={40} openLightbox={true} />
+                  <ChannelAvatar
+                    channel={currentChannel}
+                    width={40}
+                    height={40}
+                    openLightbox={true}
+                    shape={AvatarShape.Round}
+                  />
                 )}
               </Box>
 
@@ -154,7 +145,7 @@ const ChatHeader = ({ currentChannel, isBlocked }) => {
                       width: '100%',
                     }}
                   >
-                    {formatString(currentChannel.data.name)}
+                    {currentChannel.data.name}
                     <Typography
                       variant="caption"
                       sx={{

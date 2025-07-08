@@ -102,7 +102,7 @@ export const TabType = {
   Chat: 0,
   Call: 1,
   Contact: 2,
-  More: 4,
+  More: 3,
 };
 
 export const MessageType = {

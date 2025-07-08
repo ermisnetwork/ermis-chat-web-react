@@ -11,7 +11,7 @@ import { debounce } from '@mui/material/utils';
 import { LoadingSpinner } from '../animate';
 import AvatarComponent from '../AvatarComponent';
 import { splitChannelId } from '../../utils/commons';
-import { ChatType } from '../../constants/commons-const';
+import { AvatarShape, ChatType } from '../../constants/commons-const';
 import { setSearchChannels } from '../../redux/slices/channel';
 
 const StyledSearchItem = styled(Box)(({ theme }) => ({
@@ -30,13 +30,13 @@ const HomeSearch = ({ channels }) => {
   const navigate = useNavigate();
   const theme = useTheme();
   const { user_id } = useSelector(state => state.auth);
-  const { all_members } = useSelector(state => state.member);
   const { searchChannels } = useSelector(state => state.channel);
   const [visible, setVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredLocalChannels, setFilteredLocalChannels] = useState([]);
   const [publicChannels, setPublicChannels] = useState([]);
   const [loading, setLoading] = useState(false);
+  const users = client.state.users ? Object.values(client.state.users) : [];
 
   useEffect(() => {
     if (channels.length) {
@@ -46,7 +46,7 @@ const HomeSearch = ({ channels }) => {
         if (channelData.type === ChatType.MESSAGING) {
           const otherMember = channelData.members.find(member => member.user_id !== user_id);
           if (otherMember) {
-            const otherUser = all_members.find(user => user.id === otherMember.user_id);
+            const otherUser = users.find(user => user.id === otherMember.user_id);
             if (otherUser) {
               name = otherUser.name;
             }
@@ -66,7 +66,7 @@ const HomeSearch = ({ channels }) => {
 
       dispatch(setSearchChannels(dataChannels));
     }
-  }, [channels, all_members, user_id]);
+  }, [channels, user_id]);
 
   const debouncedSearch = useCallback(
     debounce(async term => {
@@ -195,6 +195,7 @@ const HomeSearch = ({ channels }) => {
                               width={40}
                               height={40}
                               isPublic={isPublic}
+                              shape={AvatarShape.Round}
                             />
                           ) : (
                             <ChannelAvatar channel={dataChannel} width={40} height={40} />
@@ -269,6 +270,7 @@ const HomeSearch = ({ channels }) => {
                             width={40}
                             height={40}
                             isPublic={true}
+                            shape={AvatarShape.Round}
                           />
                           <Stack sx={{ width: 'calc(100% - 40px)', paddingLeft: '15px' }}>
                             <Typography

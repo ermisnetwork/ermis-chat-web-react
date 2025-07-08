@@ -24,14 +24,11 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel }) => {
   const dispatch = useDispatch();
 
   const { user_id } = useSelector(state => state.auth);
-  const { projectCurrent } = useSelector(state => state.wallet);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (projectCurrent) {
-      dispatch(FetchFriends());
-    }
-  }, [projectCurrent]);
+    dispatch(FetchFriends());
+  }, []);
 
   const NewGroupSchema = Yup.object().shape({
     name: Yup.string().required('Channel name is required'),

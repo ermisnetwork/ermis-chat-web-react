@@ -19,6 +19,7 @@ import { ConfirmType, SidebarType } from '../../constants/commons-const';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PATH } from '../../config';
 import { ClientEvents } from '../../constants/events-const';
+import { client } from '../../client';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -38,11 +39,11 @@ const ChannelConfirmDialog = () => {
   const navigate = useNavigate();
 
   const { openDialog, channel, userId, type } = useSelector(state => state.dialog.channelConfirm);
-  const { all_members } = useSelector(state => state.member);
+  const users = client.state.users ? Object.values(client.state.users) : [];
 
   const channelId = channel.data.id;
   const channelName = channel.data.name;
-  const directChannelName = getChannelName(channel, all_members);
+  const directChannelName = getChannelName(channel, users);
 
   const [loadingButton, setLoadingButton] = useState(false);
 

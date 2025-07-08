@@ -33,7 +33,7 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-const ChatFooter = ({ currentChannel, setMessages, isDialog, usersTyping }) => {
+const ChatFooter = ({ currentChannel, setMessages, isDialog }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const inputRef = useRef(null);
@@ -48,6 +48,7 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog, usersTyping }) => {
   const [messagesQueue, setMessagesQueue] = useState([]); // Lưu payload những tin nhắn khi mất mạng
   const [editMessagesQueue, setEditMessagesQueue] = useState([]); // Lưu messageId và text những tin nhắn chỉnh sửa khi mất mạng
   const [stickerUrl, setStickerUrl] = useState('');
+  const [isComposing, setIsComposing] = useState(false);
 
   const myRole = myRoleInChannel(currentChannel);
   const isDirect = isChannelDirect(currentChannel);
@@ -403,6 +404,8 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog, usersTyping }) => {
   };
 
   const onKeyDown = e => {
+    if (isComposing) return;
+
     if (anchorElMention && filteredMentions.length) {
       if (e.key === 'ArrowDown') {
         // setHighlightedIndex(prevIndex => (prevIndex < filteredMentions.length - 1 ? prevIndex + 1 : prevIndex));
@@ -486,7 +489,7 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog, usersTyping }) => {
 
   return (
     <>
-      <Box sx={{ borderRadius: '30px', backgroundColor: theme.palette.background.neutral, position: 'relative' }}>
+      <Box sx={{ borderRadius: '30px', backgroundColor: theme.palette.background.secondary, position: 'relative' }}>
         {quotesMessage && <ReplyMessageBox quotesMessage={quotesMessage} />}
         {editMessage && <EditMessageBox editMessage={editMessage} />}
 
@@ -591,6 +594,8 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog, usersTyping }) => {
           onKeyDown={onKeyDown}
           onKeyUp={onKeyUp}
           // onKeyPress={onKeyPress}
+          onCompositionStart={() => setIsComposing(true)}
+          onCompositionEnd={() => setIsComposing(false)}
         />
       </Box>
 

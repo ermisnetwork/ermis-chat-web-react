@@ -17,6 +17,7 @@ const initialState = {
   isLoading: false,
   isResetEmailSent: false,
   authProvider: null,
+  isUserConnected: false,
 };
 
 const slice = createSlice({
@@ -59,6 +60,9 @@ const slice = createSlice({
     },
     setAuthProvider(state, action) {
       state.authProvider = action.payload;
+    },
+    setIsUserConnected(state, action) {
+      state.isUserConnected = action.payload;
     },
   },
 });
@@ -120,5 +124,11 @@ export function SetUserLogin(payload) {
 export function SetAuthProvider(payload) {
   return async (dispatch, getState) => {
     dispatch(slice.actions.setAuthProvider(payload));
+  };
+}
+
+export function SetIsUserConnected(payload) {
+  return async (dispatch, getState) => {
+    dispatch(slice.actions.setIsUserConnected(payload));
   };
 }

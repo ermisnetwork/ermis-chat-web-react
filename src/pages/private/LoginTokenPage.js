@@ -7,7 +7,7 @@ import FormProvider, { RHFTextField } from '../../components/hook-form';
 import { logIn } from '../../redux/slices/auth';
 import { useDispatch } from 'react-redux';
 import uuidv4 from '../../utils/uuidv4';
-import { ERMIS_PROJECT_ID } from '../../config';
+import { CHAT_PROJECT_ID } from '../../config';
 import { LoginType } from '../../constants/commons-const';
 import { LocalStorageKey } from '../../constants/localStorage-const';
 
@@ -44,7 +44,7 @@ export default function LoginTokenPage() {
       logIn({
         isLoggedIn: true,
         user_id: user_id,
-        project_id_ermis: ERMIS_PROJECT_ID,
+        chat_project_id: CHAT_PROJECT_ID,
         openDialogPlatform: false,
         loginType: LoginType.Email,
       }),

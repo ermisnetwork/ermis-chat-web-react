@@ -19,20 +19,21 @@ import { DEFAULT_PATH } from '../../config';
 import ChannelNotFound from '../../sections/dashboard/ChannelNotFound';
 import { Box } from '@mui/material';
 import SidebarPanel from './SidebarPanel';
+import useResponsive from '../../hooks/useResponsive';
 
 const ChannelDetailApp = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const navigate = useNavigate();
+  const isMobileToMd = useResponsive('down', 'md');
 
-  const { currentChannel, currentChannelStatus, activeChannels, pendingChannels } = useSelector(state => state.channel);
-  const { sideBar } = useSelector(state => state.app);
-  const { all_members } = useSelector(state => state.member);
+  const { currentChannelStatus } = useSelector(state => state.channel);
+  const { sideBar, isUserConnected } = useSelector(state => state.app);
 
   const { id } = useParams();
 
   useEffect(() => {
-    if (id && all_members.length) {
+    if (id && isUserConnected) {
       const result = splitChannelId(id);
       if (result) {
         dispatch(ConnectCurrentChannel(result.channelId, result.channelType));
@@ -40,7 +41,7 @@ const ChannelDetailApp = () => {
         navigate(`${DEFAULT_PATH}`);
       }
     }
-  }, [dispatch, id, all_members]);
+  }, [dispatch, id, isUserConnected]);
 
   return (
     <>
@@ -53,6 +54,12 @@ const ChannelDetailApp = () => {
           borderRadius: '16px',
           minWidth: 'auto',
           flex: 1,
+          position: isMobileToMd ? 'fixed' : 'relative',
+          top: isMobileToMd ? 0 : undefined,
+          left: isMobileToMd ? 0 : undefined,
+          right: isMobileToMd ? 0 : undefined,
+          bottom: isMobileToMd ? 0 : undefined,
+          zIndex: isMobileToMd ? 10 : 0,
         }}
       >
         {currentChannelStatus === CurrentChannelStatus.ERROR ? <ChannelNotFound /> : <ChatComponent />}

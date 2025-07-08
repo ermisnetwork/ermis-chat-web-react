@@ -11,7 +11,7 @@ export const BASE_URL_PROFILE = apiURL;
 export const BASE_URL = apiURL;
 export const BASE_URL_WALLET = apiURL;
 export const API_KEY = import.meta.env.VITE_API_KEY;
-export const ERMIS_PROJECT_ID = import.meta.env.VITE_ERMIS_PROJECT_ID;
+export const CHAT_PROJECT_ID = import.meta.env.VITE_CHAT_PROJECT_ID;
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 export const defaultSettings = {

@@ -8,7 +8,7 @@ import { formatString, isChannelDirect, isPublicChannel, myRoleInChannel } from 
 import { ClientEvents } from '../constants/events-const';
 import { onEditMessage, onReplyMessage } from '../redux/slices/messages';
 import { EnvelopeSimpleOpen, PushPin, PushPinSlash, SignOut, Trash } from 'phosphor-react';
-import { ConfirmType, MessageType, RoleMember, TabValueChannel } from '../constants/commons-const';
+import { AvatarShape, ConfirmType, MessageType, RoleMember, TabValueChannel } from '../constants/commons-const';
 import { setChannelConfirm } from '../redux/slices/dialog';
 import { convertMessageSystem } from '../utils/messageSystem';
 import { useNavigate } from 'react-router-dom';
@@ -18,10 +18,6 @@ import { convertLastMessageSignal } from '../utils/messageSignal';
 import { getDisplayDate } from '../utils/formatTime';
 import { client } from '../client';
 import { SpearkerOffIcon } from './Icons';
-
-const truncateText = (string, n) => {
-  return string?.length > n ? `${string?.slice(0, n)}...` : string;
-};
 
 const StyledChatBox = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -70,9 +66,9 @@ const ChatElement = ({ channel }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { currentChannel, mutedChannels, selectedTabChannel } = useSelector(state => state.channel);
-  const { all_members } = useSelector(state => state.member);
   const { user_id } = useSelector(state => state.auth);
   const { tab } = useSelector(state => state.app);
+  const users = client.state.users ? Object.values(client.state.users) : [];
 
   const channelIdSelected = currentChannel?.data.id;
   const channelId = channel.data.id;
@@ -98,7 +94,7 @@ const ChatElement = ({ channel }) => {
   const showItemDeleteConversation = isDirect;
 
   const replaceMentionsWithNames = inputValue => {
-    all_members.forEach(user => {
+    users.forEach(user => {
       inputValue = inputValue.replaceAll(`@${user.id}`, `@${user.name}`);
     });
     return inputValue;
@@ -112,7 +108,7 @@ const ChatElement = ({ channel }) => {
       // setLastMessageAt(dayjs(date).format('hh:mm A'));
       setLastMessageAt(getDisplayDate(date));
       if (message.type === MessageType.System) {
-        const messageSystem = convertMessageSystem(message.text, all_members, isDirect);
+        const messageSystem = convertMessageSystem(message.text, users, isDirect);
         setLastMessage(`${senderName}: ${messageSystem}`);
       } else if (message.type === MessageType.Signal) {
         const messageSignal = convertLastMessageSignal(message.text);
@@ -194,22 +190,10 @@ const ChatElement = ({ channel }) => {
         if (lastMsg.id === event.message.id || event.message.type === MessageType.Signal) {
           getLastMessage(event.message, true);
         } else {
-          // setLastMessage(prev => {
-          //   if (prev === event.message_update.text) {
-          //     if (event.message.type === MessageType.System) {
-          //       const messageSystem = convertMessageSystem(event.message.text, all_members, isDirect);
-          //       return messageSystem;
-          //     } else {
-          //       return event.message.text;
-          //     }
-          //   }
-          //   return prev;
-          // });
-
           setLastMessageUpdated(prev => {
             if (prev === event.message_update.text) {
               if (event.message.type === MessageType.System) {
-                const messageSystem = convertMessageSystem(event.message.text, all_members, isDirect);
+                const messageSystem = convertMessageSystem(event.message.text, users, isDirect);
                 return messageSystem;
               } else {
                 return event.message.text;
@@ -359,9 +343,10 @@ const ChatElement = ({ channel }) => {
             width={60}
             height={60}
             isPublic={isPublic}
+            shape={AvatarShape.Round}
           />
         ) : (
-          <ChannelAvatar channel={channel} width={60} height={60} />
+          <ChannelAvatar channel={channel} width={60} height={60} shape={AvatarShape.Round} />
         )}
 
         {/* -------------------------------content------------------------------- */}

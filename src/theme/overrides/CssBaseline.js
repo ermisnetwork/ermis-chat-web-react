@@ -17,7 +17,7 @@ export default function CssBaseline() {
         body: {
           width: '100%',
           height: '100%',
-          overflow: 'hidden',
+          // overflow: 'hidden',
           fontVariantNumeric: 'lining-nums tabular-nums',
         },
         '#root': {

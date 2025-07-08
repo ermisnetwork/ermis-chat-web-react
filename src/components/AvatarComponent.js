@@ -4,8 +4,17 @@ import { GlobeHemisphereWest } from 'phosphor-react';
 import ImageCanvas from './ImageCanvas';
 import AvatarDefault from './AvatarDefault';
 import { useTheme } from '@mui/material';
+import { AvatarShape } from '../constants/commons-const';
 
-export default function AvatarComponent({ name = '', url = '', width, height, isPublic = false, openLightbox }) {
+export default function AvatarComponent({
+  name = '',
+  url = '',
+  width,
+  height,
+  isPublic = false,
+  openLightbox,
+  shape = 'circle',
+}) {
   const theme = useTheme();
   const renderIconPublic = () => {
     if (isPublic) {
@@ -35,13 +44,13 @@ export default function AvatarComponent({ name = '', url = '', width, height, is
           width={width}
           height={height}
           styleCustom={{
-            borderRadius: '30%',
+            borderRadius: shape === AvatarShape.Circle ? '50%' : '30%',
             border: `1px solid ${theme.palette.background.paper}`,
           }}
           openLightbox={openLightbox}
         />
       ) : (
-        <AvatarDefault name={name} width={width} height={height} />
+        <AvatarDefault name={name} width={width} height={height} shape={shape} />
       )}
       {renderIconPublic()}
     </Stack>

@@ -184,11 +184,7 @@ export default function ReadBy() {
   }, [messageReadType, readBy, theme]);
 
   return (
-    <Stack
-      direction="row"
-      justifyContent="flex-end"
-      sx={{ position: 'absolute', bottom: '-25px', right: '0px', zIndex: 1 }}
-    >
+    <Stack direction="row" justifyContent="flex-end">
       {renderReadBy()}
 
       {isOpen && (

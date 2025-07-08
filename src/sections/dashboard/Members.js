@@ -15,7 +15,6 @@ import {
   Tab,
 } from '@mui/material';
 import { ArrowLeft, MagnifyingGlass, UserCirclePlus } from 'phosphor-react';
-import useResponsive from '../../hooks/useResponsive';
 import { useDispatch, useSelector } from 'react-redux';
 import { UpdateSidebarType, showSnackbar } from '../../redux/slices/app';
 import { Search, SearchIconWrapper, StyledInputBase } from '../../components/Search';
@@ -37,8 +36,8 @@ import RHFAutocompleteFriends from '../../components/hook-form/RHFAutocompleteFr
 import { RoleMember, SidebarType, TabMembers } from '../../constants/commons-const';
 import TabMembersOther from './TabMembersOther';
 import TabMembersPending from './TabMembersPending';
-import { WatchCurrentChannel } from '../../redux/slices/channel';
 import { FetchFriends } from '../../redux/slices/member';
+import { client } from '../../client';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -205,11 +204,9 @@ const LIST_TAB = ['Members', 'Invited Members'];
 
 const Members = () => {
   const dispatch = useDispatch();
-  const theme = useTheme();
-  const isDesktop = useResponsive('up', 'md');
+  const users = client.state.users ? Object.values(client.state.users) : [];
 
   const { currentChannel } = useSelector(state => state.channel);
-  const { all_members } = useSelector(state => state.member);
   const { user_id } = useSelector(state => state.auth);
 
   const [indexTab, setIndexTab] = useState(TabMembers.Members);
@@ -222,7 +219,7 @@ const Members = () => {
 
   useEffect(() => {
     if (currentChannel) {
-      const members = getChannelMembers(currentChannel, all_members);
+      const members = getChannelMembers(currentChannel, users);
       const membersOther = members.filter(item => item.channel_role !== RoleMember.PENDING);
       const membersPending = members.filter(item => item.channel_role === RoleMember.PENDING);
       setMembersInChannel(members);
@@ -257,7 +254,7 @@ const Members = () => {
       };
 
       const handleInviteAccept = event => {
-        const memberInfoInChannel = getMemberInfoInChannel(event.member, all_members);
+        const memberInfoInChannel = getMemberInfoInChannel(event.member, users);
         setMembersInChannel(prev => {
           return [...prev, memberInfoInChannel];
         });
@@ -277,7 +274,7 @@ const Members = () => {
         currentChannel.off(ClientEvents.Notification.InviteAccepted, handleInviteAccept);
       };
     }
-  }, [currentChannel, all_members, indexTab, searchTerm, user_id]);
+  }, [currentChannel, users, indexTab, searchTerm, user_id]);
 
   const onOpenDialog = () => {
     setOpenDialog(true);

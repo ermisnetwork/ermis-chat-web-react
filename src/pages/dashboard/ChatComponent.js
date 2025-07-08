@@ -1,4 +1,4 @@
-import { Stack, Box, Typography, Chip, Alert } from '@mui/material';
+import { Stack, Box, Typography, Chip, Alert, Tooltip } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import { ChatHeader, ChatFooter } from '../../components/Chat';
@@ -74,18 +74,24 @@ import CreatePollDialog from '../../sections/dashboard/CreatePollDialog';
 import PollResultDialog from '../../sections/dashboard/PollResultDialog';
 import { motion } from 'framer-motion';
 import UsersTyping from '../../components/UsersTyping';
+import NoMessageBox from '../../components/NoMessageBox';
 
 const StyledMessage = styled(motion(Stack))(({ theme }) => ({
   '&:hover': {
     '& .messageActions': {
       visibility: 'visible',
     },
+
+    '& .quickReactions': {
+      visibility: 'visible',
+    },
   },
   '& .mentionHighlight': {
     padding: '2px 10px',
     borderRadius: '12px',
-    backgroundColor: '#F4F6F8',
+    backgroundColor: '#fff',
     color: '#212B36',
+    fontWeight: 700,
     display: 'inline-block',
     margin: '0 5px 5px 0',
     '&.mentionAll': {
@@ -107,6 +113,10 @@ const StyledMessage = styled(motion(Stack))(({ theme }) => ({
   '& .messageActions.open': {
     visibility: 'visible',
   },
+
+  '& .quickReactions': {
+    visibility: 'hidden',
+  },
 }));
 
 const MESSAGE_LIMIT = 25;
@@ -124,12 +134,12 @@ const MessageList = ({
   highlightMsg,
   setHighlightMsg,
 }) => {
+  const users = client.state.users ? Object.values(client.state.users) : [];
   const dispatch = useDispatch();
   const messageRefs = useRef({});
   const unreadRefs = useRef([]);
   const theme = useTheme();
   const { user_id } = useSelector(state => state.auth);
-  const { all_members } = useSelector(state => state.member);
   const { activeChannels, isGuest } = useSelector(state => state.channel);
 
   const lastReadIndex = messages.findIndex(msg => msg.id === lastReadMessageId);
@@ -241,16 +251,14 @@ const MessageList = ({
         }
       } else if (messageType === MessageType.Reply) {
         if (el.quoted_message) {
-          return (
-            <ReplyMsg el={{ ...el, isMyMessage }} all_members={all_members} onScrollToReplyMsg={onScrollToReplyMsg} />
-          );
+          return <ReplyMsg el={{ ...el, isMyMessage }} all_members={users} onScrollToReplyMsg={onScrollToReplyMsg} />;
         } else {
           return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
         }
       } else if (messageType === MessageType.Signal) {
         return <SignalMsg el={{ ...el, isMyMessage }} />;
       } else if (messageType === MessageType.Poll) {
-        return <PollMsg el={{ ...el, isMyMessage }} all_members={all_members} />;
+        return <PollMsg el={{ ...el, isMyMessage }} all_members={users} />;
       } else if (messageType === MessageType.Sticker) {
         return <StickerMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
       } else {
@@ -259,27 +267,10 @@ const MessageList = ({
     }
   };
 
-  const getDateLabel = (currentDate, lastDate) => {
-    const today = dayjs().startOf('day');
-    const yesterday = today.subtract(1, 'day');
-
-    if (!lastDate || !currentDate.isSame(lastDate)) {
-      if (currentDate.isSame(today)) {
-        return 'Today';
-      }
-      if (currentDate.isSame(yesterday)) {
-        return 'Yesterday';
-      }
-      return currentDate.format('DD/MM/YYYY');
-    }
-
-    return null;
-  };
-
   if (messages.length === 0) return null;
 
   return (
-    <Box sx={{ padding: isMobile ? '15px' : '40px 90px' }}>
+    <Box sx={{ padding: isMobile ? '15px' : '20px 90px' }}>
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -291,13 +282,12 @@ const MessageList = ({
             .map((el, idx) => {
               const messageType = el.type;
               const isMyMessage = el.user.id === user_id;
-              const name = formatString(el.user?.name || el.user?.id);
+              const name = el.user?.name || el.user?.id;
               const sender = el.user;
-              const isMessageDeleted = el.deleted_at;
               const isNewestMessage = idx === messages.length - 1;
 
               if (messageType === MessageType.System) {
-                const msgSystem = renderSystemMessage(el.text, all_members, isDirect, messages);
+                const msgSystem = renderSystemMessage(el.text, users, isDirect, messages);
                 return (
                   <React.Fragment key={el.id}>
                     {el?.date_label && (
@@ -353,7 +343,7 @@ const MessageList = ({
                         maxWidth: '100%',
                         paddingTop: '5px',
                         paddingLeft: !showAvatar ? '44px' : '0',
-                        marginBottom: showAvatar ? '24px!important' : '0px!important',
+                        marginBottom: showAvatar ? '32px!important' : '0px!important',
                         marginTop: '0px!important',
                       }}
                       initial={isNewestMessage ? { opacity: 0, y: 50 } : false}
@@ -374,7 +364,31 @@ const MessageList = ({
                         />
                       )}
 
-                      {showAvatar && <MemberAvatar member={sender} width={36} height={36} openLightbox={true} />}
+                      {showAvatar && (
+                        <Box
+                          sx={{
+                            position: 'relative',
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle1"
+                            sx={{
+                              fontSize: '12px',
+                              fontWeight: 400,
+                              color: theme.palette.text.secondary,
+                              position: 'absolute',
+                              top: '100%',
+                              left: '0px',
+                              zIndex: 3,
+                              whiteSpace: 'nowrap',
+                              paddingTop: '5px',
+                            }}
+                          >
+                            {name}
+                          </Typography>
+                          <MemberAvatar member={sender} width={36} height={36} openLightbox={true} />
+                        </Box>
+                      )}
 
                       <Stack
                         sx={{
@@ -385,9 +399,7 @@ const MessageList = ({
                       >
                         {renderMessage(el)}
 
-                        {el.latest_reactions && !isMessageDeleted && (
-                          <ReactionsMessage isMyMessage={isMyMessage} message={el} />
-                        )}
+                        <ReactionsMessage isMyMessage={isMyMessage} message={el} />
 
                         {el.status === 'error' && (
                           <Stack direction="row" justifyContent="flex-end" sx={{ marginTop: '3px' }}>
@@ -434,7 +446,6 @@ const ChatComponent = () => {
   const messageListRef = useRef(null);
   const { currentChannel, isBlocked, isGuest, selectedTabChannel } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
-  const { all_members } = useSelector(state => state.member);
   const { deleteMessage, messageIdError, searchMessageId, forwardMessage, filesMessage } = useSelector(
     state => state.messages,
   );
@@ -454,12 +465,13 @@ const ChatComponent = () => {
 
   const isDirect = isChannelDirect(currentChannel);
   const tabInvite = selectedTabChannel === TabValueChannel.Invite;
+  const users = client.state.users ? Object.values(client.state.users) : [];
 
   useEffect(() => {
     if (currentChannel) {
       const channelName = currentChannel.data.name
         ? formatString(currentChannel.data.name)
-        : getChannelName(currentChannel, all_members);
+        : getChannelName(currentChannel, users);
       document.title = channelName;
       if (messageListRef.current) {
         messageListRef.current.scrollTop = 0;
@@ -969,24 +981,7 @@ const ChatComponent = () => {
                 </InfiniteScroll>
               )}
 
-              {noMessageTitle && (
-                <Typography
-                  variant="subtitle2"
-                  sx={{
-                    textAlign: 'center',
-                    fontStyle: 'italic',
-                    fontSize: '14px',
-                    color: theme.palette.text.secondary,
-                    fontWeight: 400,
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                  }}
-                >
-                  {noMessageTitle}
-                </Typography>
-              )}
+              {noMessageTitle && <NoMessageBox channel={currentChannel} />}
             </Box>
           </Box>
         )}
@@ -1001,12 +996,7 @@ const ChatComponent = () => {
           }}
         >
           {usersTyping && usersTyping.length > 0 && <UsersTyping usersTyping={usersTyping} />}
-          <ChatFooter
-            currentChannel={currentChannel}
-            setMessages={setMessages}
-            isDialog={false}
-            usersTyping={usersTyping}
-          />
+          <ChatFooter currentChannel={currentChannel} setMessages={setMessages} isDialog={false} />
         </Box>
       )}
       {isPendingInvite && <ChannelInvitation />}

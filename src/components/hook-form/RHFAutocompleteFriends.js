@@ -5,6 +5,7 @@ import { Autocomplete, Chip, Stack, TextField } from '@mui/material';
 import MemberAvatar from '../MemberAvatar';
 import { formatString } from '../../utils/commons';
 import { useSelector } from 'react-redux';
+import { client } from '../../client';
 
 // ----------------------------------------------------------------------
 
@@ -18,14 +19,13 @@ export default function RHFAutocompleteFriends({ name, label, helperText, ...oth
   const { control, setValue } = useFormContext();
 
   const { friend_ids } = useSelector(state => state.member);
-  const { all_members } = useSelector(state => state.member);
-
   const [options, setOptions] = useState([]);
 
   useEffect(() => {
-    const listFriends = all_members.filter(member => friend_ids.includes(member.id));
+    const users = client.state.users ? Object.values(client.state.users) : [];
+    const listFriends = users.filter(member => friend_ids.includes(member.id));
     setOptions(listFriends);
-  }, [friend_ids, all_members]);
+  }, [friend_ids]);
 
   return (
     <Controller

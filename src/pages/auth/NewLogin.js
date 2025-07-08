@@ -1,4 +1,15 @@
-import { Box, Divider, Stack, Typography, Button, Checkbox, InputAdornment, FormControlLabel } from '@mui/material';
+import {
+  Box,
+  Divider,
+  Stack,
+  Typography,
+  Button,
+  Checkbox,
+  InputAdornment,
+  FormControlLabel,
+  useTheme,
+  alpha,
+} from '@mui/material';
 import Iconify from '../../components/Iconify';
 import { useEffect, useRef, useState } from 'react';
 import { Link, Link as RouterLink } from 'react-router-dom';
@@ -8,7 +19,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import RHFCodes from '../../components/hook-form/RHFCodes';
 import { CaretLeft } from 'phosphor-react';
-import { API_KEY, BASE_URL, GOOGLE_CLIENT_ID } from '../../config';
+import { API_KEY, BASE_URL } from '../../config';
 import { ErmisAuthProvider } from 'ermis-chat-js-sdk';
 import { useDispatch, useSelector } from 'react-redux';
 import { SetAuthProvider, showSnackbar } from '../../redux/slices/app';
@@ -16,6 +27,8 @@ import { GoogleLogin } from '@react-oauth/google';
 import { logIn } from '../../redux/slices/auth';
 import { LocalStorageKey } from '../../constants/localStorage-const';
 import uuidv4 from '../../utils/uuidv4';
+import useResponsive from '../../hooks/useResponsive';
+import { LoadingSpinner } from '../../components/animate';
 
 // ----------------------------------------------------------------------
 
@@ -38,6 +51,8 @@ const LOGIN_METHODS = [
 ];
 
 export default function NewLogin() {
+  const theme = useTheme();
+  const isMobileToLg = useResponsive('down', 'lg');
   const dispatch = useDispatch();
   const { authProvider } = useSelector(state => state.app);
   const phoneRef = useRef();
@@ -46,6 +61,7 @@ export default function NewLogin() {
   const [loginData, setLoginData] = useState(null);
   const [showOtp, setShowOtp] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     dispatch(SetAuthProvider(new ErmisAuthProvider(API_KEY, { baseURL: BASE_URL })));
@@ -195,7 +211,7 @@ export default function NewLogin() {
       logIn({
         isLoggedIn: true,
         user_id: user_id,
-        project_id_ermis: project_id,
+        chat_project_id: project_id,
         openDialogPlatform: false,
         loginType: loginType,
       }),
@@ -366,7 +382,39 @@ export default function NewLogin() {
   const otherMethods = LOGIN_METHODS.filter(method => method.key !== loginType);
 
   return (
-    <Stack spacing={4}>
+    <Stack
+      spacing={4}
+      sx={{
+        backgroundColor: 'background.default',
+        padding: '20px',
+        borderRadius: '30px',
+        width: isMobileToLg ? '100%' : '500px',
+        margin: '0px auto',
+        boxShadow: theme.shadows[18],
+        position: 'relative',
+      }}
+    >
+      {isLoading && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: alpha(theme.palette.background.default, 0.5),
+            zIndex: 9999,
+            backdropFilter: 'blur(4px)',
+            borderRadius: '30px',
+          }}
+        >
+          <LoadingSpinner />
+        </Box>
+      )}
+
       <Stack spacing={2}>{renderLoginForm()}</Stack>
 
       {!showOtp && (
@@ -385,24 +433,36 @@ export default function NewLogin() {
             {otherMethods.map(method => {
               if (method.key === 'google') {
                 return (
-                  <GoogleLogin
-                    key={method.key}
-                    onSuccess={async credentialResponse => {
-                      const response = await authProvider.loginWithGoogle(credentialResponse.credential);
-                      if (response) {
-                        onLoginSuccess(response);
-                      }
-                    }}
-                    onError={() => {
-                      dispatch(
-                        showSnackbar({
-                          severity: 'error',
-                          message: 'Google login failed. Please try again.',
-                        }),
-                      );
-                    }}
-                    containerProps={{ className: 'googleLoginBtn' }}
-                  />
+                  <Box key={method.key} sx={{ position: 'relative', cursor: 'pointer' }}>
+                    <Button
+                      variant="outlined"
+                      color="inherit"
+                      sx={{ minWidth: 80, width: 80, height: 80, display: 'block' }}
+                    >
+                      <Iconify icon={method.icon} width={32} height={32} sx={{ margin: 'auto' }} />
+                      <span style={{ display: 'block', width: '100%' }}>{method.label}</span>
+                    </Button>
+                    <GoogleLogin
+                      onSuccess={async credentialResponse => {
+                        setIsLoading(true);
+                        const response = await authProvider.loginWithGoogle(credentialResponse.credential);
+                        if (response) {
+                          onLoginSuccess(response);
+                          setIsLoading(false);
+                        }
+                      }}
+                      onError={() => {
+                        dispatch(
+                          showSnackbar({
+                            severity: 'error',
+                            message: 'Google login failed. Please try again.',
+                          }),
+                        );
+                        setIsLoading(false);
+                      }}
+                      containerProps={{ className: 'googleLoginBtn' }}
+                    />
+                  </Box>
                 );
               }
 

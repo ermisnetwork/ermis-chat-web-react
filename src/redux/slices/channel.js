@@ -250,27 +250,14 @@ export function FetchChannels(params) {
   return async (dispatch, getState) => {
     if (!client) return;
     const { user_id } = getState().auth;
-    const { projectCurrent } = getState().wallet;
-    const projectId = projectCurrent.project_id;
-    // const filter = {
-    //   roles: tab === TabType.Chat ? [RoleMember.OWNER, RoleMember.MOD, RoleMember.MEMBER] : [RoleMember.PENDING],
-    // };
-
-    // if (params) {
-    //   const { type } = params;
-    //   filter.type = type ? type : ChatType.ALL;
-    // }
 
     const filter = {};
     const sort = [];
     const options = {
-      // limit: 10,
-      // offset: 0,
       message_limit: 25,
-      // presence: true,
-      // watch: true,
     };
     dispatch(slice.actions.fetchChannels({ activeChannels: [], pendingChannels: [] }));
+
     await client
       .queryChannels(filter, sort, options)
       .then(async response => {
@@ -669,11 +656,11 @@ export const SetFilterWords = payload => {
 
 export const SetMentions = payload => {
   return async (dispatch, getState) => {
-    const { all_members } = getState().member;
+    const users = client.state.users ? Object.values(client.state.users) : [];
 
     const mentionsData = payload
       .map(member => {
-        const memberInfo = all_members.find(it => it.id === member.user_id);
+        const memberInfo = users.find(it => it.id === member.user_id);
         const name = memberInfo ? memberInfo.name : member.user_id;
         const avatar = memberInfo ? memberInfo.avatar : '';
         return {
@@ -693,9 +680,9 @@ export const SetMentions = payload => {
 
 export const AddMention = mentionId => {
   return async (dispatch, getState) => {
-    const { all_members } = getState().member;
+    const users = client.state.users ? Object.values(client.state.users) : [];
 
-    const memberInfo = all_members.find(it => it.id === mentionId);
+    const memberInfo = users.find(it => it.id === mentionId);
     const name = memberInfo ? memberInfo.name : mentionId;
     const mentionData = {
       name,

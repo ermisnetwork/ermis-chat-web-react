@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { Box, IconButton, Stack, Typography, debounce, styled } from '@mui/material';
 import { MagnifyingGlass, X } from 'phosphor-react';
-import useResponsive from '../../hooks/useResponsive';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSidebar } from '../../redux/slices/app';
 import { Search, SearchIconWrapper, StyledInputBase } from '../../components/Search';
@@ -34,9 +33,7 @@ const LIMIT = 25;
 const ChannelSearch = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isDesktop = useResponsive('up', 'md');
   const { currentChannel } = useSelector(state => state.channel);
-  const { all_members } = useSelector(state => state.member);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [messages, setMessages] = useState([]);

@@ -3,7 +3,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import Badge from '@mui/material/Badge';
 import Stack from '@mui/material/Stack';
 import { useState, useEffect, useMemo } from 'react';
-import { ChatType, OnlineStatusUser } from '../constants/commons-const';
+import { AvatarShape, ChatType, OnlineStatusUser } from '../constants/commons-const';
 import { useSelector } from 'react-redux';
 import useOnlineStatus from '../hooks/useOnlineStatus';
 import ImageCanvas from './ImageCanvas';
@@ -38,7 +38,7 @@ const StyledBadgeOnline = styled(Badge)(({ theme, status }) => ({
   },
 }));
 
-export default function ChannelAvatar({ channel, width, height, openLightbox }) {
+export default function ChannelAvatar({ channel, width, height, openLightbox, shape = 'circle' }) {
   const theme = useTheme();
   const { user_id } = useSelector(state => state.auth);
   const [groupMemberFirst, setGroupMemberFirst] = useState({ name: '', avatar: null });
@@ -93,7 +93,7 @@ export default function ChannelAvatar({ channel, width, height, openLightbox }) 
   };
 
   const styleCustom = {
-    borderRadius: '30%',
+    borderRadius: shape === AvatarShape.Circle ? '50%' : '30%',
     border: `1px solid ${theme.palette.background.paper}`,
   };
 
@@ -124,7 +124,7 @@ export default function ChannelAvatar({ channel, width, height, openLightbox }) 
               openLightbox={openLightbox}
             />
           ) : (
-            <AvatarDefault name={otherMemberInDirect.user?.name} width={width} height={height} />
+            <AvatarDefault name={otherMemberInDirect.user?.name} width={width} height={height} shape={shape} />
           )}
         </StyledBadgeOnline>
       ) : channelAvatar ? (
@@ -147,6 +147,7 @@ export default function ChannelAvatar({ channel, width, height, openLightbox }) 
                 name={groupMemberFirst.name}
                 width={getSizeSmallAvatar(width)}
                 height={getSizeSmallAvatar(height)}
+                shape={shape}
               />
             )
           }
@@ -154,7 +155,7 @@ export default function ChannelAvatar({ channel, width, height, openLightbox }) 
           {groupMemberSecond.avatar ? (
             <ImageCanvas dataUrl={groupMemberSecond.avatar} width={width} height={height} styleCustom={styleCustom} />
           ) : (
-            <AvatarDefault name={groupMemberSecond.name || ''} width={width} height={height} />
+            <AvatarDefault name={groupMemberSecond.name || ''} width={width} height={height} shape={shape} />
           )}
         </StyledBadge>
       )}
