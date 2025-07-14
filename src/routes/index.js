@@ -41,6 +41,7 @@ export default function Router() {
         { element: <Navigate to={DEFAULT_PATH} replace />, index: true },
         { path: 'channels', element: <GeneralApp /> },
         { path: 'channels/:id', element: <ChannelDetailApp /> },
+        { path: 'contacts', element: <PageContact /> },
 
         { path: '404', element: <Page404 /> },
         { path: '*', element: <Navigate to="/404" replace /> },
@@ -54,6 +55,7 @@ export default function Router() {
 const GeneralApp = Loadable(lazy(() => import('../pages/dashboard/GeneralApp')));
 const ChannelDetailApp = Loadable(lazy(() => import('../pages/dashboard/ChannelDetailApp')));
 const PageDeleteAccount = Loadable(lazy(() => import('../pages/dashboard/DeleteAccount')));
+const PageContact = Loadable(lazy(() => import('../pages/dashboard/Contacts')));
 const Page404 = Loadable(lazy(() => import('../pages/Page404')));
 
 const LoginPage = Loadable(lazy(() => import('../pages/auth/Login')));

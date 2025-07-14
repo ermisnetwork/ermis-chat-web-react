@@ -24,7 +24,7 @@ const ClientsTabPanel = () => {
         sx={{
           position: 'relative',
           height: '100%',
-          width: isDesktop ? `${WIDTH_LEFT_PANEL}px` : isScreenMdToXl ? '280px' : '100%',
+          width: isDesktop ? `${WIDTH_LEFT_PANEL}px` : isScreenMdToXl ? '300px' : '100%',
           backgroundColor: theme.palette.mode === 'light' ? '#fff' : theme.palette.grey[900],
           borderRadius: '16px',
         }}

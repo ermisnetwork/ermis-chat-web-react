@@ -1,4 +1,4 @@
-import { Stack, Box, Typography, Chip, Alert, Tooltip } from '@mui/material';
+import { Stack, Box, Typography, Chip, Alert } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import { ChatHeader, ChatFooter } from '../../components/Chat';
@@ -34,29 +34,18 @@ import ReactionsMessage from '../../components/ReactionsMessage';
 import ChannelInvitation from '../../sections/dashboard/ChannelInvitation';
 import {
   AddActiveChannel,
-  AddSkippedChannel,
   RemoveActiveChannel,
-  RemovePendingChannel,
-  RemoveSkippedChannel,
   SetCooldownTime,
   SetFilterWords,
   SetIsGuest,
+  SetMarkReadChannel,
   SetMemberCapabilities,
   WatchCurrentChannel,
 } from '../../redux/slices/channel';
 import { Clock, Trash } from 'phosphor-react';
 import ScrollToBottom from '../../components/ScrollToBottom';
 import DeleteMessageDialog from '../../sections/dashboard/DeleteMessageDialog';
-import {
-  ChatType,
-  DefaultLastSend,
-  MessageType,
-  RoleMember,
-  TabType,
-  TabValueChannel,
-  UploadType,
-} from '../../constants/commons-const';
-import { UpdateTab } from '../../redux/slices/app';
+import { ChatType, DefaultLastSend, MessageType, RoleMember, UploadType } from '../../constants/commons-const';
 import BannedBackdrop from '../../components/BannedBackdrop';
 import { client } from '../../client';
 import { onFilesMessage, setSearchMessageId } from '../../redux/slices/messages';
@@ -123,7 +112,6 @@ const MESSAGE_LIMIT = 25;
 
 const MessageList = ({
   messageListRef,
-  isMobile,
   messages,
   lastReadMessageId,
   targetId,
@@ -139,6 +127,8 @@ const MessageList = ({
   const messageRefs = useRef({});
   const unreadRefs = useRef([]);
   const theme = useTheme();
+  const isLgToXl = useResponsive('between', null, 'lg', 'xl');
+  const isMobileToLg = useResponsive('down', 'lg');
   const { user_id } = useSelector(state => state.auth);
   const { activeChannels, isGuest } = useSelector(state => state.channel);
 
@@ -270,7 +260,7 @@ const MessageList = ({
   if (messages.length === 0) return null;
 
   return (
-    <Box sx={{ padding: isMobile ? '15px' : '20px 90px' }}>
+    <Box sx={{ padding: isMobileToLg ? '20px' : isLgToXl ? '20px 50px' : '20px 90px' }}>
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -281,9 +271,14 @@ const MessageList = ({
             .filter(item => !(item.type === MessageType.Signal && ['1', '4'].includes(item.text[0])))
             .map((el, idx) => {
               const messageType = el.type;
+              let sender = el.user;
+              // Nếu thiếu name/avatar thì lấy từ users list
+              if (!sender?.name || !sender?.avatar) {
+                const foundUser = users.find(u => u.id === el.user?.id);
+                if (foundUser) sender = { ...sender, name: foundUser.name, avatar: foundUser.avatar };
+              }
               const isMyMessage = el.user.id === user_id;
-              const name = el.user?.name || el.user?.id;
-              const sender = el.user;
+              const name = sender?.name || sender?.id;
               const isNewestMessage = idx === messages.length - 1;
 
               if (messageType === MessageType.System) {
@@ -440,11 +435,9 @@ const MessageList = ({
 const ChatComponent = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const isMobile = useResponsive('between', 'md', 'xs', 'sm');
   const theme = useTheme();
   const messageListRef = useRef(null);
-  const { currentChannel, isBlocked, isGuest, selectedTabChannel } = useSelector(state => state.channel);
+  const { currentChannel, isBlocked, isGuest } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
   const { deleteMessage, messageIdError, searchMessageId, forwardMessage, filesMessage } = useSelector(
     state => state.messages,
@@ -464,7 +457,6 @@ const ChatComponent = () => {
   const [noMessageTitle, setNoMessageTitle] = useState('');
 
   const isDirect = isChannelDirect(currentChannel);
-  const tabInvite = selectedTabChannel === TabValueChannel.Invite;
   const users = client.state.users ? Object.values(client.state.users) : [];
 
   useEffect(() => {
@@ -534,6 +526,12 @@ const ChatComponent = () => {
               setMessages(prev => {
                 return [...prev, event.message];
               });
+              const myRole = myRoleInChannel(currentChannel);
+              if (![RoleMember.PENDING, RoleMember.SKIPPED].includes(myRole)) {
+                setTimeout(() => {
+                  dispatch(SetMarkReadChannel(currentChannel));
+                }, 100);
+              }
             } else {
               setMessages(prev => {
                 if (prev.some(item => item.id === event.message.id)) {
@@ -627,49 +625,17 @@ const ChatComponent = () => {
       };
 
       const handleInviteAccept = async event => {
-        const splitCID = splitChannelId(event.cid);
-        const channelId = splitCID.channelId;
-        const channelType = splitCID.channelType;
-
         if (event.member.user_id === user_id) {
-          dispatch(UpdateTab({ tab: TabType.Chat }));
           setIsPendingInvite(false);
-          dispatch(RemovePendingChannel(channelId));
-          dispatch(RemoveSkippedChannel(channelId));
-          dispatch(AddActiveChannel(event.cid, event.type));
         } else {
-          dispatch(WatchCurrentChannel(channelId, channelType));
           setIsAlertInvitePending(false);
         }
       };
 
-      const handleInviteReject = event => {
-        const splitCID = splitChannelId(event.cid);
-        const channelId = splitCID.channelId;
-        const channelType = splitCID.channelType;
-
-        if (event.member.user_id === user_id) {
-          navigate(`${DEFAULT_PATH}`);
-          dispatch(UpdateTab({ tab: TabType.Chat }));
-          setIsPendingInvite(false);
-          dispatch(RemovePendingChannel(channelId));
-        } else {
-          dispatch(WatchCurrentChannel(channelId, channelType));
-        }
-      };
-
       const handleInviteSkipped = async event => {
-        const splitCID = splitChannelId(event.cid);
-        const channelId = splitCID.channelId;
-        const channelType = splitCID.channelType;
-
         if (event.member.user_id === user_id) {
           navigate(`${DEFAULT_PATH}`);
-          dispatch(UpdateTab({ tab: TabType.Chat }));
           setIsPendingInvite(false);
-          dispatch(AddSkippedChannel(event.cid));
-        } else {
-          dispatch(WatchCurrentChannel(channelId, channelType));
         }
       };
 
@@ -739,7 +705,6 @@ const ChatComponent = () => {
       currentChannel.on(ClientEvents.TypingStart, handleTypingStart);
       currentChannel.on(ClientEvents.TypingStop, handleTypingStop);
       currentChannel.on(ClientEvents.Notification.InviteAccepted, handleInviteAccept);
-      currentChannel.on(ClientEvents.Notification.InviteRejected, handleInviteReject);
       currentChannel.on(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
       currentChannel.on(ClientEvents.ChannelUpdated, handleChannelUpdated);
       currentChannel.on(ClientEvents.MemberJoined, handleMemberJoined);
@@ -759,7 +724,7 @@ const ChatComponent = () => {
         currentChannel.off(ClientEvents.TypingStart, handleTypingStart);
         currentChannel.off(ClientEvents.TypingStop, handleTypingStop);
         currentChannel.off(ClientEvents.Notification.InviteAccepted, handleInviteAccept);
-        currentChannel.off(ClientEvents.Notification.InviteRejected, handleInviteReject);
+        currentChannel.off(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
         currentChannel.off(ClientEvents.ChannelUpdated, handleChannelUpdated);
         currentChannel.off(ClientEvents.MemberJoined, handleMemberJoined);
         currentChannel.off(ClientEvents.MemberAdded, handleMemberAdded);
@@ -889,7 +854,7 @@ const ChatComponent = () => {
   }
 
   return (
-    <Stack sx={{ position: 'relative', width: isMobile ? '100%' : 'auto', height: '100%', overflow: 'hidden' }}>
+    <Stack sx={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       <ChatHeader currentChannel={currentChannel} isBlocked={isBlocked} />
 
       {currentChannel && (
@@ -903,7 +868,7 @@ const ChatComponent = () => {
             </Box>
           )}
 
-          {!tabInvite && <PinnedMessages />}
+          <PinnedMessages />
 
           {(showChipUnread || unreadCount >= MESSAGE_LIMIT) && (
             <Stack direction="row" alignItems="center" justifyContent="center">
@@ -966,7 +931,6 @@ const ChatComponent = () => {
                   {/* <SimpleBarStyle timeout={500} clickOnTrack={false}> */}
                   <MessageList
                     messageListRef={messageListRef}
-                    isMobile={isMobile}
                     messages={addDateLabels(messages)}
                     lastReadMessageId={lastReadMessageId}
                     targetId={targetId}
@@ -987,7 +951,7 @@ const ChatComponent = () => {
         )}
       </Dropzone>
 
-      {!tabInvite && currentChannel ? <ScrollToBottom messageListRef={messageListRef} /> : null}
+      {currentChannel ? <ScrollToBottom messageListRef={messageListRef} /> : null}
       {!isGuest && (
         <Box
           sx={{

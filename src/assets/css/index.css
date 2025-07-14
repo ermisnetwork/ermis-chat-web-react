@@ -67,7 +67,7 @@ iframe#webpack-dev-server-client-overlay {
 .customScrollbar {
   -webkit-overflow-scrolling: touch;
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
 
   &::-webkit-scrollbar-track {

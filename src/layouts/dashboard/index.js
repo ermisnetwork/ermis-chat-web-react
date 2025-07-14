@@ -59,12 +59,13 @@ const DashboardLayout = () => {
       const handleMessageNew = event => {
         const channelId = event.channel_id;
         const unreadCount = event.unread_count;
+        const channelType = event.channel_type;
         if (event.user.id !== user_id && unreadChannels) {
           const existingChannel = unreadChannels.find(item => item.id === channelId);
           dispatch(
             existingChannel && unreadCount > 0
-              ? UpdateUnreadChannel(channelId, unreadCount)
-              : AddUnreadChannel(channelId, unreadCount),
+              ? UpdateUnreadChannel(channelId, unreadCount, channelType)
+              : AddUnreadChannel(channelId, unreadCount, channelType),
           );
         }
       };

@@ -1,11 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import {
-  ChatType,
-  CurrentChannelStatus,
-  RoleMember,
-  SidebarType,
-  TabValueChannel,
-} from '../../constants/commons-const';
+import { ChatType, CurrentChannelStatus, RoleMember, SidebarType } from '../../constants/commons-const';
 import { client } from '../../client';
 import { handleError, myRoleInChannel, splitChannelId } from '../../utils/commons';
 import { CapabilitiesName } from '../../constants/capabilities-const';
@@ -43,25 +37,7 @@ const initialState = {
   isBlocked: false,
   loadingChannels: true,
   isGuest: false,
-  tabsChannels: [
-    { label: 'All', value: TabValueChannel.All, count: 0 },
-    { label: 'Group', value: TabValueChannel.Group, count: 0 },
-    { label: 'Unread', value: TabValueChannel.Unread, count: 0 },
-    { label: 'Invite', value: TabValueChannel.Invite, count: 0 },
-  ],
-  selectedTabChannel: TabValueChannel.All,
 };
-
-function getTabsChannels({ activeChannels = [], pendingChannels = [] }) {
-  const tabs = [{ label: 'All', value: TabValueChannel.All, count: activeChannels.length }];
-  if (activeChannels.some(c => c.type === ChatType.TEAM)) {
-    const groupCount = activeChannels.filter(c => c.type === ChatType.TEAM).length;
-    tabs.push({ label: 'Group', value: TabValueChannel.Group, count: groupCount });
-  }
-  if (pendingChannels.length > 0)
-    tabs.push({ label: 'Invite', value: TabValueChannel.Invite, count: pendingChannels.length });
-  return tabs;
-}
 
 const slice = createSlice({
   name: 'channel',
@@ -74,7 +50,6 @@ const slice = createSlice({
       state.unreadChannels = action.payload.unreadChannels;
       state.skippedChannels = action.payload.skippedChannels;
       state.pinnedChannels = action.payload.pinnedChannels;
-      state.tabsChannels = getTabsChannels(action.payload);
     },
     setActiveChannels(state, action) {
       state.activeChannels = action.payload;
@@ -87,19 +62,15 @@ const slice = createSlice({
     },
     addActiveChannel(state, action) {
       state.activeChannels.unshift(action.payload);
-      state.tabsChannels = getTabsChannels(state);
     },
     removeActiveChannel(state, action) {
       state.activeChannels = state.activeChannels.filter(item => item.id !== action.payload);
-      state.tabsChannels = getTabsChannels(state);
     },
     addPendingChannel(state, action) {
       state.pendingChannels.unshift(action.payload);
-      state.tabsChannels = getTabsChannels(state);
     },
     removePendingChannel(state, action) {
       state.pendingChannels = state.pendingChannels.filter(item => item.id !== action.payload);
-      state.tabsChannels = getTabsChannels(state);
     },
     setPendingChannels(state, action) {
       state.pendingChannels = action.payload;
@@ -187,7 +158,7 @@ const slice = createSlice({
     addUnreadChannel(state, action) {
       const exists = state.unreadChannels.some(c => c.id === action.payload.id);
       if (!exists) {
-        state.unreadChannels.push({ id: action.payload.id, unreadCount: action.payload.unreadCount });
+        state.unreadChannels.push(action.payload);
       }
     },
     removeUnreadChannel(state, action) {
@@ -196,7 +167,7 @@ const slice = createSlice({
     updateUnreadChannel(state, action) {
       state.unreadChannels = state.unreadChannels.map(item => {
         if (item.id === action.payload.id) {
-          return { id: action.payload.id, unreadCount: action.payload.unreadCount };
+          return action.payload;
         } else {
           return item;
         }
@@ -205,14 +176,11 @@ const slice = createSlice({
     setLoadingChannels(state, action) {
       state.loadingChannels = action.payload;
     },
-    setSelectedTabChannel(state, action) {
-      state.selectedTabChannel = action.payload;
-    },
   },
 });
 
 // Reducer
-export const { setCurrentChannel, setSearchChannels, setCurrentChannelStatus, setSelectedTabChannel } = slice.actions;
+export const { setCurrentChannel, setSearchChannels, setCurrentChannelStatus } = slice.actions;
 
 export default slice.reducer;
 
@@ -286,7 +254,7 @@ export function FetchChannels(params) {
                 const read = channel.state.read[user_id];
                 const unreadMessage = read.unread_messages;
                 if (unreadMessage > 0) {
-                  acc.unreadChannels.push({ id: channel.id, unreadCount: unreadMessage });
+                  acc.unreadChannels.push({ id: channel.id, unreadCount: unreadMessage, type: channel.type });
                 }
               }
 
@@ -422,7 +390,6 @@ export const AddActiveChannel = (cid, eventType) => {
     if (!client) return;
     const { user_id } = getState().auth;
     const channel = client.activeChannels[cid];
-    console.log('AddActiveChannel', channel);
 
     dispatch(slice.actions.addActiveChannel(channel));
 
@@ -514,9 +481,9 @@ export const RemovePinnedChannel = cid => {
   };
 };
 
-export const AddUnreadChannel = (channelId, unreadCount) => {
+export const AddUnreadChannel = (channelId, unreadCount, channelType) => {
   return async (dispatch, getState) => {
-    dispatch(slice.actions.addUnreadChannel({ id: channelId, unreadCount }));
+    dispatch(slice.actions.addUnreadChannel({ id: channelId, unreadCount, type: channelType }));
   };
 };
 
@@ -526,9 +493,9 @@ export const RemoveUnreadChannel = channelId => {
   };
 };
 
-export const UpdateUnreadChannel = (channelId, unreadCount) => {
+export const UpdateUnreadChannel = (channelId, unreadCount, channelType) => {
   return async (dispatch, getState) => {
-    dispatch(slice.actions.updateUnreadChannel({ id: channelId, unreadCount }));
+    dispatch(slice.actions.updateUnreadChannel({ id: channelId, unreadCount, type: channelType }));
   };
 };
 
@@ -661,8 +628,8 @@ export const SetMentions = payload => {
     const mentionsData = payload
       .map(member => {
         const memberInfo = users.find(it => it.id === member.user_id);
-        const name = memberInfo ? memberInfo.name : member.user_id;
-        const avatar = memberInfo ? memberInfo.avatar : '';
+        const name = member.user?.name ? member.user.name : memberInfo ? memberInfo.name : member.user_id;
+        const avatar = member.user?.avatar ? member.user.avatar : memberInfo ? memberInfo.avatar : '';
         return {
           name,
           id: member.user_id,

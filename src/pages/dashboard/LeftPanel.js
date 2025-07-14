@@ -7,19 +7,21 @@ import {
   AddActiveChannel,
   AddPendingChannel,
   AddPinnedChannel,
+  AddSkippedChannel,
   FetchChannels,
   MoveChannelToTop,
   RemoveActiveChannel,
   RemoveMutedChannel,
   RemovePendingChannel,
   RemovePinnedChannel,
+  RemoveSkippedChannel,
+  WatchCurrentChannel,
 } from '../../redux/slices/channel';
 import { ClientEvents } from '../../constants/events-const';
-import { getChannelName, getMemberInfo } from '../../utils/commons';
+import { getChannelName, getMemberInfo, splitChannelId } from '../../utils/commons';
 import Logo from '../../assets/Images/logo.svg';
 import { DEFAULT_PATH, DOMAIN_APP } from '../../config';
 import { ChatType, EMOJI_QUICK, MessageType, TabType } from '../../constants/commons-const';
-import { UpdateTab } from '../../redux/slices/app';
 import { convertMessageSystem } from '../../utils/messageSystem';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +29,7 @@ import { convertLastMessageSignal } from '../../utils/messageSignal';
 import { UpdateMember } from '../../redux/slices/member';
 import Contacts from './Contacts';
 import Channels from './Channels';
+import SidebarContacts from './SidebarContacts';
 
 const LeftPanel = () => {
   const dispatch = useDispatch();
@@ -58,7 +61,7 @@ const LeftPanel = () => {
           navigate(`${DEFAULT_PATH}/${channelType}:${channelId}`);
           break;
         case ClientEvents.ChannelCreated:
-          dispatch(UpdateTab({ tab: TabType.Invite }));
+          navigate(`${DEFAULT_PATH}`);
           break;
         case ClientEvents.ReactionNew:
           navigate(`${DEFAULT_PATH}/${channelType}:${channelId}`);
@@ -416,6 +419,44 @@ const LeftPanel = () => {
         dispatch(RemovePinnedChannel(event.cid));
       };
 
+      const handleInviteReject = event => {
+        const splitCID = splitChannelId(event.cid);
+        const channelId = splitCID.channelId;
+        const channelType = splitCID.channelType;
+
+        if (event.member.user_id === user_id) {
+          dispatch(RemovePendingChannel(channelId));
+        } else {
+          dispatch(WatchCurrentChannel(channelId, channelType));
+        }
+      };
+
+      const handleInviteAccept = async event => {
+        const splitCID = splitChannelId(event.cid);
+        const channelId = splitCID.channelId;
+        const channelType = splitCID.channelType;
+
+        if (event.member.user_id === user_id) {
+          dispatch(RemovePendingChannel(channelId));
+          dispatch(RemoveSkippedChannel(channelId));
+          dispatch(AddActiveChannel(event.cid, event.type));
+        } else {
+          dispatch(WatchCurrentChannel(channelId, channelType));
+        }
+      };
+
+      const handleInviteSkipped = async event => {
+        const splitCID = splitChannelId(event.cid);
+        const channelId = splitCID.channelId;
+        const channelType = splitCID.channelType;
+
+        if (event.member.user_id === user_id) {
+          dispatch(AddSkippedChannel(event.cid));
+        } else {
+          dispatch(WatchCurrentChannel(channelId, channelType));
+        }
+      };
+
       client.on(ClientEvents.ChannelCreated, handleChannelCreated);
       client.on(ClientEvents.ChannelDeleted, handleChannelDeleted);
       client.on(ClientEvents.MessageNew, handleMessageNew);
@@ -426,6 +467,9 @@ const LeftPanel = () => {
       client.on(ClientEvents.MemberAdded, handleMemberAdded);
       client.on(ClientEvents.ChannelPinned, handleChannelPinned);
       client.on(ClientEvents.ChannelUnPinned, handleChannelUnPinned);
+      client.on(ClientEvents.Notification.InviteRejected, handleInviteReject);
+      client.on(ClientEvents.Notification.InviteAccepted, handleInviteAccept);
+      client.on(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
 
       return () => {
         client.off(ClientEvents.ChannelCreated, handleChannelCreated);
@@ -438,6 +482,9 @@ const LeftPanel = () => {
         client.off(ClientEvents.MemberAdded, handleMemberAdded);
         client.off(ClientEvents.ChannelPinned, handleChannelPinned);
         client.off(ClientEvents.ChannelUnPinned, handleChannelUnPinned);
+        client.off(ClientEvents.Notification.InviteRejected, handleInviteReject);
+        client.off(ClientEvents.Notification.InviteAccepted, handleInviteAccept);
+        client.off(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
       };
     }
   }, [dispatch, user_id, client, mutedChannels, activeChannels, pendingChannels]);
@@ -476,7 +523,7 @@ const LeftPanel = () => {
     return (
       <>
         {tab === TabType.Chat && <Channels />}
-        {tab === TabType.Contact && <Contacts />}
+        {tab === TabType.Contact && <SidebarContacts />}
       </>
     );
   }, [tab]);
@@ -488,8 +535,6 @@ const LeftPanel = () => {
           position: 'relative',
           height: '100%',
           width: '100%',
-          // backgroundColor: theme.palette.background.default,
-          // boxShadow: '0px 0px 2px rgba(0, 0, 0, 0.25)',
         }}
       >
         {renderedTabs}

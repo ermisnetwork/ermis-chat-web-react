@@ -1,34 +1,87 @@
-import React, { useMemo, useState } from 'react';
-import { Stack, Typography } from '@mui/material';
-import { MagnifyingGlass } from 'phosphor-react';
+import React, { useMemo } from 'react';
+import { Stack, Typography, Box, IconButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useSelector } from 'react-redux';
-import { ChatType, RoleMember } from '../../constants/commons-const';
+import { ChatType, ContactType, RoleMember } from '../../constants/commons-const';
 import ContactElement from '../../components/ContactElement';
-import { Search, SearchIconWrapper, StyledInputBase } from '../../components/Search';
+import BoxContainer from '../../layouts/dashboard/BoxContainer';
+import NoResult from '../../assets/Illustration/NoResult';
+import InviteElement from '../../components/InviteElement';
+import useResponsive from '../../hooks/useResponsive';
+import { CaretLeft } from 'phosphor-react';
+import { useNavigate } from 'react-router-dom';
 
 const Contacts = () => {
+  const navigate = useNavigate();
   const theme = useTheme();
-  const { activeChannels } = useSelector(state => state.channel);
+  const { activeChannels, pendingChannels } = useSelector(state => state.channel);
+  const { searchQuery } = useSelector(state => state.app);
   const { user_id } = useSelector(state => state.auth);
-  const [searchQuery, setSearchQuery] = useState('');
+  const isMobileToLg = useResponsive('down', 'lg');
+  const isMobileToMd = useResponsive('down', 'md');
+
+  const hash = window.location.hash;
+  const currentHash = hash.replace('#', '');
 
   const renderedContacts = useMemo(() => {
-    const directChannels = activeChannels.filter(channel => {
-      const isDirect = channel.type === ChatType.MESSAGING;
-      const otherMember = Object.values(channel.state.members).find(member => member.user_id !== user_id);
-      return isDirect && otherMember && otherMember.channel_role === RoleMember.OWNER;
-    });
+    let channels = [];
+    const replaceHash = hash.replace('#', '');
 
-    // Lọc theo searchQuery
-    const filteredChannels = directChannels.filter(channel => {
-      const name = channel.data.name || '';
+    if (replaceHash === ContactType.Friends) {
+      channels = activeChannels.filter(channel => {
+        const isDirect = channel.type === ChatType.MESSAGING;
+        const otherMember = Object.values(channel.state.members).find(member => member.user_id !== user_id);
+        return isDirect && otherMember && otherMember.channel_role === RoleMember.OWNER;
+      });
+    } else if (replaceHash === ContactType.Channels) {
+      channels = activeChannels.filter(channel => channel.type === ChatType.TEAM);
+    } else if (replaceHash === ContactType.Request) {
+      channels = pendingChannels;
+    }
+
+    const filteredChannels = channels.filter(channel => {
+      const name = channel.data?.name || '';
       return name.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
-    // Group by first letter of channel name (case-insensitive)
+    // Nếu là Request thì render danh sách pendingChannels
+    if (replaceHash === ContactType.Request) {
+      if (filteredChannels.length > 0) {
+        return (
+          <>
+            {filteredChannels.map(item => (
+              <Box key={`channel-${item.id}`} sx={{ marginBottom: '15px', width: isMobileToLg ? '100%' : '650px' }}>
+                <InviteElement channel={item} />
+              </Box>
+            ))}
+          </>
+        );
+      } else {
+        return (
+          <Stack
+            key="no-requests"
+            sx={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <NoResult />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                textAlign: 'center',
+                fontSize: '20px',
+                color: theme.palette.text.primary,
+                fontWeight: 600,
+              }}
+            >
+              No result {searchQuery ? `for "${searchQuery}"` : ''}
+            </Typography>
+          </Stack>
+        );
+      }
+    }
+
+    // Group by first letter of channel name (case-insensitive) cho Friends & Channels
     const grouped = filteredChannels.reduce((acc, channel) => {
-      const name = channel.data.name || '';
+      const name = channel.data?.name || '';
       const firstLetter = name.charAt(0).toUpperCase();
       if (!acc[firstLetter]) acc[firstLetter] = [];
       acc[firstLetter].push(channel);
@@ -46,7 +99,7 @@ const Contacts = () => {
                 variant="subtitle2"
                 sx={{
                   fontWeight: 700,
-                  fontSize: '16px',
+                  fontSize: '20px',
                   color: theme.palette.text.primary,
                   mb: 1,
                 }}
@@ -54,9 +107,9 @@ const Contacts = () => {
                 {letter}
               </Typography>
               {grouped[letter].map(item => (
-                <div className="channelItem" key={`channel-${item.id}`}>
+                <Box key={`channel-${item.id}`} sx={{ marginBottom: '5px' }}>
                   <ContactElement channel={item} />
-                </div>
+                </Box>
               ))}
             </div>
           ))}
@@ -64,54 +117,84 @@ const Contacts = () => {
       );
     } else {
       return (
-        <div key="no-channels">
+        <Stack key="no-channels" sx={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+          <NoResult />
           <Typography
             variant="subtitle2"
             sx={{
               textAlign: 'center',
-              fontStyle: 'italic',
-              fontSize: '14px',
-              color: theme.palette.text.secondary,
-              fontWeight: 400,
+              fontSize: '20px',
+              color: theme.palette.text.primary,
+              fontWeight: 600,
             }}
           >
-            No contacts found.
+            No result {searchQuery ? `for "${searchQuery}"` : ''}
           </Typography>
-        </div>
+        </Stack>
       );
     }
-  }, [activeChannels, user_id, searchQuery, theme]);
+  }, [activeChannels, pendingChannels, user_id, searchQuery, hash, theme]);
+
+  if (!hash) return null;
 
   return (
-    <Stack spacing={2} sx={{ height: '100%', width: '100%', padding: '15px' }}>
-      <Stack spacing={2}>
-        <Search>
-          <SearchIconWrapper>{<MagnifyingGlass size={18} />}</SearchIconWrapper>
-          <StyledInputBase
-            placeholder="Search"
-            inputProps={{ 'aria-label': 'search' }}
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
-        </Search>
-      </Stack>
-
+    <BoxContainer>
       <Stack
-        className="customScrollbar"
         sx={{
-          flexGrow: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          height: 'calc(100% - 167px)',
-          marginLeft: '-15px!important',
-          marginRight: '-15px!important',
-          marginTop: '0px!important',
-          padding: '15px',
+          padding: isMobileToMd ? '15px' : '30px',
+          width: '100%',
+          height: '100%',
         }}
       >
-        <Stack spacing={2}>{renderedContacts}</Stack>
+        {isMobileToMd && (
+          <Stack
+            direction="row"
+            alignItems="center"
+            sx={{
+              padding: '0px 15px 15px',
+              borderBottom: `1px solid ${theme.palette.divider}`,
+              margin: '0 -15px 15px',
+            }}
+          >
+            <IconButton
+              onClick={() => {
+                window.location.hash = '';
+                navigate('/contacts');
+              }}
+            >
+              <CaretLeft />
+            </IconButton>
+            <Typography
+              variant="h6"
+              sx={{
+                color: theme.palette.text.primary,
+                fontWeight: 600,
+                fontSize: '20px',
+                marginLeft: '10px',
+              }}
+            >
+              {currentHash === ContactType.Friends
+                ? 'Friends list'
+                : currentHash === ContactType.Channels
+                  ? 'Channels list'
+                  : 'Friend/Channel Request'}
+            </Typography>
+          </Stack>
+        )}
+        <Stack
+          className="customScrollbar"
+          sx={{
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            height: '100%',
+            margin: '0px -30px',
+            padding: '0px 30px',
+          }}
+        >
+          {renderedContacts}
+        </Stack>
       </Stack>
-    </Stack>
+    </BoxContainer>
   );
 };
 

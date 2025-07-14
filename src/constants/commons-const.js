@@ -162,7 +162,7 @@ export const CurrentChannelStatus = {
 };
 
 export const OnlineStatusUser = {
-  ONLINE: 'active',
+  ONLINE: 'online',
   OFFLINE: 'offline',
   UNKNOWN: '',
 };
@@ -171,10 +171,16 @@ export const TabValueChannel = {
   All: 0,
   Group: 1,
   Unread: 2,
-  Invite: 3,
+  // Invite: 3,
 };
 
 export const AvatarShape = {
   Circle: 'circle',
   Round: 'round',
+};
+
+export const ContactType = {
+  Friends: 'friends',
+  Channels: 'channels',
+  Request: 'requests',
 };

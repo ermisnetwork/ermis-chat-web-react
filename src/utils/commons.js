@@ -212,10 +212,6 @@ export function isChannelDirect(channel) {
   return channel.data.type === ChatType.MESSAGING;
 }
 
-export function isTabInvite(tab) {
-  return tab === TabType.Invite;
-}
-
 export function getChannelMembers(channel, all_members) {
   if (!channel || !all_members || all_members.length === 0) return [];
 

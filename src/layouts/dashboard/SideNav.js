@@ -1,17 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { alpha, styled, useTheme } from '@mui/material/styles';
-import { Box, IconButton, Stack, Tooltip } from '@mui/material';
+import { Badge, Box, IconButton, Stack, Tooltip } from '@mui/material';
 import AntSwitch from '../../components/AntSwitch';
 import useSettings from '../../hooks/useSettings';
 import { Nav_Buttons } from '../../data';
 import { useDispatch, useSelector } from 'react-redux';
 import { UpdateTab } from '../../redux/slices/app';
 import Logo from '../../assets/Images/logo.svg';
-import { Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { DEFAULT_PATH, WIDTH_SIDE_NAV } from '../../config';
 import useResponsive from '../../hooks/useResponsive';
 import { setCurrentChannel, setCurrentChannelStatus } from '../../redux/slices/channel';
-import { CurrentChannelStatus } from '../../constants/commons-const';
+import { ContactType, CurrentChannelStatus, TabType } from '../../constants/commons-const';
 
 const StyledIconButton = styled(IconButton)(({ theme }) => ({
   color: 'inherit',
@@ -89,18 +89,45 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
 
 const SideBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
   const dispatch = useDispatch();
   const isMobileToXl = useResponsive('down', 'xl');
+  const isMobileToMd = useResponsive('down', 'md');
 
   const { tab } = useSelector(state => state.app);
+  const { pendingChannels } = useSelector(state => state.channel);
 
   const { onToggleMode } = useSettings();
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/contacts')) {
+      dispatch(UpdateTab({ tab: TabType.Contact }));
+    } else {
+      dispatch(UpdateTab({ tab: TabType.Chat }));
+    }
+  }, [location.pathname, dispatch]);
 
   const selectedTab = tab;
 
   const handleChangeTab = index => {
-    dispatch(UpdateTab({ tab: index }));
+    switch (index) {
+      case TabType.Chat:
+        navigate(DEFAULT_PATH);
+        break;
+      case TabType.Contact:
+        if (isMobileToMd) {
+          navigate('/contacts');
+        } else {
+          navigate(`/contacts/#${ContactType.Friends}`);
+        }
+        break;
+      default:
+        break;
+    }
+
+    dispatch(setCurrentChannel(null));
+    dispatch(setCurrentChannelStatus(CurrentChannelStatus.IDLE));
   };
 
   const renderNavButtons = () => {
@@ -116,6 +143,17 @@ const SideBar = () => {
             className={isSelected ? 'selected' : ''}
           >
             {el.icon}
+            {el.index === TabType.Contact && pendingChannels && (
+              <Badge
+                color="error"
+                badgeContent={pendingChannels.length}
+                sx={{
+                  '& .MuiBadge-badge': {
+                    top: '-20px',
+                  },
+                }}
+              />
+            )}
           </StyledIconButton>
         </Tooltip>
       );

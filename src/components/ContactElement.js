@@ -1,30 +1,26 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Box, Stack, Typography } from '@mui/material';
-import { styled, useTheme, alpha } from '@mui/material/styles';
-import { useDispatch } from 'react-redux';
+import { styled, useTheme } from '@mui/material/styles';
+import { useDispatch, useSelector } from 'react-redux';
 import ChannelAvatar from './ChannelAvatar';
-import { formatString } from '../utils/commons';
-import { onEditMessage, onReplyMessage } from '../redux/slices/messages';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PATH } from '../config';
-import { UpdateTab } from '../redux/slices/app';
-import { TabType } from '../constants/commons-const';
+import { AvatarShape } from '../constants/commons-const';
+import { isChannelDirect } from '../utils/commons';
+import useOnlineStatus from '../hooks/useOnlineStatus';
+import { SetSearchQuery } from '../redux/slices/app';
 
 const StyledChatBox = styled(Box)(({ theme }) => ({
   width: '100%',
-  borderRadius: '8px',
+  borderRadius: '16px',
   position: 'relative',
   transition: 'background-color 0.2s ease-in-out',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '5px',
   '&:hover': {
     cursor: 'pointer',
-    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-    '& .optionsMore': {
-      display: 'flex',
-      justifyContent: 'flex-end',
-    },
-    '& .optionsNoti': {
-      display: 'none',
-    },
+    backgroundColor: theme.palette.divider,
   },
 }));
 
@@ -32,47 +28,54 @@ const ContactElement = ({ channel }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const navigate = useNavigate();
+  const { user_id } = useSelector(state => state.auth);
+
   const channelId = channel.data.id;
   const channelType = channel.data.type;
+  const isDirect = isChannelDirect(channel);
+
+  const members = useMemo(() => (isDirect ? Object.values(channel.state.members) : []), [channel, isDirect]);
+  const otherMember = useMemo(() => members.find(member => member.user_id !== user_id), [members, user_id]);
+  const otherMemberId = otherMember?.user_id;
+  const onlineStatus = useOnlineStatus(isDirect ? otherMemberId : '');
 
   const onLeftClick = () => {
     navigate(`${DEFAULT_PATH}/${channelType}:${channelId}`);
-    dispatch(onReplyMessage(null));
-    dispatch(onEditMessage(null));
-    dispatch(UpdateTab({ tab: TabType.Chat }));
+    dispatch(SetSearchQuery(''));
   };
 
   return (
-    <StyledChatBox
-      onClick={onLeftClick}
-      sx={{
-        backgroundColor: theme.palette.mode === 'light' ? '#fff' : theme.palette.background.paper,
-        padding: '10px',
-      }}
-    >
-      <Stack direction="row" justifyContent="space-between">
-        <Stack direction="row" sx={{ width: '100%', alignItems: 'center', paddingRight: '8px' }}>
-          <Stack sx={{ width: '40px' }}>
-            <ChannelAvatar channel={channel} width={40} height={40} />
-          </Stack>
+    <StyledChatBox onClick={onLeftClick}>
+      <Stack direction="row" alignItems="center" gap={2} sx={{ width: '100%' }}>
+        <ChannelAvatar channel={channel} width={60} height={60} shape={AvatarShape.Round} />
 
-          <Stack sx={{ width: 'calc(100% - 40px)', paddingLeft: '15px' }}>
-            <Typography
-              variant="subtitle2"
-              sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-            >
-              <span
-                style={{
-                  width: `100%`,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {formatString(channel.data.name)}
-              </span>
-            </Typography>
-          </Stack>
+        <Stack sx={{ minWidth: 'auto', flex: 1, overflow: 'hidden', paddingLeft: !isDirect ? '10px' : '0px' }}>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              width: '100%',
+              display: 'block',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '18px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {channel.data.name}
+          </Typography>
+
+          <Typography
+            variant="caption"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontSize: '14px',
+              fontWeight: 400,
+            }}
+          >
+            {!isDirect ? `${Object.values(channel.state.members).length} members` : <>{onlineStatus}</>}
+          </Typography>
         </Stack>
       </Stack>
     </StyledChatBox>

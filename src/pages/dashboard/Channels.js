@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Stack, Typography, Tabs, Tab, Chip } from '@mui/material';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import ChatElement from '../../components/ChatElement';
 import { useDispatch, useSelector } from 'react-redux';
-import { setSelectedTabChannel } from '../../redux/slices/channel';
 import { ChatType, TabValueChannel } from '../../constants/commons-const';
 import HomeSearch from '../../components/Search/HomeSearch';
 import SkeletonChannels from '../../components/SkeletonChannels';
 import FlipMove from 'react-flip-move';
+import NoResult from '../../assets/Illustration/NoResult';
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   minHeight: 'auto',
@@ -57,35 +57,54 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
 const Channels = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { activeChannels, pendingChannels, loadingChannels, pinnedChannels, tabsChannels, selectedTabChannel } =
-    useSelector(state => state.channel);
+  const { activeChannels, loadingChannels, pinnedChannels, unreadChannels } = useSelector(state => state.channel);
+  const [listTab, setListTab] = useState([
+    { label: 'All', value: TabValueChannel.All, count: 0 },
+    { label: 'Group', value: TabValueChannel.Group, count: 0 },
+    { label: 'Unread', value: TabValueChannel.Unread, count: 0 },
+  ]);
+  const [tabSeledected, setTabSelected] = useState(TabValueChannel.All);
 
   useEffect(() => {
-    if (!tabsChannels.find(tab => tab.value === selectedTabChannel)) {
-      dispatch(setSelectedTabChannel(TabValueChannel.All));
-    }
-  }, [tabsChannels, selectedTabChannel]);
+    setListTab([
+      { label: 'All', value: TabValueChannel.All, count: 0 },
+      {
+        label: 'Group',
+        value: TabValueChannel.Group,
+        count: unreadChannels?.filter(c => c.type === ChatType.TEAM)?.length || 0,
+      },
+      {
+        label: 'Unread',
+        value: TabValueChannel.Unread,
+        count: unreadChannels?.length || 0,
+      },
+    ]);
+  }, [unreadChannels]);
 
   const renderedChannels = useMemo(() => {
     let displayChannels = [];
     let displayPinnedChannels = [];
 
-    switch (selectedTabChannel) {
+    switch (tabSeledected) {
       case TabValueChannel.All:
-        displayChannels = activeChannels || [];
         displayPinnedChannels = pinnedChannels || [];
+        displayChannels = activeChannels || [];
         break;
       case TabValueChannel.Group:
+        displayPinnedChannels = (pinnedChannels || []).filter(c => c.type === ChatType.TEAM);
         displayChannels = (activeChannels || []).filter(c => c.type === ChatType.TEAM);
         break;
       case TabValueChannel.Unread:
-        // displayChannels = (activeChannels || []).filter(c => c.type === ChatType.MESSAGING);
-        break;
-      case TabValueChannel.Invite:
-        displayChannels = pendingChannels || [];
+        displayPinnedChannels = (pinnedChannels || []).filter(c => {
+          return unreadChannels.some(item => item.id === c.id);
+        });
+        displayChannels = (activeChannels || []).filter(c => {
+          return unreadChannels.some(item => item.id === c.id);
+        });
         break;
       default:
-        displayChannels = activeChannels || [];
+        displayPinnedChannels = [];
+        displayChannels = [];
         break;
     }
 
@@ -94,7 +113,7 @@ const Channels = () => {
     } else {
       return (
         <>
-          {displayPinnedChannels && displayPinnedChannels.length > 0 && (
+          {displayPinnedChannels.length > 0 && (
             <FlipMove duration={200}>
               {displayPinnedChannels.map(item => (
                 <div className="channelItem" key={`pinned-${item.id}`}>
@@ -104,7 +123,7 @@ const Channels = () => {
             </FlipMove>
           )}
 
-          {displayChannels && displayChannels.length > 0 ? (
+          {displayChannels.length > 0 && (
             <FlipMove duration={200}>
               {displayChannels.map(item => {
                 return (
@@ -114,46 +133,52 @@ const Channels = () => {
                 );
               })}
             </FlipMove>
-          ) : (
-            <div key="no-channels">
+          )}
+
+          {displayChannels.length === 0 && displayPinnedChannels.length === 0 && (
+            <Stack
+              key="no-channels"
+              sx={{ width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '50px!important' }}
+            >
+              <NoResult width={180} height={180} />
               <Typography
                 variant="subtitle2"
                 sx={{
                   textAlign: 'center',
-                  fontStyle: 'italic',
-                  fontSize: '14px',
-                  color: theme.palette.text.secondary,
-                  fontWeight: 400,
+                  fontSize: '16px',
+                  color: theme.palette.text.primary,
+                  marginTop: '15px',
                 }}
               >
                 No channels
               </Typography>
-            </div>
+            </Stack>
           )}
         </>
       );
     }
-  }, [activeChannels, pendingChannels, pinnedChannels, loadingChannels, selectedTabChannel]);
+  }, [activeChannels, pinnedChannels, loadingChannels, unreadChannels, tabSeledected, theme]);
 
   return (
     <Stack spacing={2} sx={{ height: '100%', width: '100%', padding: '15px' }}>
       <Stack spacing={2}>
         <HomeSearch channels={activeChannels} />
         <StyledTabs
-          value={selectedTabChannel}
+          value={tabSeledected}
           onChange={(event, newValue) => {
-            dispatch(setSelectedTabChannel(newValue));
+            setTabSelected(newValue);
           }}
           variant="scrollable"
         >
-          {tabsChannels.map((item, index) => {
+          {listTab.map((item, index) => {
             return (
               <Tab
                 key={index}
                 value={item.value}
                 label={
                   <Stack direction="row" alignItems="center" spacing={1}>
-                    <span>{item.label}</span> {item.value !== TabValueChannel.All && <Chip label={item.count} />}
+                    <span>{item.label}</span>
+                    {item.value !== TabValueChannel.All && item.count > 0 && <Chip label={item.count} />}
                   </Stack>
                 }
               />
@@ -165,14 +190,14 @@ const Channels = () => {
       <Stack
         className="customScrollbar"
         sx={{
-          flexGrow: 1,
           overflowY: 'auto',
           overflowX: 'hidden',
-          height: 'calc(100% - 167px)',
           marginLeft: '-15px!important',
           marginRight: '-15px!important',
           marginTop: '0px!important',
           padding: '15px',
+          minHeight: 'auto',
+          flex: 1,
         }}
       >
         <Stack spacing={2}>{renderedChannels}</Stack>

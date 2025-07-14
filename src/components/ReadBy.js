@@ -22,6 +22,7 @@ import { ClientEvents } from '../constants/events-const';
 import { MessageReadType, MessageType } from '../constants/commons-const';
 import { setMessageReadType } from '../redux/slices/messages';
 import { FixedSizeList } from 'react-window';
+import { client } from '../client';
 
 const StyledAvatarGroup = styled(AvatarGroup)(({ theme }) => ({
   cursor: 'pointer',
@@ -63,6 +64,7 @@ export default function ReadBy() {
 
   const [readBy, setReadBy] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const users = client.state.users ? Object.values(client.state.users) : [];
 
   useEffect(() => {
     if (currentChannel) {
@@ -70,8 +72,9 @@ export default function ReadBy() {
         currentChannel.state.messages.filter(msg => ![MessageType.System, MessageType.Signal].includes(msg.type)) || [];
 
       if (messages.length) {
-        const members = Object.values(currentChannel.state.read).filter(item => item.user.id !== user_id);
-        const readMembers = members.filter(item => item.unread_messages === 0);
+        const readMembers = Object.values(currentChannel.state.read).filter(
+          item => item.user.id !== user_id && item.unread_messages === 0,
+        );
 
         if (readMembers.length) {
           setReadBy(readMembers);
@@ -167,14 +170,14 @@ export default function ReadBy() {
         return (
           <Tooltip title={`${readBy.length} members have seen`} placement="left">
             <StyledAvatarGroup max={5} spacing={2} onClick={() => setIsOpen(true)}>
-              {readBy.map(item => (
-                <MemberAvatar
-                  key={item.user.id}
-                  member={{ name: item.user.name, avatar: item.user.avatar }}
-                  width={18}
-                  height={18}
-                />
-              ))}
+              {readBy.map(item => {
+                const userInfo = users.find(user => user.id === item.user.id);
+                const member = {
+                  name: item.user?.name ? item.user.name : userInfo ? userInfo.name : item.user.id,
+                  avatar: item.user?.avatar ? item.user.avatar : userInfo ? userInfo.avatar : '',
+                };
+                return <MemberAvatar key={item.user.id} member={member} width={18} height={18} />;
+              })}
             </StyledAvatarGroup>
           </Tooltip>
         );

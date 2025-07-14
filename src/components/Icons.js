@@ -1585,6 +1585,90 @@ export const SlideLogin3 = ({ size = 520, color = 'currentColor', ...props }) =>
   </svg>
 );
 
+export const UserSupportIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M5.49735 12.2496C5.50786 10.8709 6.63221 9.76067 8.011 9.76761C9.38978 9.77462 10.5029 10.8961 10.4994 12.2749C10.4959 13.6537 9.37723 14.7697 7.99842 14.7697C7.33229 14.7681 6.69418 14.5015 6.22495 14.0287C5.75571 13.5559 5.49392 12.9158 5.49735 12.2496V12.2496Z"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M2.99634 20.3783V19.753C3.00038 18.3734 4.11777 17.256 5.49738 17.252H10.4995C11.8791 17.256 12.9965 18.3734 13.0005 19.753V20.3783C12.9995 20.7232 12.7201 21.0025 12.3752 21.0035H3.6216C3.2767 21.0025 2.99735 20.7232 2.99634 20.3783V20.3783Z"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M8.27539 5.99703C10.0324 3.48208 13.2233 2.40564 16.1447 3.34228C19.0662 4.27892 21.0363 7.00999 21.0035 10.0778C20.9707 13.1455 18.9426 15.8338 16.0018 16.7078"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M14.508 11.3274V11.1217C14.508 10.4471 14.9246 10.082 15.3429 9.80171C15.7509 9.52742 16.1597 9.16914 16.1597 8.50828C16.1597 7.59628 15.4209 6.85742 14.5089 6.85742C13.5969 6.85742 12.8572 7.59456 12.8572 8.50656"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M14.5071 13.6544C14.4248 13.6544 14.3579 13.7213 14.3588 13.8036C14.3588 13.8859 14.4256 13.9527 14.5079 13.9527C14.5902 13.9527 14.6571 13.8859 14.6571 13.8036C14.6571 13.7204 14.5902 13.6544 14.5071 13.6544"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const DeviceMessageIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      d="M20 12.2V13.9C20 17.05 18.2 18.4 15.5 18.4H6.5C3.8 18.4 2 17.05 2 13.9V8.5C2 5.35 3.8 4 6.5 4H9.2C9.07 4.38 9 4.8 9 5.25V9.15002C9 10.12 9.32 10.94 9.89 11.51C10.46 12.08 11.28 12.4 12.25 12.4V13.79C12.25 14.3 12.83 14.61 13.26 14.33L16.15 12.4H18.75C19.2 12.4 19.62 12.33 20 12.2Z"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeMiterlimit={10}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M22 5.25V9.15002C22 10.64 21.24 11.76 20 12.2C19.62 12.33 19.2 12.4 18.75 12.4H16.15L13.26 14.33C12.83 14.61 12.25 14.3 12.25 13.79V12.4C11.28 12.4 10.46 12.08 9.89 11.51C9.32 10.94 9 10.12 9 9.15002V5.25C9 4.8 9.07 4.38 9.2 4C9.64 2.76 10.76 2 12.25 2H18.75C20.7 2 22 3.3 22 5.25Z"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeMiterlimit={10}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M7.3999 22H14.5999"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeMiterlimit={10}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M11 18.4004V22.0004"
+      stroke="#292D32"
+      strokeWidth="1.5"
+      strokeMiterlimit={10}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path d="M18.4955 7.25H18.5045" stroke="#7949EC" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M15.6957 7.25H15.7047" stroke="#7949EC" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M12.8954 7.25H12.9044" stroke="#7949EC" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 export default {
   EditProfileIcon,
   ArchiveMinusIcon,
@@ -1611,5 +1695,7 @@ export default {
   SlideLogin1,
   SlideLogin2,
   SlideLogin3,
+  UserSupportIcon,
+  DeviceMessageIcon,
   // Add any other icons here as needed
 };

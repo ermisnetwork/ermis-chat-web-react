@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
-import { useTheme } from '@mui/material/styles';
 import ChatComponent from './ChatComponent';
 import { useDispatch, useSelector } from 'react-redux';
 import ChannelInfo from '../../sections/dashboard/ChannelInfo';
 import Members from '../../sections/dashboard/Members';
-
 import { CurrentChannelStatus, SidebarType } from '../../constants/commons-const';
 import ChannelPermissions from '../../sections/dashboard/ChannelPermissions';
 import ChannelMedia from '../../sections/dashboard/ChannelMedia';
@@ -17,15 +15,12 @@ import { splitChannelId } from '../../utils/commons';
 import { ConnectCurrentChannel } from '../../redux/slices/channel';
 import { DEFAULT_PATH } from '../../config';
 import ChannelNotFound from '../../sections/dashboard/ChannelNotFound';
-import { Box } from '@mui/material';
 import SidebarPanel from './SidebarPanel';
-import useResponsive from '../../hooks/useResponsive';
+import BoxContainer from '../../layouts/dashboard/BoxContainer';
 
 const ChannelDetailApp = () => {
   const dispatch = useDispatch();
-  const theme = useTheme();
   const navigate = useNavigate();
-  const isMobileToMd = useResponsive('down', 'md');
 
   const { currentChannelStatus } = useSelector(state => state.channel);
   const { sideBar, isUserConnected } = useSelector(state => state.app);
@@ -45,25 +40,9 @@ const ChannelDetailApp = () => {
 
   return (
     <>
-      <Box
-        sx={{
-          height: '100%',
-          overflow: 'hidden',
-          position: 'relative',
-          backgroundColor: theme.palette.mode === 'light' ? '#fff' : theme.palette.grey[900],
-          borderRadius: '16px',
-          minWidth: 'auto',
-          flex: 1,
-          position: isMobileToMd ? 'fixed' : 'relative',
-          top: isMobileToMd ? 0 : undefined,
-          left: isMobileToMd ? 0 : undefined,
-          right: isMobileToMd ? 0 : undefined,
-          bottom: isMobileToMd ? 0 : undefined,
-          zIndex: isMobileToMd ? 10 : 0,
-        }}
-      >
+      <BoxContainer>
         {currentChannelStatus === CurrentChannelStatus.ERROR ? <ChannelNotFound /> : <ChatComponent />}
-      </Box>
+      </BoxContainer>
 
       {sideBar.open &&
         (() => {

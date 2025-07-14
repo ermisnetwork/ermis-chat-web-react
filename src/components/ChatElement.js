@@ -8,7 +8,7 @@ import { formatString, isChannelDirect, isPublicChannel, myRoleInChannel } from 
 import { ClientEvents } from '../constants/events-const';
 import { onEditMessage, onReplyMessage } from '../redux/slices/messages';
 import { EnvelopeSimpleOpen, PushPin, PushPinSlash, SignOut, Trash } from 'phosphor-react';
-import { AvatarShape, ConfirmType, MessageType, RoleMember, TabValueChannel } from '../constants/commons-const';
+import { AvatarShape, ConfirmType, MessageType, RoleMember } from '../constants/commons-const';
 import { setChannelConfirm } from '../redux/slices/dialog';
 import { convertMessageSystem } from '../utils/messageSystem';
 import { useNavigate } from 'react-router-dom';
@@ -65,9 +65,8 @@ const ChatElement = ({ channel }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const navigate = useNavigate();
-  const { currentChannel, mutedChannels, selectedTabChannel } = useSelector(state => state.channel);
+  const { currentChannel, mutedChannels } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
-  const { tab } = useSelector(state => state.app);
   const users = client.state.users ? Object.values(client.state.users) : [];
 
   const channelIdSelected = currentChannel?.data.id;
@@ -76,12 +75,10 @@ const ChatElement = ({ channel }) => {
   const isDirect = isChannelDirect(channel);
   const myRole = myRoleInChannel(channel);
   const isPublic = isPublicChannel(channel);
-  const tabInvite = selectedTabChannel === TabValueChannel.Invite;
   const isPinned = channel.data.is_pinned;
 
   const [lastMessage, setLastMessage] = useState('');
   const [count, setCount] = useState(0);
-  const [timer, setTimer] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const openMenu = Boolean(anchorEl);
   const [isRightClick, setIsRightClick] = useState(false);
@@ -160,11 +157,6 @@ const ChatElement = ({ channel }) => {
       setIsBlocked(blocked);
       setCount(channel.state.unreadCount);
 
-      const markRead = async () => {
-        dispatch(SetMarkReadChannel(channel));
-        setCount(0);
-        setTimer(null);
-      };
       const handleMessageNew = event => {
         // lastMsg = event.message;
         // getLastMessage(event.message); // listen last message
@@ -177,12 +169,6 @@ const ChatElement = ({ channel }) => {
 
         if (event.channel_id === channel?.data.id) {
           setCount(channel.state.unreadCount);
-          if (channelIdSelected && channelIdSelected === event.channel_id && event.user.id !== user_id) {
-            if (timer) {
-              clearTimeout(timer);
-            }
-            setTimer(setTimeout(markRead, 1000));
-          }
         }
       };
 
@@ -241,12 +227,9 @@ const ChatElement = ({ channel }) => {
         channel.off(ClientEvents.MessageRead, handleMessageRead);
         channel.off(ClientEvents.MemberBlocked, handleMemberBlocked);
         channel.off(ClientEvents.MemberUnblocked, handleMemberUnBlocked);
-        if (timer) {
-          clearTimeout(timer);
-        }
       };
     }
-  }, [channel, user_id, channelIdSelected, timer]);
+  }, [channel, user_id]);
 
   const onLeftClick = () => {
     const selectedChatId = channelIdSelected?.toString();
@@ -259,11 +242,9 @@ const ChatElement = ({ channel }) => {
   };
 
   const onRightClick = event => {
-    if (!tabInvite) {
-      event.preventDefault();
-      setIsRightClick(true);
-      setAnchorEl(event.currentTarget);
-    }
+    event.preventDefault();
+    setIsRightClick(true);
+    setAnchorEl(event.currentTarget);
   };
 
   const onCloseMenu = () => {
@@ -371,7 +352,7 @@ const ChatElement = ({ channel }) => {
               {isMuted && <SpearkerOffIcon size={14} />}
               {isPinned && <PushPin size={14} color={theme.palette.primary.main} weight="fill" />}
 
-              {!tabInvite && !isBlocked && (
+              {!isBlocked && (
                 <Typography
                   sx={{
                     color: theme.palette.text.secondary,
@@ -389,7 +370,7 @@ const ChatElement = ({ channel }) => {
           </Stack>
 
           {/* -------------------------------last message------------------------------- */}
-          {!tabInvite && !isBlocked && (
+          {!isBlocked && (
             <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
               <Typography
                 variant="caption"
