@@ -35,6 +35,26 @@ const DashboardLayout = () => {
   useFaviconBadge(unreadChannels);
 
   useEffect(() => {
+    let hiddenTime = null;
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        hiddenTime = Date.now();
+      } else if (hiddenTime) {
+        const elapsed = Date.now() - hiddenTime;
+        // Nếu tab bị ẩn hơn 1 tiếng (3600000 ms), reload lại
+        if (elapsed > 3600000) {
+          window.location.reload();
+        }
+        hiddenTime = null;
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
     // Lưu lại overflow cũ để khôi phục khi unmount
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';

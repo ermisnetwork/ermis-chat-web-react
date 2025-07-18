@@ -75,25 +75,6 @@ const StyledMessage = styled(motion(Stack))(({ theme }) => ({
       visibility: 'visible',
     },
   },
-  '& .mentionHighlight': {
-    padding: '2px 10px',
-    borderRadius: '12px',
-    backgroundColor: '#fff',
-    color: '#212B36',
-    fontWeight: 700,
-    display: 'inline-block',
-    margin: '0 5px 5px 0',
-    '&.mentionAll': {
-      color: '#FF4842',
-    },
-    '&.mentionMe': {
-      color: '#FF4842',
-    },
-    '& .linkUrl': {
-      display: 'inline',
-      color: 'inherit !important',
-    },
-  },
   '&.myMessage': {
     '& .linkUrl': {
       color: '#f1f1f1',
@@ -262,7 +243,7 @@ const MessageList = ({
   return (
     <Box sx={{ padding: isMobileToLg ? '20px' : isLgToXl ? '20px 50px' : '20px 90px' }}>
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, type: 'spring', stiffness: 100 }}
       >
@@ -341,7 +322,7 @@ const MessageList = ({
                         marginBottom: showAvatar ? '32px!important' : '0px!important',
                         marginTop: '0px!important',
                       }}
-                      initial={isNewestMessage ? { opacity: 0, y: 50 } : false}
+                      initial={isNewestMessage ? { opacity: 0, y: 10 } : false}
                       animate={isNewestMessage ? { opacity: 1, y: 0 } : false}
                       transition={isNewestMessage ? { duration: 0.4, type: 'spring', stiffness: 200 } : undefined}
                     >
@@ -352,7 +333,7 @@ const MessageList = ({
                             top: 0,
                             left: '50%',
                             transform: 'translateX(-50%)',
-                            width: 'calc(100% + 80px)',
+                            width: '200%',
                             height: '100%',
                             backgroundColor: 'rgb(1 98 196 / 20%)',
                           }}
@@ -388,6 +369,7 @@ const MessageList = ({
                       <Stack
                         sx={{
                           minWidth: 'auto',
+                          maxWidth: '100%',
                           flex: 1,
                           // overflow: 'hidden',
                         }}
@@ -442,8 +424,6 @@ const ChatComponent = () => {
   const { deleteMessage, messageIdError, searchMessageId, forwardMessage, filesMessage } = useSelector(
     state => state.messages,
   );
-  const { tab } = useSelector(state => state.app);
-
   const [messages, setMessages] = useState([]);
   const [usersTyping, setUsersTyping] = useState([]);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -458,12 +438,12 @@ const ChatComponent = () => {
 
   const isDirect = isChannelDirect(currentChannel);
   const users = client.state.users ? Object.values(client.state.users) : [];
+  const isLgToXl = useResponsive('between', null, 'lg', 'xl');
+  const isMobileToLg = useResponsive('down', 'lg');
 
   useEffect(() => {
     if (currentChannel) {
-      const channelName = currentChannel.data.name
-        ? formatString(currentChannel.data.name)
-        : getChannelName(currentChannel, users);
+      const channelName = currentChannel.data.name ? currentChannel.data.name : getChannelName(currentChannel, users);
       document.title = channelName;
       if (messageListRef.current) {
         messageListRef.current.scrollTop = 0;
@@ -591,7 +571,7 @@ const ChatComponent = () => {
 
       const handleTypingStart = event => {
         if (user_id !== event.user.id) {
-          const name = formatString(event.user?.name || event.user.id);
+          const name = event.user?.name ? event.user?.name : formatString(event.user.id);
 
           const item = {
             name: name,
@@ -858,7 +838,15 @@ const ChatComponent = () => {
       <ChatHeader currentChannel={currentChannel} isBlocked={isBlocked} />
 
       {currentChannel && (
-        <Box sx={{ width: '100%', position: 'absolute', top: '75px', zIndex: 2 }}>
+        <Box
+          sx={{
+            width: '100%',
+            position: 'absolute',
+            top: '75px',
+            zIndex: 2,
+            padding: isMobileToLg ? '4px 20px' : isLgToXl ? '4px 50px' : '4px 90px',
+          }}
+        >
           {isAlertInvitePending && (
             <Box sx={{ width: '100%' }}>
               <Alert severity="info" sx={{ fontWeight: 400 }}>
@@ -915,7 +903,12 @@ const ChatComponent = () => {
                 <InfiniteScroll
                   dataLength={messages.length}
                   next={fetchMoreMessages}
-                  style={{ display: 'flex', flexDirection: 'column-reverse', position: 'relative' }}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column-reverse',
+                    position: 'relative',
+                    overflowX: 'hidden',
+                  }}
                   inverse={true}
                   hasMore={true}
                   loader={

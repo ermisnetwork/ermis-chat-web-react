@@ -29,7 +29,13 @@ import {
   PushPin,
   PushPinSimpleSlash,
 } from 'phosphor-react';
-import { checkPermissionDeleteMessage, downloadFile, formatString, getMemberInfo } from '../../utils/commons';
+import {
+  checkPermissionDeleteMessage,
+  displayMessageWithMentionName,
+  downloadFile,
+  formatString,
+  getMemberInfo,
+} from '../../utils/commons';
 import { CallType, MessageType } from '../../constants/commons-const';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -59,6 +65,22 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
   height: '22px',
   padding: '0px',
   color: theme.palette.text.primary,
+}));
+
+const StyledTextLine = styled(Typography)(({ theme }) => ({
+  wordBreak: 'break-word',
+  whiteSpace: 'pre-wrap',
+  fontWeight: 500,
+  '& .mentionHighlight': {
+    padding: '2px 10px',
+    borderRadius: '12px',
+    backgroundColor: '#fff',
+    color: '#212B36',
+    '& .linkUrl': {
+      display: 'inline',
+      color: 'inherit !important',
+    },
+  },
 }));
 
 const MoreOptions = ({ message, setIsOpen, orderMore, isMyMessage }) => {
@@ -255,7 +277,7 @@ const MoreOptions = ({ message, setIsOpen, orderMore, isMyMessage }) => {
                   <Copy size={18} />
                 </ListItemIcon>
                 <ListItemText
-                  primary="Coppy text"
+                  primary="Copy"
                   primaryTypographyProps={{
                     fontSize: '14px',
                   }}
@@ -392,25 +414,6 @@ const TextLine = ({ message }) => {
   const { mentions } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
 
-  const replaceMentionsWithNames = inputValue => {
-    mentions.forEach(user => {
-      if (user.mentionId === '@all') {
-        inputValue = inputValue.replaceAll(
-          user.mentionId,
-          `<span class="mentionHighlight mentionAll">${user.mentionName}</span>`,
-        );
-      } else if (user.id === user_id) {
-        inputValue = inputValue.replaceAll(
-          user.mentionId,
-          `<span class="mentionHighlight mentionMe">${user.mentionName}</span>`,
-        );
-      } else {
-        inputValue = inputValue.replaceAll(user.mentionId, `<span class="mentionHighlight">${user.mentionName}</span>`);
-      }
-    });
-    return inputValue;
-  };
-
   const isCode = str => {
     // Loại bỏ khoảng trắng đầu/cuối chuỗi
     str = str.trim();
@@ -478,19 +481,15 @@ const TextLine = ({ message }) => {
     if (isCode(message.text)) {
       const codeContent = message.text.slice(3, -3).trim();
       return (
-        <SyntaxHighlighter language="javascript" style={atomDark} showLineNumbers>
+        <SyntaxHighlighter language="javascript" style={atomDark} showLineNumbers customStyle={{ width: '100%' }}>
           {codeContent}
         </SyntaxHighlighter>
       );
     } else {
       return (
-        <Typography
-          variant="body2"
-          color={message.isMyMessage ? '#fff' : theme.palette.text}
-          sx={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap', fontWeight: 500 }}
-        >
+        <StyledTextLine variant="body2" color={message.isMyMessage ? '#fff' : theme.palette.text}>
           {processMessage(message.text)}
-        </Typography>
+        </StyledTextLine>
       );
     }
   };
@@ -539,7 +538,8 @@ const PollBox = ({ message, all_members }) => {
     ? message.latest_poll_choices.some(choice => choice.user_id === user_id)
     : false;
 
-  const totalVotes = currentChannel?.state?.members ? Object.keys(currentChannel.state.members).length : 0;
+  const totalMembers = currentChannel?.state?.members ? Object.keys(currentChannel.state.members).length : 0;
+  const totalVotes = Array.isArray(message.latest_poll_choices) ? message.latest_poll_choices.length : 0;
 
   const handleChange = option => {
     if (pollType === 'multiple') {
@@ -550,6 +550,11 @@ const PollBox = ({ message, all_members }) => {
   };
 
   const handleVote = async () => {
+    if (!selected || (selected.length === 0 && pollType === 'multiple')) {
+      dispatch(showSnackbar({ severity: 'error', message: 'Please select an option to vote' }));
+      return;
+    }
+
     if (pollType === 'multiple' && Array.isArray(selected)) {
       for (const choice of selected) {
         await currentChannel.votePoll(message.id, choice);
@@ -583,32 +588,31 @@ const PollBox = ({ message, all_members }) => {
     );
   };
 
+  const colorMsg = message.isMyMessage ? '#fff' : theme.palette.text.primary;
+  const senderName = message.user.name;
+
   return (
-    <Box sx={{ maxWidth: '100%', width: '20rem' }}>
+    <Box sx={{ maxWidth: '100%', width: '20rem', padding: '8px' }}>
+      <Typography
+        variant="body1"
+        color={message.isMyMessage ? '#fff' : theme.palette.primary.main}
+        sx={{ fontWeight: 600, marginBottom: 2, fontSize: '12px' }}
+      >
+        {senderName}
+      </Typography>
+
       <Typography
         variant="subtitle1"
-        color={message.isMyMessage ? '#fff' : theme.palette.text}
-        sx={{ fontWeight: 600, marginBottom: 1, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
+        color={colorMsg}
+        sx={{ fontWeight: 600, marginBottom: 1, wordBreak: 'break-word', whiteSpace: 'pre-wrap', fontSize: '18px' }}
       >
         {message.text}
       </Typography>
       <Stack spacing={1}>
         {Object.entries(pollOptions).map(([option, count]) => {
-          const percent = totalVotes === 0 ? 0 : Math.round((count / totalVotes) * 100);
+          const percent = totalMembers === 0 ? 0 : Math.round((count / totalMembers) * 100);
           return (
-            <Stack
-              key={option}
-              sx={{
-                background: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
-                borderRadius: 1,
-                px: 1,
-                py: 1,
-              }}
-              direction={'row'}
-              alignItems="center"
-              justifyContent="space-between"
-              spacing={1}
-            >
+            <Stack key={option} direction={'row'} alignItems="center" justifyContent="space-between" spacing={2}>
               {!hasVoted && (
                 <>
                   {pollType === 'multiple' ? (
@@ -616,39 +620,56 @@ const PollBox = ({ message, all_members }) => {
                       name={option}
                       checked={selected.includes(option)}
                       onChange={() => handleChange(option)}
-                      sx={{ mr: 1, p: 0 }}
+                      sx={{
+                        p: 0,
+                        color: colorMsg,
+                        '&.Mui-checked': {
+                          color: colorMsg,
+                        },
+                      }}
                     />
                   ) : (
                     <Radio
                       name="poll-radio"
                       checked={selected === option}
                       onChange={() => handleChange(option)}
-                      sx={{ mr: 1, p: 0 }}
+                      sx={{
+                        p: 0,
+                        color: colorMsg,
+                        '&.Mui-checked': {
+                          color: colorMsg,
+                        },
+                      }}
                     />
                   )}
                 </>
               )}
+
+              {hasVoted && count > 0 && (
+                <Typography
+                  variant="caption"
+                  color={message.isMyMessage ? '#fff' : theme.palette.primary.main}
+                  sx={{ fontSize: '16px', fontWeight: 600, marginTop: '-10px!important' }}
+                >
+                  {percent}%
+                </Typography>
+              )}
               <Box sx={{ flex: 1 }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Typography variant="body2" sx={{ flex: 1 }}>
-                    {option}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {count}
-                  </Typography>
-                </Stack>
+                <Typography variant="body2" color={colorMsg} sx={{ flex: 1, fontSize: '16px', fontWeight: 400 }}>
+                  {option}
+                </Typography>
 
                 {hasVoted && (
                   <LinearProgress
                     variant="determinate"
-                    value={totalVotes === 0 ? 0 : (count / totalVotes) * 100}
+                    value={totalMembers === 0 ? 0 : (count / totalMembers) * 100}
                     sx={{
                       mt: 1,
-                      height: 5,
+                      height: 3,
                       borderRadius: 4,
-                      background: theme.palette.grey[300],
+                      background: message.isMyMessage ? theme.palette.primary.main : theme.palette.grey[100],
                       '& .MuiLinearProgress-bar': {
-                        background: theme.palette.info.main,
+                        background: message.isMyMessage ? '#fff' : theme.palette.primary.main,
                       },
                     }}
                   />
@@ -660,33 +681,44 @@ const PollBox = ({ message, all_members }) => {
       </Stack>
 
       {!hasVoted && (
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
           <Button
             onClick={handleVote}
             variant="contained"
-            color="info"
-            size="small"
-            sx={{ minWidth: '100px' }}
-            disabled={selected.length === 0 || selected === ''}
+            sx={{
+              minWidth: '100px',
+              backgroundColor: message.isMyMessage ? '#fff' : theme.palette.primary.main,
+              color: message.isMyMessage ? theme.palette.primary.main : '#fff',
+            }}
           >
-            Vote
+            VOTE
           </Button>
         </Box>
       )}
 
       {hasVoted && message.isMyMessage && (
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
           <Button
             variant="contained"
-            color="info"
-            size="small"
-            sx={{ minWidth: '100px' }}
+            sx={{
+              minWidth: '100px',
+              backgroundColor: message.isMyMessage ? '#fff' : theme.palette.primary.main,
+              color: message.isMyMessage ? theme.palette.primary.main : '#fff',
+            }}
             onClick={handleShowPollResult}
           >
-            Show result
+            RESULT
           </Button>
         </Box>
       )}
+
+      <Typography
+        variant="body2"
+        color={message.isMyMessage ? theme.palette.grey[400] : theme.palette.text.secondary}
+        sx={{ fontSize: '12px', position: 'absolute', bottom: '13px' }}
+      >
+        {totalVotes} votes
+      </Typography>
     </Box>
   );
 };
@@ -755,21 +787,6 @@ const AttachmentMsg = ({ el, menu, forwardChannelName }) => {
 };
 const ReplyMsg = ({ el, all_members, onScrollToReplyMsg }) => {
   const { mentions } = useSelector(state => state.channel);
-  const { user_id } = useSelector(state => state.auth);
-
-  const replaceMentionsWithNames = inputValue => {
-    mentions.forEach(user => {
-      if (user.mentionId === '@all') {
-        inputValue = inputValue.replaceAll(user.mentionId, `<strong>${user.mentionName}</strong>`);
-      } else if (user.id === user_id) {
-        inputValue = inputValue.replaceAll(user.mentionId, `<strong>${user.mentionName}</strong>`);
-      } else {
-        inputValue = inputValue.replaceAll(user.mentionId, `<strong>${user.mentionName}</strong>`);
-      }
-    });
-    return inputValue;
-  };
-
   const theme = useTheme();
   const memberInfo = el.quoted_message?.user;
   const quotedMessage = el.quoted_message;
@@ -879,7 +896,9 @@ const ReplyMsg = ({ el, all_members, onScrollToReplyMsg }) => {
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                     }}
-                    dangerouslySetInnerHTML={{ __html: replaceMentionsWithNames(el.quoted_message.text) }}
+                    dangerouslySetInnerHTML={{
+                      __html: displayMessageWithMentionName(el.quoted_message.text, mentions),
+                    }}
                   />
                 </>
               )}

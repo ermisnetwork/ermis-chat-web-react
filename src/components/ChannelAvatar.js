@@ -45,7 +45,7 @@ export default function ChannelAvatar({ channel, width, height, openLightbox, sh
   const [groupMemberSecond, setGroupMemberSecond] = useState({ name: '', avatar: null });
 
   const isDirect = channel?.type === ChatType.MESSAGING;
-  const channelAvatar = channel?.data.image;
+  const channelAvatar = channel.data?.image || '';
 
   const directMembers = useMemo(
     () => (isDirect ? Object.values(channel.state.members) : []),

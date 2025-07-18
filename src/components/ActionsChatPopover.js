@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTheme, Button, MenuList, MenuItem, ListItemIcon, ListItemText, Popover, styled } from '@mui/material';
 import Iconify from './Iconify';
 import { PollIcon, ShareFileIcon } from './Icons';
@@ -23,6 +23,7 @@ const VisuallyHiddenInput = styled('input')({
 const ActionsChatPopover = ({}) => {
   const dispatch = useDispatch();
   const theme = useTheme();
+  const { editMessage } = useSelector(state => state.messages);
   const [anchorEl, setAnchorEl] = useState(null);
 
   const onChangeUploadFile = (event, type) => {
@@ -43,6 +44,7 @@ const ActionsChatPopover = ({}) => {
         onClick={event => {
           setAnchorEl(event.currentTarget);
         }}
+        disabled={Boolean(editMessage)}
       >
         <Iconify icon="ph:plus-bold" width={24} height={24} />
       </Button>

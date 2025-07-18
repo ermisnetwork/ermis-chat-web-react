@@ -155,7 +155,7 @@ const ForwardMessageDialog = () => {
                       {isPublic ? (
                         <AvatarComponent
                           name={channel.data.name}
-                          url={channel.data.image}
+                          url={channel.data?.image || ''}
                           width={30}
                           height={30}
                           isPublic={isPublic}

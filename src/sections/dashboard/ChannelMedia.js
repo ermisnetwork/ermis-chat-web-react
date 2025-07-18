@@ -20,10 +20,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { UpdateSidebarType } from '../../redux/slices/app';
 import { MediaType, SidebarType } from '../../constants/commons-const';
 import { downloadFile, formatFileSize } from '../../utils/commons';
-import { SlideshowLightbox } from 'lightbox.js-react';
 import FileTypeBadge from '../../components/FileTypeBadge';
 import ImageCanvas from '../../components/ImageCanvas';
 import NoImage from '../../assets/Images/no-image.png';
+import LightboxMedia from '../../components/LightboxMedia';
 
 const LIST_TAB = [
   { value: 0, label: 'Media' },
@@ -55,7 +55,7 @@ const MediasBox = ({ medias }) => {
                 }}
               >
                 <ImageCanvas
-                  dataUrl={item.thumbnail}
+                  dataUrl={isVideo ? item.poster : item.src}
                   width={'100%'}
                   height={'96px'}
                   styleCustom={{ borderRadius: '6px' }}
@@ -85,25 +85,11 @@ const MediasBox = ({ medias }) => {
           No medias
         </Typography>
       )}
-
-      <SlideshowLightbox
-        theme="lightbox"
-        images={medias}
-        startingSlideIndex={indexMedia}
-        showThumbnails={true}
-        open={isOpenLightBox}
-        lightboxIdentifier="lbox1"
-        onClose={() => {
-          setIsOpenLightBox(false);
-          setIndexMedia(0);
-        }}
-        downloadImages
-        iconColor={theme.palette.grey[400]}
-        imgAnimation="fade"
-        animateThumbnails
-        roundedImages
-        modalClose="clickOutside"
-        lightboxImgClass="slideItem"
+      <LightboxMedia
+        openLightbox={isOpenLightBox}
+        setOpenlightbox={setIsOpenLightBox}
+        medias={medias}
+        indexMedia={indexMedia}
       />
     </>
   );
@@ -180,7 +166,17 @@ const LinksBox = ({ links }) => {
                   />
                   <ListItemText
                     sx={{ width: 'calc(100% - 40px)', paddingLeft: '15px' }}
-                    primary={item.file_name ? item.file_name : new URL(item.url) ? new URL(item.url).hostname : ''}
+                    primary={
+                      item.file_name
+                        ? item.file_name
+                        : (() => {
+                            try {
+                              return item.url ? new URL(item.url).hostname : '';
+                            } catch {
+                              return '';
+                            }
+                          })()
+                    }
                     secondary={
                       <a href={item.url} target="_blank" rel="noopener noreferrer">
                         {item.url}
@@ -238,17 +234,23 @@ const ChannelMedia = () => {
             if (isVideo) {
               return {
                 type: MediaType.VIDEO,
-                videoSrc: item.url,
-                thumbnail: item.thumb_url,
-                alt: item.file_name,
-                autoPlay: false,
+                width: 1280,
+                height: 720,
+                poster: item.thumb_url,
+                sources: [
+                  {
+                    src: item.url,
+                    type: item.content_type,
+                  },
+                ],
+                description: item.file_name,
               };
             } else {
               return {
                 type: MediaType.IMAGE,
                 src: item.url,
-                thumbnail: item.url,
                 alt: item.file_name,
+                description: item.file_name,
               };
             }
           });

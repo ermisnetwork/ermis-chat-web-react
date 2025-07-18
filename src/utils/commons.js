@@ -305,9 +305,9 @@ export function isStagingDomain() {
   // return domain === 'https://chat-staging.ermis.network';
 }
 
-export async function processImageFile(file) {
+export async function processImageFile(file, isAvatarUpload = false) {
   const isImage = file.type.startsWith('image/');
-  if (['image/svg+xml', 'image/gif'].includes(file.type) || !isImage) {
+  if (['image/svg+xml', 'image/gif'].includes(file.type) || !isImage || !isAvatarUpload) {
     return file;
   }
 
@@ -336,7 +336,40 @@ export async function processImageFile(file) {
     const resultFile = new File([resultBlob], file.name, {
       type: file.type,
     });
-
     return resultFile;
   }
 }
+
+export function displayMessageWithMentionName(text, mentions) {
+  const myUserId = window.localStorage.getItem(LocalStorageKey.UserId);
+  if (!mentions) return text;
+
+  mentions.forEach(user => {
+    if (user.mentionId === '@all') {
+      text = text.replaceAll(user.mentionId, `<span class="mentionHighlight mentionAll">${user.mentionName}</span>`);
+    } else if (user.id === myUserId) {
+      text = text.replaceAll(user.mentionId, `<span class="mentionHighlight mentionMe">${user.mentionName}</span>`);
+    } else {
+      text = text.replaceAll(user.mentionId, `<span class="mentionHighlight">${user.mentionName}</span>`);
+    }
+  });
+  return text;
+}
+
+export const replaceMentionsWithNames = (text, mentions) => {
+  if (!mentions) return text;
+
+  mentions.forEach(user => {
+    text = text.replaceAll(user.mentionId, user.mentionName);
+  });
+  return text;
+};
+
+export const replaceMentionsWithIds = (text, mentions) => {
+  if (!mentions) return text;
+
+  mentions.forEach(user => {
+    text = text.replaceAll(user.mentionName, user.mentionId);
+  });
+  return text;
+};

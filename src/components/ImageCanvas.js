@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { SlideshowLightbox } from 'lightbox.js-react';
 import { MediaType } from '../constants/commons-const';
 import { useTheme } from '@mui/material';
+import LightboxMedia from './LightboxMedia';
 
 const ImageCanvas = ({ dataUrl, width, height, styleCustom, openLightbox }) => {
   const theme = useTheme();
@@ -64,8 +64,8 @@ const ImageCanvas = ({ dataUrl, width, height, styleCustom, openLightbox }) => {
     {
       type: MediaType.IMAGE,
       src: dataUrl,
-      thumbnail: dataUrl,
-      alt: 'image',
+      alt: 'Image',
+      description: '',
     },
   ];
 
@@ -83,26 +83,7 @@ const ImageCanvas = ({ dataUrl, width, height, styleCustom, openLightbox }) => {
         onClick={onOpenLightbox}
       />
 
-      <div style={{ position: 'fixed' }}>
-        <SlideshowLightbox
-          theme="lightbox"
-          images={medias}
-          startingSlideIndex={0}
-          showThumbnails={false}
-          open={isOpen}
-          lightboxIdentifier="lbox1"
-          onClose={() => {
-            setIsOpen(false);
-          }}
-          downloadImages
-          iconColor={theme.palette.grey[400]}
-          imgAnimation="fade"
-          // animateThumbnails
-          roundedImages
-          modalClose="clickOutside"
-          lightboxImgClass="slideItem"
-        />
-      </div>
+      <LightboxMedia openLightbox={isOpen} setOpenlightbox={setIsOpen} medias={medias} indexMedia={0} />
     </>
   );
 };

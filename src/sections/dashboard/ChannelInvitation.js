@@ -80,8 +80,8 @@ const ChannelInvitation = () => {
       >
         {isPublic ? (
           <AvatarComponent
-            name={currentChannel.data.name}
-            url={currentChannel.data.image}
+            name={currentChannel.data?.name}
+            url={currentChannel.data?.image || ''}
             width={100}
             height={100}
             isPublic={isPublic}

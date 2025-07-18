@@ -164,8 +164,9 @@ const CallDirectDialog2 = () => {
   };
 
   const startRing = () => {
+    const audioFile = callDirectData?.type === 'incoming' ? '/call_incoming.mp3' : '/call_outgoing.mp3';
     ringtone.current = new Howl({
-      src: ['/ringtone.mp3'],
+      src: [audioFile],
       loop: true,
     });
     ringtone.current.play();
@@ -176,6 +177,12 @@ const CallDirectDialog2 = () => {
       ringtone.current.stop();
     }
   };
+
+  useEffect(() => {
+    if (callDirectData && callDirectStatus === CallStatus.RINGING) {
+      startRing();
+    }
+  }, [callDirectData, callDirectStatus]);
 
   useEffect(() => {
     if (!callClient) return;
@@ -224,7 +231,7 @@ const CallDirectDialog2 = () => {
       dispatch(setCallDirectStatus(status));
       switch (status) {
         case CallStatus.RINGING:
-          startRing();
+          // startRing();
           break;
         case CallStatus.CONNECTED:
           startTimer();

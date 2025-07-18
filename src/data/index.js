@@ -17,16 +17,16 @@ const Profile_Menu = [
     icon: <EditProfileIcon size={24} />,
     key: 'profile',
   },
-  {
-    title: 'Saved Messages',
-    icon: <ArchiveMinusIcon size={24} />,
-    key: 'saved_messages',
-  },
-  {
-    title: 'Blocked Contacts',
-    icon: <UserOctagonIcon size={24} />,
-    key: 'blocked_contacts',
-  },
+  // {
+  //   title: 'Saved Messages',
+  //   icon: <ArchiveMinusIcon size={24} />,
+  //   key: 'saved_messages',
+  // },
+  // {
+  //   title: 'Blocked Contacts',
+  //   icon: <UserOctagonIcon size={24} />,
+  //   key: 'blocked_contacts',
+  // },
   {
     title: 'Log Out',
     icon: <LogoutIcon size={24} />,

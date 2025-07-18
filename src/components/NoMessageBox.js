@@ -31,7 +31,7 @@ const NoMessageBox = ({ channel }) => {
       {isPublic ? (
         <AvatarComponent
           name={channel.data.name}
-          url={channel.data.image}
+          url={channel.data?.image || ''}
           width={90}
           height={90}
           isPublic={isPublic}

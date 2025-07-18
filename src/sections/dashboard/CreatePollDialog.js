@@ -1,5 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Dialog, DialogContent, DialogTitle, Slide, Stack, IconButton } from '@mui/material';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Slide,
+  Stack,
+  IconButton,
+  Box,
+  InputAdornment,
+  useTheme,
+  alpha,
+} from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { LoadingButton } from '@mui/lab';
 import { setOpenCreatePollDialog } from '../../redux/slices/dialog';
@@ -10,6 +22,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { X } from 'phosphor-react';
 import RHFCheckbox from '../../components/hook-form/RHFCheckbox';
 import { handleError } from '../../utils/commons';
+import { FlagIcon, PollIcon } from '../../components/Icons';
+import Iconify from '../../components/Iconify';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -17,6 +31,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const CreatePollDialog = () => {
   const dispatch = useDispatch();
+  const theme = useTheme();
   const { openCreatePollDialog } = useSelector(state => state.dialog);
   const { currentChannel } = useSelector(state => state.channel);
 
@@ -87,50 +102,83 @@ const CreatePollDialog = () => {
       onClose={onCloseDialog}
     >
       <DialogTitle sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        New Poll
+        Create a poll
         <IconButton onClick={onCloseDialog}>
           <X />
         </IconButton>
       </DialogTitle>
       <DialogContent>
         <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-          <Stack spacing={3}>
-            <RHFTextField name="question" label="Question" style={{ marginTop: '5px' }} />
-            <Stack spacing={2}>
-              <label style={{ fontWeight: 600 }}>Poll Options</label>
+          <Stack spacing={2}>
+            <Box>
+              <label style={{ fontWeight: 600, fontSize: '12px' }}>QUESTION</label>
+              <RHFTextField
+                name="question"
+                placeholder="Question name"
+                style={{ marginTop: '5px' }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PollIcon color={theme.palette.text.primary} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
 
-              {fields.map((field, idx) => (
-                <Stack key={field.id} direction="row" alignItems="center" spacing={1}>
-                  <RHFTextField
-                    name={`options[${idx}].text`}
-                    label={`Option ${idx + 1}`}
+            <Box>
+              <label style={{ fontWeight: 600, fontSize: '12px' }}>OPTIONS</label>
+              <Stack spacing={2}>
+                {fields.map((field, idx) => (
+                  <Stack key={field.id} direction="row" alignItems="center" spacing={1}>
+                    <RHFTextField
+                      name={`options[${idx}].text`}
+                      placeholder={`Option ${idx + 1}`}
+                      fullWidth
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FlagIcon color={theme.palette.text.primary} />
+                          </InputAdornment>
+                        ),
+                      }}
+                      // error={!!errors.options}
+                      // helperText={errors.options && errors.options.message}
+                    />
+                    {fields.length > 2 && (
+                      <IconButton onClick={() => remove(idx)} edge="end" size="small" aria-label="remove">
+                        <X size={16} />
+                      </IconButton>
+                    )}
+                  </Stack>
+                ))}
+
+                <Box>
+                  <Button
+                    variant="text"
+                    size="large"
+                    onClick={() => append({ text: '' })}
+                    sx={{
+                      backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                      color: theme.palette.primary.main,
+                      fontSize: '14px',
+                    }}
                     fullWidth
-                    // error={!!errors.options}
-                    // helperText={errors.options && errors.options.message}
-                  />
-                  {fields.length > 2 && (
-                    <IconButton onClick={() => remove(idx)} edge="end" size="small" aria-label="remove">
-                      <X size={16} />
-                    </IconButton>
-                  )}
-                </Stack>
-              ))}
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => append({ text: '' })}
-                sx={{ alignSelf: 'flex-start' }}
-              >
-                Add Option
-              </Button>
-            </Stack>
+                  >
+                    <Iconify icon="ph:plus-bold" width={18} height={18} /> &nbsp;ADD OPTION
+                  </Button>
+                </Box>
+              </Stack>
+            </Box>
 
             <RHFCheckbox name="multipleAnswers" label="Multiple answers" />
 
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button onClick={onCloseDialog}>Cancel</Button>
-              <LoadingButton type="submit" variant="contained" loading={loadingButton}>
-                Create
+            <Stack direction="row" spacing={2} justifyContent="center">
+              <Button size="large" onClick={onCloseDialog} sx={{ flex: 1 }}>
+                CANCEL
+              </Button>
+              <LoadingButton size="large" type="submit" variant="contained" loading={loadingButton} sx={{ flex: 1 }}>
+                CREATE
               </LoadingButton>
             </Stack>
           </Stack>

@@ -277,3 +277,38 @@ a.linkUrl:last-child {
   width: 100%;
   height: 100%;
 }
+
+.mentionHighlight {
+  font-weight: 700;
+  display: inline-block;
+}
+
+.mentionHighlight.mentionAll,
+.mentionHighlight.mentionMe {
+  color: #ff4842 !important;
+}
+
+.yarl__thumbnails_thumbnail {
+  width: 80px;
+  height: 60px;
+}
+
+.yarl__thumbnails_thumbnail.yarl__thumbnails_thumbnail_active {
+  border-color: #7949ec !important;
+}
+
+.pdf-viewer-container.pdfViewer {
+  width: auto;
+}
+
+.pdf-viewer-container.pdfViewer .optionBar {
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  width: auto;
+  display: flex;
+}
+
+.pdf-viewer-container.pdfViewer .optionBar .title {
+  display: none;
+}

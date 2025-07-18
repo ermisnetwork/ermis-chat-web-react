@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { Stack, Tooltip, Button } from '@mui/material';
-import { EMOJI_QUICK } from '../constants/commons-const';
+import { EMOJI_QUICK, MessageType } from '../constants/commons-const';
 import { handleError } from '../utils/commons';
 import { useDispatch, useSelector } from 'react-redux';
 import QuickReactions from './QuickReactions';
@@ -52,6 +52,8 @@ export default function ReactionsMessage({ isMyMessage, message }) {
     }
   };
 
+  if (message.type === MessageType.Signal) return null;
+
   return (
     <Stack
       direction="row"
@@ -97,6 +99,7 @@ export default function ReactionsMessage({ isMyMessage, message }) {
                     fontWeight: 600,
                     border: `1px solid ${item.isMyReact ? theme.palette.action.active : 'transparent'}`,
                     boxShadow: theme.shadows[6],
+                    color: theme.palette.text.primary,
                   }}
                   onClick={() => onToggleReaction(item)}
                 >

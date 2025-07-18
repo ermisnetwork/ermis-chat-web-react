@@ -2,7 +2,7 @@ import React from 'react';
 import { Stack, useTheme, Typography, Box, IconButton } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { Quotes, X } from 'phosphor-react';
-import { formatString } from '../../utils/commons';
+import { displayMessageWithMentionName, formatString } from '../../utils/commons';
 import { onReplyMessage } from '../../redux/slices/messages';
 import FileTypeBadge from '../../components/FileTypeBadge';
 import ImageCanvas from '../../components/ImageCanvas';
@@ -17,15 +17,14 @@ const ReplyMessageBox = ({ quotesMessage }) => {
   const memberInfo = quotesMessage?.user;
   const name = formatString(memberInfo?.name || memberInfo?.id);
 
-  const replaceMentionsWithNames = inputValue => {
-    mentions.forEach(user => {
-      inputValue = inputValue.replaceAll(user.mentionId, user.mentionName);
-    });
-    return inputValue;
-  };
-
   return (
-    <Stack direction="row" justifyContent="space-between" sx={{ padding: '15px 15px 5px' }} gap={1}>
+    <Stack
+      direction="row"
+      justifyContent="space-between"
+      justifyItems="center"
+      sx={{ padding: '15px 15px 5px' }}
+      gap={1}
+    >
       <Box
         sx={{
           flex: 1,
@@ -84,18 +83,19 @@ const ReplyMessageBox = ({ quotesMessage }) => {
               </Typography>
             )}
 
-            <Typography
-              variant="body2"
-              sx={{
-                color: theme.palette.grey[500],
-                fontSize: 12,
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                overflow: 'hidden',
-              }}
-            >
-              {quotesMessage.type !== MessageType.Sticker && replaceMentionsWithNames(quotesMessage.text)}
-            </Typography>
+            {quotesMessage.type !== MessageType.Sticker && (
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.grey[500],
+                  fontSize: 12,
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                }}
+                dangerouslySetInnerHTML={{ __html: displayMessageWithMentionName(quotesMessage.text, mentions) }}
+              />
+            )}
           </Box>
         </Stack>
       </Box>

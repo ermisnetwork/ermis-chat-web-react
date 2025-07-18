@@ -80,7 +80,7 @@ const EditChannel = ({ setIsEdit }) => {
   const channelInfo = {
     name: formatString(currentChannel.data.name) || '',
     description: currentChannel.data.description || '',
-    image: currentChannel.data.image || '',
+    image: currentChannel.data?.image || '',
     public: String(currentChannel.data.public),
   };
 
@@ -112,7 +112,7 @@ const EditChannel = ({ setIsEdit }) => {
       if (!isImage) {
         dispatch(showSnackbar({ severity: 'error', message: 'Please upload an image file!' }));
       } else {
-        const fileCompress = await processImageFile(file);
+        const fileCompress = await processImageFile(file, true);
 
         if (fileCompress) {
           const newFile = Object.assign(fileCompress, {
@@ -402,8 +402,8 @@ const ChannelInfo = () => {
               )}
               {isPublic ? (
                 <AvatarComponent
-                  name={currentChannel.data.name}
-                  url={currentChannel.data.image}
+                  name={currentChannel.data?.name}
+                  url={currentChannel.data?.image || ''}
                   width={80}
                   height={80}
                   isPublic={isPublic}

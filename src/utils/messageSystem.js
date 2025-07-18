@@ -84,9 +84,9 @@ export function convertMessageSystem(input, all_members, isDirect, isNotify = fa
       break;
     case 10: // InviteAccepted
       if (isNotify) {
-        message = `${name} have joined ${isDirect ? 'conversation' : 'channel'}`;
+        message = `${name} joined ${isDirect ? 'conversation' : 'channel'}`;
       } else {
-        message = `${name} have joined this ${isDirect ? 'conversation' : 'channel'}`;
+        message = `${name} joined this ${isDirect ? 'conversation' : 'channel'}`;
       }
       break;
     case 11: // InviteRejected
@@ -240,7 +240,7 @@ export function renderSystemMessage(input, all_members, isDirect, messages = [])
       message = `<strong>${name}</strong> has updated member permission of channel`;
       break;
     case 10: // InviteAccepted
-      message = `<strong>${name}</strong> have joined this ${isDirect ? 'conversation' : 'channel'}`;
+      message = `<strong>${name}</strong> joined this ${isDirect ? 'conversation' : 'channel'}`;
       break;
     case 11: // InviteRejected
       message = `<strong>${name}</strong> has declined to join this channel`;

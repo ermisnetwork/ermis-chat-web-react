@@ -21,7 +21,7 @@ const BoxContainer = ({ children }) => {
         left: isMobileToMd ? 0 : undefined,
         right: isMobileToMd ? 0 : undefined,
         bottom: isMobileToMd ? 0 : undefined,
-        zIndex: isMobileToMd ? 10 : 0,
+        zIndex: isMobileToMd ? 10 : 5,
         marginLeft: isMobileToMd ? '0px !important' : '16px !important',
       }}
     >

@@ -74,7 +74,7 @@ const ContactElement = ({ channel }) => {
               fontWeight: 400,
             }}
           >
-            {!isDirect ? `${Object.values(channel.state.members).length} members` : <>{onlineStatus}</>}
+            {!isDirect ? `${channel.data?.member_count} members` : <>{onlineStatus}</>}
           </Typography>
         </Stack>
       </Stack>

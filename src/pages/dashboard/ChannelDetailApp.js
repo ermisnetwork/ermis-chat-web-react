@@ -17,6 +17,7 @@ import { DEFAULT_PATH } from '../../config';
 import ChannelNotFound from '../../sections/dashboard/ChannelNotFound';
 import SidebarPanel from './SidebarPanel';
 import BoxContainer from '../../layouts/dashboard/BoxContainer';
+import { client } from '../../client';
 
 const ChannelDetailApp = () => {
   const dispatch = useDispatch();
@@ -24,6 +25,7 @@ const ChannelDetailApp = () => {
 
   const { currentChannelStatus } = useSelector(state => state.channel);
   const { sideBar, isUserConnected } = useSelector(state => state.app);
+  const users = client.state.users ? Object.values(client.state.users) : [];
 
   const { id } = useParams();
 

@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useTheme } from '@emotion/react';
 import { Box, Stack, Paper, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 import { downloadFile, formatFileSize } from '../utils/commons';
-import { SlideshowLightbox } from 'lightbox.js-react';
 import { PlayCircle } from 'phosphor-react';
 import { MediaType } from '../constants/commons-const';
 import FileTypeBadge from './FileTypeBadge';
 import ImageCanvas from './ImageCanvas';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
+import LightboxMedia from './LightboxMedia';
 
 const QuiltedMediaList = ({ medias, setIsOpen, setIndexMedia }) => {
   const processedImages = medias.map((item, index) => {
@@ -73,7 +73,7 @@ const QuiltedMediaList = ({ medias, setIsOpen, setIndexMedia }) => {
             }}
           >
             <ImageCanvas
-              dataUrl={item.thumbnail}
+              dataUrl={item.type === MediaType.VIDEO ? item.poster : item.src}
               width={'100%'}
               height={'100%'}
               styleCustom={{ borderRadius: '12px' }}
@@ -96,6 +96,7 @@ const QuiltedMediaList = ({ medias, setIsOpen, setIndexMedia }) => {
 export default function Attachments({ attachments }) {
   const theme = useTheme();
   const [medias, setMedias] = useState([]);
+  const [pdfData, setPdfData] = useState(null);
   const [indexMedia, setIndexMedia] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -131,8 +132,11 @@ export default function Attachments({ attachments }) {
       attachment.type !== 'image' &&
       (isAviFile(attachment) ||
         // isMovFileTooLarge(attachment) ||
-        !isThumbVideo(attachment)),
+        !isThumbVideo(attachment)) &&
+      attachment.mime_type !== 'application/pdf',
   );
+
+  const attachmentsPDF = attachments.filter(item => item.type === 'file' && item.mime_type === 'application/pdf');
 
   useEffect(() => {
     // Lọc các tệp đính kèm là hình ảnh hoặc là video không phải tệp AVI và video MOV không vượt quá 10MB
@@ -149,16 +153,22 @@ export default function Attachments({ attachments }) {
           return {
             type: MediaType.IMAGE,
             src: item.image_url,
-            thumbnail: item.image_url,
             alt: item.title,
+            description: item.title,
           };
         } else {
           return {
             type: MediaType.VIDEO,
-            videoSrc: item.asset_url,
-            thumbnail: item.thumb_url,
-            alt: item.title,
-            autoPlay: false,
+            width: 1280,
+            height: 720,
+            poster: item.thumb_url,
+            sources: [
+              {
+                src: item.asset_url,
+                type: item.mime_type,
+              },
+            ],
+            description: item.title,
           };
         }
       });
@@ -169,6 +179,27 @@ export default function Attachments({ attachments }) {
     }
   }, [attachments]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setPdfData(null);
+      setIndexMedia(0);
+    }
+  }, [isOpen]);
+
+  const onViewPDF = item => {
+    setPdfData({
+      type: MediaType.PDF,
+      src: item.asset_url,
+      description: item.title,
+    });
+    setIsOpen(true);
+    setIndexMedia(0);
+  };
+
+  const onDownloadFile = (url, fileName) => {
+    downloadFile(url, fileName);
+  };
+
   if (!attachments.length) return null;
 
   return (
@@ -177,25 +208,43 @@ export default function Attachments({ attachments }) {
         <QuiltedMediaList medias={medias} setIsOpen={setIsOpen} setIndexMedia={setIndexMedia} />
       </Stack>
 
-      <SlideshowLightbox
-        theme="lightbox"
-        images={medias}
-        startingSlideIndex={indexMedia}
-        showThumbnails={true}
-        open={isOpen}
-        lightboxIdentifier="lbox1"
-        onClose={() => {
-          setIsOpen(false);
-          setIndexMedia(0);
-        }}
-        downloadImages
-        iconColor={theme.palette.grey[400]}
-        imgAnimation="fade"
-        animateThumbnails
-        roundedImages
-        modalClose="clickOutside"
-        lightboxImgClass="slideItem"
+      <LightboxMedia
+        openLightbox={isOpen}
+        setOpenlightbox={setIsOpen}
+        medias={pdfData ? [pdfData] : medias}
+        indexMedia={indexMedia}
       />
+
+      {attachmentsPDF.length > 0 && (
+        <List>
+          {attachmentsPDF.map((item, index) => {
+            const lastItem = index === attachmentsPDF.length - 1;
+            return (
+              <ListItem key={index} disablePadding sx={{ marginBottom: lastItem ? '0px' : '10px' }}>
+                <Paper elevation={3} sx={{ borderRadius: '12px', width: '100%' }}>
+                  <ListItemButton onClick={() => onViewPDF(item)}>
+                    <FileTypeBadge fileName={item.title} />
+                    <ListItemText
+                      primary={item.title}
+                      secondary={formatFileSize(item.file_size)}
+                      sx={{
+                        width: 'calc(100% - 50px)',
+                        paddingLeft: '15px',
+                      }}
+                      primaryTypographyProps={{
+                        whiteSpace: 'nowrap',
+                        width: '100%',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    />
+                  </ListItemButton>
+                </Paper>
+              </ListItem>
+            );
+          })}
+        </List>
+      )}
 
       {attachmentsOther.length > 0 && (
         <List>
@@ -204,7 +253,7 @@ export default function Attachments({ attachments }) {
             return (
               <ListItem key={index} disablePadding sx={{ marginBottom: lastItem ? '0px' : '10px' }}>
                 <Paper elevation={3} sx={{ borderRadius: '12px', width: '100%' }}>
-                  <ListItemButton onClick={() => downloadFile(item.asset_url, item.title)}>
+                  <ListItemButton onClick={() => onDownloadFile(item.asset_url, item.title)}>
                     <FileTypeBadge fileName={item.title} />
                     <ListItemText
                       primary={item.title}

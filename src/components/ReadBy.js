@@ -26,7 +26,7 @@ import { client } from '../client';
 
 const StyledAvatarGroup = styled(AvatarGroup)(({ theme }) => ({
   cursor: 'pointer',
-  width: '96px',
+  minWidth: '18px',
   '& .MuiAvatar-root': {
     border: 'none',
     boxSizing: 'border-box',

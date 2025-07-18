@@ -4,7 +4,7 @@ import { styled, useTheme, alpha } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { SetMarkReadChannel } from '../redux/slices/channel';
 import ChannelAvatar from './ChannelAvatar';
-import { formatString, isChannelDirect, isPublicChannel, myRoleInChannel } from '../utils/commons';
+import { isChannelDirect, isPublicChannel, myRoleInChannel } from '../utils/commons';
 import { ClientEvents } from '../constants/events-const';
 import { onEditMessage, onReplyMessage } from '../redux/slices/messages';
 import { EnvelopeSimpleOpen, PushPin, PushPinSlash, SignOut, Trash } from 'phosphor-react';
@@ -320,7 +320,7 @@ const ChatElement = ({ channel }) => {
         {isPublic ? (
           <AvatarComponent
             name={channel.data.name}
-            url={channel.data.image}
+            url={channel.data?.image || ''}
             width={60}
             height={60}
             isPublic={isPublic}
@@ -345,7 +345,7 @@ const ChatElement = ({ channel }) => {
                 fontSize: '14px',
               }}
             >
-              {formatString(channel.data.name)}
+              {channel.data.name}
             </Typography>
 
             <Stack direction="row" alignItems="center" justifyContent="flex-end" gap={1}>
@@ -389,7 +389,7 @@ const ChatElement = ({ channel }) => {
                 {isBlocked ? 'You have block this user' : lastMessageUpdated ? lastMessageUpdated : lastMessage}
               </Typography>
 
-              {count > 0 ? <Badge variant="dot" color="primary" sx={{ margin: '0 10px 0 15px' }} /> : null}
+              {count > 0 ? <Badge variant="dot" color="error" sx={{ margin: '0 10px 0 15px' }} /> : null}
             </Stack>
           )}
         </Box>

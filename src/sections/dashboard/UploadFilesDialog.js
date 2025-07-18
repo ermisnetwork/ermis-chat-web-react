@@ -130,7 +130,7 @@ const UploadFilesDialog = ({ setMessages }) => {
       // setAttachments(filesArr);
 
       const onProcessFiles = async () => {
-        const processedFiles = await Promise.all(files.map(file => processImageFile(file)));
+        const processedFiles = await Promise.all(files.map(file => processImageFile(file, false)));
         if (processedFiles) {
           const filesArr = processedFiles.map(file => {
             const isFileTooLarge = checkFileTooLarge(file.size);

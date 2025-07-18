@@ -67,7 +67,7 @@ const ProfileForm = ({ onCloseDialog, openDialogProfile }) => {
         dispatch(showSnackbar({ severity: 'error', message: 'Please upload an image file!' }));
         setFile(null);
       } else {
-        const fileCompress = await processImageFile(file);
+        const fileCompress = await processImageFile(file, true);
 
         if (fileCompress) {
           setFile(fileCompress);

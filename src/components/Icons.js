@@ -1669,6 +1669,48 @@ export const DeviceMessageIcon = ({ size = 24, color = 'currentColor', ...props 
   </svg>
 );
 
+export const ChatJumpIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path d="M13.2004 14.4004H8.40039" stroke={color} strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M8.40039 10.1996H15.6004" stroke={color} strokeLinecap="round" strokeLinejoin="round" />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M4.151 16.396C3.421 15.096 3 13.598 3 12C3 7.029 7.029 3 12 3C16.971 3 21 7.029 21 12C21 16.971 16.971 21 12 21C10.402 21 8.904 20.579 7.604 19.849L3 21L4.151 16.396Z"
+      stroke={color}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M14.4004 8.40039L16.8004 10.2004L14.4004 12.0004"
+      stroke={color}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const FlagIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      d="M5.1499 4H16.3499C19.0499 4 19.6499 5.5 17.7499 7.4L16.5499 8.6C15.7499 9.4 15.7499 10.7 16.5499 11.4L17.7499 12.6C19.6499 14.5 18.9499 16 16.3499 16H5.1499"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeMiterlimit={10}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M5.1499 2V22"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeMiterlimit={10}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 export default {
   EditProfileIcon,
   ArchiveMinusIcon,
@@ -1697,5 +1739,7 @@ export default {
   SlideLogin3,
   UserSupportIcon,
   DeviceMessageIcon,
+  ChatJumpIcon,
+  FlagIcon,
   // Add any other icons here as needed
 };

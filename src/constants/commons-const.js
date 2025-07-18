@@ -132,7 +132,8 @@ export const TabMembers = {
 
 export const MediaType = {
   IMAGE: 'image',
-  VIDEO: 'htmlVideo',
+  VIDEO: 'video',
+  PDF: 'pdf',
 };
 
 export const MessageReadType = {

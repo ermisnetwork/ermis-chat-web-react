@@ -8,65 +8,154 @@ import {
   AccordionSummary,
   AccordionDetails,
   styled,
-  List,
-  ListItem,
   IconButton,
-  ListItemText,
-  ListItemAvatar,
-  ListItemButton,
+  alpha,
+  Backdrop,
 } from '@mui/material';
-import {
-  PushPin,
-  CaretDown,
-  PushPinSimpleSlash,
-  ChatCircleText,
-  Link,
-  FileText,
-  Sticker,
-  ChartBar,
-} from 'phosphor-react';
+import { CaretDown, PushPin, X } from 'phosphor-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { formatString } from '../utils/commons';
-import MemberAvatar from './MemberAvatar';
+import { displayMessageWithMentionName, formatString } from '../utils/commons';
 import { onUnPinMessage, setSearchMessageId } from '../redux/slices/messages';
 import UnpinMessageDialog from '../sections/dashboard/UnpinMessageDialog';
 import { SetPinnedMessages } from '../redux/slices/channel';
 import { ClientEvents } from '../constants/events-const';
 import { MessageType } from '../constants/commons-const';
+import { ChatJumpIcon } from './Icons';
 
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? '#fff' : theme.palette.background.paper,
-  borderRadius: '0px !important',
+  borderRadius: '16px !important',
   width: '100%',
+  boxShadow: theme.shadows[5],
 }));
 
 const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
+  width: '100%',
   minHeight: 'auto !important',
   padding: '5px 15px',
   '& .MuiAccordionSummary-content': {
     margin: '0px !important',
-    width: 'calc(100% - 16px)',
+    width: '100%',
   },
 }));
 
 const StyledAccordionDetails = styled(AccordionDetails)(({ theme }) => ({
   padding: 0,
-  '& .MuiListItemText-root': {
-    '& .MuiListItemText-primary': {
-      fontSize: '14px',
-      fontWeight: 700,
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-    },
-    '& .MuiListItemText-secondary': {
-      fontSize: '12px',
-    },
-  },
 }));
 
-export default function PinnedMessages() {
+const MessageBox = ({ message, setIsOpen, showActions, messageCount }) => {
   const theme = useTheme();
+  const dispatch = useDispatch();
+  const { mentions } = useSelector(state => state.channel);
+
+  const sender = message.user;
+  const senderName = sender ? sender?.name : formatString(message.user.id);
+
+  const getMsg = message => {
+    if (message.type === MessageType.Poll) {
+      return <>Poll</>;
+    } else if (message.type === MessageType.Sticker) {
+      return <>Sticker</>;
+    } else {
+      if (message.text) {
+        return <span dangerouslySetInnerHTML={{ __html: displayMessageWithMentionName(message.text, mentions) }} />;
+      } else if (message.attachments && message.attachments.length) {
+        const titles = message.attachments.map(item => item?.title || item?.link_url).join(', ');
+        return <>{titles}</>;
+      }
+    }
+  };
+
+  const onJumpToMsg = messageId => {
+    dispatch(setSearchMessageId(messageId));
+    setIsOpen(false);
+  };
+
+  const onUnPin = messageId => {
+    dispatch(onUnPinMessage({ openDialog: true, messageId }));
+    setIsOpen(false);
+  };
+
+  return (
+    <Stack direction="row" alignItems="center" sx={{ width: '100%' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '32px',
+          height: '32px',
+          borderRadius: '10px',
+          backgroundColor: alpha(theme.palette.primary.main, 0.2),
+        }}
+      >
+        <PushPin size={14} weight="fill" color={theme.palette.primary.main} />
+      </Box>
+
+      <Box sx={{ width: 'calc(100% - 104px)', overflow: 'hidden', padding: '0px 15px' }}>
+        <Typography
+          variant="body1"
+          sx={{
+            fontWeight: 400,
+            fontSize: '14px',
+            color: 'text.primary',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
+          }}
+        >
+          {getMsg(message)}
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            fontSize: '12px',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
+          }}
+        >
+          From <strong>{senderName}</strong>
+        </Typography>
+      </Box>
+
+      <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ width: '72px' }}>
+        {showActions ? (
+          <>
+            <IconButton onClick={() => onJumpToMsg(message.id)}>
+              <ChatJumpIcon size={24} color={theme.palette.text.primary} />
+            </IconButton>
+
+            <IconButton onClick={() => onUnPin(message.id)}>
+              <X size={20} color={theme.palette.text.primary} />
+            </IconButton>
+          </>
+        ) : (
+          <Box
+            sx={{
+              minWidth: '50px',
+              height: '26px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '10px',
+              border: `1px solid ${theme.palette.text.primary}`,
+              fontSize: '12px',
+              gap: '6px',
+            }}
+          >
+            +{messageCount} <CaretDown />
+          </Box>
+        )}
+      </Stack>
+    </Stack>
+  );
+};
+
+export default function PinnedMessages() {
   const dispatch = useDispatch();
   const { pinnedMessages, currentChannel } = useSelector(state => state.channel);
   const [isOpen, setIsOpen] = useState(false);
@@ -89,130 +178,41 @@ export default function PinnedMessages() {
     }
   }, [currentChannel]);
 
-  const getMsg = message => {
-    if (message.attachments && message.attachments.length) {
-      const titles = message.attachments.map(item => item?.title || item?.link_url).join(', ');
-      return (
-        <>
-          <Link size={16} color={theme.palette.primary.main} style={{ transform: 'translateY(2px)' }} />
-          &nbsp;&nbsp;
-          {titles}
-        </>
-      );
-    } else if (message.type === MessageType.Sticker) {
-      return (
-        <>
-          <Sticker size={16} color={theme.palette.primary.main} style={{ transform: 'translateY(2px)' }} />
-          &nbsp;&nbsp; Sticker
-        </>
-      );
-    } else if (message.type === MessageType.Poll) {
-      return (
-        <>
-          <ChartBar size={16} color={theme.palette.primary.main} style={{ transform: 'translateY(2px)' }} />
-          &nbsp;&nbsp; Poll
-        </>
-      );
-    } else {
-      return (
-        <>
-          <FileText size={16} color={theme.palette.primary.main} style={{ transform: 'translateY(2px)' }} />
-          &nbsp;&nbsp;
-          {message.text}
-        </>
-      );
-    }
-  };
-
   if (pinnedMessages.length === 0) return null;
 
+  const onChangeAccordion = () => {
+    if (pinnedMessages.length <= 1) return;
+    setIsOpen(!isOpen);
+  };
+
   const firstMsg = pinnedMessages[0];
-  const senderFirstMsg = firstMsg.user;
-  const senderNameFirstMsg = senderFirstMsg ? senderFirstMsg?.name : formatString(firstMsg.user.id);
-
-  const onJumpToMsg = messageId => {
-    dispatch(setSearchMessageId(messageId));
-    setIsOpen(false);
-  };
-
-  const onUnPin = async messageId => {
-    dispatch(onUnPinMessage({ openDialog: true, messageId }));
-  };
 
   return (
     <>
-      <StyledAccordion disableGutters expanded={isOpen} onChange={() => setIsOpen(!isOpen)}>
-        <StyledAccordionSummary expandIcon={<CaretDown />} aria-controls="panel1-content" id="panel1-header">
-          <Typography component="span" sx={{ width: '100%', paddingRight: '15px' }}>
-            <Stack direction="row" alignItems="center" sx={{ width: '100%' }}>
-              <PushPin size={18} weight="fill" color={theme.palette.primary.main} />
-              <Box sx={{ paddingLeft: '15px', width: 'calc(100% - 18px)' }}>
-                <Typography component="div" sx={{ fontWeight: 700, fontSize: '14px' }}>
-                  Pinned messages
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: 'text.secondary',
-                    fontSize: '14px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: '100%',
-                  }}
-                >
-                  {`${senderNameFirstMsg}: `}
-                  {getMsg(firstMsg)}
-                </Typography>
-              </Box>
-            </Stack>
-          </Typography>
+      {isOpen && <Backdrop open={true} onClick={() => setIsOpen(false)} />}
+
+      <StyledAccordion disableGutters expanded={isOpen} onChange={onChangeAccordion}>
+        <StyledAccordionSummary aria-controls="panel1-content" id="panel1-header">
+          <MessageBox
+            message={firstMsg}
+            setIsOpen={setIsOpen}
+            showActions={pinnedMessages.length > 1 ? isOpen : true}
+            messageCount={pinnedMessages.length - 1}
+          />
         </StyledAccordionSummary>
 
-        <StyledAccordionDetails>
-          <List dense sx={{ maxHeight: '250px', overflowY: 'auto' }} className="customScrollbar">
-            {pinnedMessages.map((message, index) => {
-              const sender = message.user;
-              const senderName = sender ? sender?.name : message.user.id;
-              const senderAvatar = sender ? sender?.avatar : '';
-              const senderId = message.user.id;
+        {pinnedMessages.length > 1 && (
+          <StyledAccordionDetails>
+            {pinnedMessages.slice(1).map((message, index) => {
               return (
-                <ListItem
-                  key={index}
-                  disablePadding
-                  secondaryAction={
-                    <IconButton edge="end" aria-label="unpin" onClick={() => onUnPin(message.id)}>
-                      <PushPinSimpleSlash size={16} color={theme.palette.error.main} />
-                    </IconButton>
-                  }
-                >
-                  <ListItemButton onClick={() => onJumpToMsg(message.id)}>
-                    <ListItemAvatar>
-                      <ChatCircleText size={20} color={theme.palette.primary.main} />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={getMsg(message)}
-                      secondary={
-                        <>
-                          <MemberAvatar
-                            member={{ name: senderName, avatar: senderAvatar, id: senderId }}
-                            width={22}
-                            height={22}
-                          />
-                          &nbsp;&nbsp;
-                          {formatString(senderName)}
-                        </>
-                      }
-                      secondaryTypographyProps={{ component: 'div', display: 'flex', alignItems: 'center' }}
-                    />
-                  </ListItemButton>
-                </ListItem>
+                <Box key={index} sx={{ padding: '5px 15px' }}>
+                  <MessageBox message={message} setIsOpen={setIsOpen} showActions={true} />
+                </Box>
               );
             })}
-          </List>
-        </StyledAccordionDetails>
+          </StyledAccordionDetails>
+        )}
       </StyledAccordion>
-
       <UnpinMessageDialog />
     </>
   );
