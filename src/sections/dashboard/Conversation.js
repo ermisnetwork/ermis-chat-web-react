@@ -11,7 +11,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Checkbox,
   Radio,
   Button,
   LinearProgress,
@@ -58,6 +57,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { setPollResult } from '../../redux/slices/dialog';
 import { ForwardIcon, QuoteDownIcon, ThreeDotsIcon } from '../../components/Icons';
+import CustomCheckbox from '../../components/CustomCheckbox';
 
 const StyledIconButton = styled(IconButton)(({ theme }) => ({
   backgroundColor: theme.palette.background.neutral,
@@ -76,6 +76,7 @@ const StyledTextLine = styled(Typography)(({ theme }) => ({
     borderRadius: '12px',
     backgroundColor: '#fff',
     color: '#212B36',
+    marginBottom: '5px',
     '& .linkUrl': {
       display: 'inline',
       color: 'inherit !important',
@@ -137,7 +138,7 @@ const MoreOptions = ({ message, setIsOpen, orderMore, isMyMessage }) => {
       return;
     }
 
-    dispatch(onEditMessage({ channelType, channelId, messageId, messageText }));
+    dispatch(onEditMessage(message));
     dispatch(onReplyMessage(null));
     dispatch(SetCooldownTime(null));
     setAnchorEl(null);
@@ -616,7 +617,7 @@ const PollBox = ({ message, all_members }) => {
               {!hasVoted && (
                 <>
                   {pollType === 'multiple' ? (
-                    <Checkbox
+                    <CustomCheckbox
                       name={option}
                       checked={selected.includes(option)}
                       onChange={() => handleChange(option)}

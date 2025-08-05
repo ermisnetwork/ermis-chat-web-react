@@ -385,18 +385,17 @@ export const WatchCurrentChannel = (channelId, channelType) => {
   };
 };
 
-export const AddActiveChannel = (cid, eventType) => {
+export const AddActiveChannel = cid => {
   return async (dispatch, getState) => {
     if (!client) return;
-    const { user_id } = getState().auth;
     const channel = client.activeChannels[cid];
 
     dispatch(slice.actions.addActiveChannel(channel));
 
-    if (eventType === ClientEvents.Notification.InviteAccepted) {
-      dispatch(slice.actions.setCurrentChannel(channel));
-      loadDataChannel(channel, dispatch, user_id);
-    }
+    // if (eventType === ClientEvents.Notification.InviteAccepted) {
+    //   dispatch(slice.actions.setCurrentChannel(channel));
+    //   loadDataChannel(channel, dispatch, user_id);
+    // }
   };
 };
 

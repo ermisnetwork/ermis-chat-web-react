@@ -8,15 +8,7 @@ import { useSelector } from 'react-redux';
 import useOnlineStatus from '../hooks/useOnlineStatus';
 import ImageCanvas from './ImageCanvas';
 import AvatarDefault from './AvatarDefault';
-
-const StyledBadge = styled(Badge)(({ theme }) => ({
-  '& .MuiBadge-badge': {
-    '& .MuiAvatar-root': {
-      // fontSize: '1rem',
-      // fontWeight: '400',
-    },
-  },
-}));
+import { Box } from '@mui/material';
 
 const StyledBadgeOnline = styled(Badge)(({ theme, status }) => ({
   '& .MuiBadge-badge': {
@@ -37,6 +29,48 @@ const StyledBadgeOnline = styled(Badge)(({ theme, status }) => ({
     },
   },
 }));
+
+function TeamAvatarBox({ member1, member2, width = 48, height = 48, shape = 'circle', styleCustom = {} }) {
+  const sizeMember1 = Math.round(width * 0.625);
+  const sizeMember2 = Math.round(width * 0.71875);
+
+  return (
+    <Box sx={{ position: 'relative', width: width, height: height }}>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          zIndex: 1,
+          width: sizeMember1,
+          height: sizeMember1,
+        }}
+      >
+        {member1.avatar ? (
+          <ImageCanvas dataUrl={member1.avatar} width={sizeMember1} height={sizeMember1} styleCustom={styleCustom} />
+        ) : (
+          <AvatarDefault name={member1.name} width={sizeMember1} height={sizeMember1} shape={shape} />
+        )}
+      </Box>
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          zIndex: 2,
+          width: sizeMember2,
+          height: sizeMember2,
+        }}
+      >
+        {member2.avatar ? (
+          <ImageCanvas dataUrl={member2.avatar} width={sizeMember2} height={sizeMember2} styleCustom={styleCustom} />
+        ) : (
+          <AvatarDefault name={member2.name} width={sizeMember2} height={sizeMember2} shape={shape} />
+        )}
+      </Box>
+    </Box>
+  );
+}
 
 export default function ChannelAvatar({ channel, width, height, openLightbox, shape = 'circle' }) {
   const theme = useTheme();
@@ -136,28 +170,14 @@ export default function ChannelAvatar({ channel, width, height, openLightbox, sh
           openLightbox={openLightbox}
         />
       ) : (
-        <StyledBadge
-          overlap="circular"
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          badgeContent={
-            groupMemberFirst.avatar ? (
-              <ImageCanvas dataUrl={groupMemberFirst.avatar} width={25} height={25} styleCustom={styleCustom} />
-            ) : (
-              <AvatarDefault
-                name={groupMemberFirst.name}
-                width={getSizeSmallAvatar(width)}
-                height={getSizeSmallAvatar(height)}
-                shape={shape}
-              />
-            )
-          }
-        >
-          {groupMemberSecond.avatar ? (
-            <ImageCanvas dataUrl={groupMemberSecond.avatar} width={width} height={height} styleCustom={styleCustom} />
-          ) : (
-            <AvatarDefault name={groupMemberSecond.name || ''} width={width} height={height} shape={shape} />
-          )}
-        </StyledBadge>
+        <TeamAvatarBox
+          member1={groupMemberFirst}
+          member2={groupMemberSecond}
+          width={width}
+          height={height}
+          shape={shape}
+          styleCustom={styleCustom}
+        />
       )}
     </Stack>
   );

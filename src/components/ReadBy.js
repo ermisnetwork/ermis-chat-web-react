@@ -19,10 +19,12 @@ import MemberAvatar from './MemberAvatar';
 import { formatString } from '../utils/commons';
 import { fDateTime } from '../utils/formatTime';
 import { ClientEvents } from '../constants/events-const';
-import { MessageReadType, MessageType } from '../constants/commons-const';
+import { AvatarShape, MessageReadType, MessageType } from '../constants/commons-const';
 import { setMessageReadType } from '../redux/slices/messages';
 import { FixedSizeList } from 'react-window';
 import { client } from '../client';
+import useResponsive from '../hooks/useResponsive';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const StyledAvatarGroup = styled(AvatarGroup)(({ theme }) => ({
   cursor: 'pointer',
@@ -34,7 +36,14 @@ const StyledAvatarGroup = styled(AvatarGroup)(({ theme }) => ({
       width: '18px',
       height: '18px',
       fontSize: '10px',
+      backgroundColor: `${theme.palette.info.main}!important`,
+      color: '#fff',
+      borderRadius: '50%',
     },
+  },
+
+  '& .MuiAvatarGroup-avatar': {
+    backgroundColor: 'transparent!important',
   },
 }));
 
@@ -44,7 +53,12 @@ const Row = memo(({ index, style, data }) => {
   return (
     <ListItem style={style} key={item.user.id} alignItems="center">
       <ListItemAvatar sx={{ width: '40px', marginRight: 0 }}>
-        <MemberAvatar member={{ name: item.user.name, avatar: item.user.avatar }} width={40} height={40} />
+        <MemberAvatar
+          member={{ name: item.user.name, avatar: item.user.avatar }}
+          width={40}
+          height={40}
+          shape={AvatarShape.Round}
+        />
       </ListItemAvatar>
       <ListItemText
         primary={formatString(item.user.name)}
@@ -58,6 +72,8 @@ const Row = memo(({ index, style, data }) => {
 export default function ReadBy() {
   const theme = useTheme();
   const dispatch = useDispatch();
+  const isLgToXl = useResponsive('between', null, 'lg', 'xl');
+  const isMobileToLg = useResponsive('down', 'lg');
   const { currentChannel } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
   const { messageReadType } = useSelector(state => state.messages);
@@ -169,16 +185,29 @@ export default function ReadBy() {
       case MessageReadType.Read:
         return (
           <Tooltip title={`${readBy.length} members have seen`} placement="left">
-            <StyledAvatarGroup max={5} spacing={2} onClick={() => setIsOpen(true)}>
-              {readBy.map(item => {
-                const userInfo = users.find(user => user.id === item.user.id);
-                const member = {
-                  name: item.user?.name ? item.user.name : userInfo ? userInfo.name : item.user.id,
-                  avatar: item.user?.avatar ? item.user.avatar : userInfo ? userInfo.avatar : '',
-                };
-                return <MemberAvatar key={item.user.id} member={member} width={18} height={18} />;
-              })}
-            </StyledAvatarGroup>
+            <AnimatePresence initial={false}>
+              <StyledAvatarGroup max={5} spacing={1} onClick={() => setIsOpen(true)}>
+                {readBy.map(item => {
+                  const userInfo = users.find(user => user.id === item.user.id);
+                  const member = {
+                    name: item.user?.name ? item.user.name : userInfo ? userInfo.name : item.user.id,
+                    avatar: item.user?.avatar ? item.user.avatar : userInfo ? userInfo.avatar : '',
+                  };
+                  return (
+                    <motion.div
+                      key={item.user.id}
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.5, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                      style={{ display: 'flex', width: '18px', height: '18px' }}
+                    >
+                      <MemberAvatar member={member} width={18} height={18} />
+                    </motion.div>
+                  );
+                })}
+              </StyledAvatarGroup>
+            </AnimatePresence>
           </Tooltip>
         );
       default:
@@ -187,7 +216,15 @@ export default function ReadBy() {
   }, [messageReadType, readBy, theme]);
 
   return (
-    <Stack direction="row" justifyContent="flex-end">
+    <Stack
+      direction="row"
+      justifyContent="flex-end"
+      sx={{
+        position: 'absolute',
+        right: isMobileToLg ? '20px' : isLgToXl ? '50px' : '90px',
+        bottom: 0,
+      }}
+    >
       {renderReadBy()}
 
       {isOpen && (
@@ -212,12 +249,12 @@ export default function ReadBy() {
           </DialogTitle>
           <DialogContent>
             <FixedSizeList
-              height={320} // Chiều cao tối đa của danh sách
-              width="100%" // Chiều rộng 100%
-              itemSize={64} // Chiều cao mỗi item
-              itemCount={readBy.length} // Tổng số item
-              itemData={readBy} // Dữ liệu truyền vào
-              style={{ maxHeight: '320px', height: 'auto' }}
+              height={320}
+              width="auto"
+              itemSize={64}
+              itemCount={readBy.length}
+              itemData={readBy}
+              style={{ maxHeight: '320px', height: 'auto', margin: '0 -24px', padding: '0 24px' }}
               className="customScrollbar"
             >
               {Row}

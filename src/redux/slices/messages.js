@@ -5,7 +5,7 @@ import { MessageReadType } from '../../constants/commons-const';
 const initialState = {
   quotesMessage: null,
   deleteMessage: { openDialog: false, messageId: '' },
-  editMessage: null, // { channelType: '', channelId: '', messageId: '', messageText: '' },
+  editMessage: null,
   messageIdError: '',
   searchMessageId: '',
   messageReadType: MessageReadType.Empty,

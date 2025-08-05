@@ -1,15 +1,7 @@
 import React, { useEffect } from 'react';
 import ChatComponent from './ChatComponent';
 import { useDispatch, useSelector } from 'react-redux';
-import ChannelInfo from '../../sections/dashboard/ChannelInfo';
-import Members from '../../sections/dashboard/Members';
 import { CurrentChannelStatus, SidebarType } from '../../constants/commons-const';
-import ChannelPermissions from '../../sections/dashboard/ChannelPermissions';
-import ChannelMedia from '../../sections/dashboard/ChannelMedia';
-import ChannelAdministrators from '../../sections/dashboard/ChannelAdministrators';
-import ChannelBannedUsers from '../../sections/dashboard/ChannelBannedUsers';
-import ChannelSearch from '../../sections/dashboard/ChannelSearch';
-import ChannelKeywordFiltering from '../../sections/dashboard/ChannelKeywordFiltering';
 import { useParams, useNavigate } from 'react-router-dom';
 import { splitChannelId } from '../../utils/commons';
 import { ConnectCurrentChannel } from '../../redux/slices/channel';
@@ -18,6 +10,16 @@ import ChannelNotFound from '../../sections/dashboard/ChannelNotFound';
 import SidebarPanel from './SidebarPanel';
 import BoxContainer from '../../layouts/dashboard/BoxContainer';
 import { client } from '../../client';
+import SidebarChannelInfo from '../../sections/dashboard/SidebarChannelInfo';
+import SidebarChannelType from '../../sections/dashboard/SidebarChannelType';
+import SidebarMembers from '../../sections/dashboard/SidebarMembers';
+import InviteFriendDialog from '../../sections/dashboard/InviteFriendDialog';
+import SidebarPermissions from '../../sections/dashboard/SidebarPermissions';
+import SidebarAdministrators from '../../sections/dashboard/SidebarAdministrators';
+import SidebarBanned from '../../sections/dashboard/SidebarBanned';
+import SidebarKeywords from '../../sections/dashboard/SidebarKeywords';
+import SidebarSearchMessage from '../../sections/dashboard/SidebarSearchMessage';
+import SidebarUserInfo from '../../sections/dashboard/SidebarUserInfo';
 
 const ChannelDetailApp = () => {
   const dispatch = useDispatch();
@@ -44,6 +46,7 @@ const ChannelDetailApp = () => {
     <>
       <BoxContainer>
         {currentChannelStatus === CurrentChannelStatus.ERROR ? <ChannelNotFound /> : <ChatComponent />}
+        <InviteFriendDialog />
       </BoxContainer>
 
       {sideBar.open &&
@@ -52,56 +55,62 @@ const ChannelDetailApp = () => {
             case SidebarType.Channel:
               return (
                 <SidebarPanel>
-                  <ChannelInfo />
+                  <SidebarChannelInfo />
+                </SidebarPanel>
+              );
+
+            case SidebarType.ChannelType:
+              return (
+                <SidebarPanel>
+                  <SidebarChannelType />
                 </SidebarPanel>
               );
 
             case SidebarType.Members:
               return (
                 <SidebarPanel>
-                  <Members />
+                  <SidebarMembers />
                 </SidebarPanel>
               );
 
             case SidebarType.Permissions:
               return (
                 <SidebarPanel>
-                  <ChannelPermissions />
-                </SidebarPanel>
-              );
-
-            case SidebarType.Media:
-              return (
-                <SidebarPanel>
-                  <ChannelMedia />
+                  <SidebarPermissions />
                 </SidebarPanel>
               );
 
             case SidebarType.Administrators:
               return (
                 <SidebarPanel>
-                  <ChannelAdministrators />
+                  <SidebarAdministrators />
                 </SidebarPanel>
               );
 
             case SidebarType.BannedUsers:
               return (
                 <SidebarPanel>
-                  <ChannelBannedUsers />
+                  <SidebarBanned />
                 </SidebarPanel>
               );
 
             case SidebarType.SearchMessage:
               return (
                 <SidebarPanel>
-                  <ChannelSearch />
+                  <SidebarSearchMessage />
                 </SidebarPanel>
               );
 
             case SidebarType.KeywordFiltering:
               return (
                 <SidebarPanel>
-                  <ChannelKeywordFiltering />
+                  <SidebarKeywords />
+                </SidebarPanel>
+              );
+            case SidebarType.UserInfo:
+              return (
+                <SidebarPanel>
+                  <SidebarUserInfo />
                 </SidebarPanel>
               );
 

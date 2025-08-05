@@ -4,7 +4,6 @@ import {
   Stack,
   Typography,
   Button,
-  Checkbox,
   InputAdornment,
   FormControlLabel,
   useTheme,
@@ -29,6 +28,7 @@ import { LocalStorageKey } from '../../constants/localStorage-const';
 import uuidv4 from '../../utils/uuidv4';
 import useResponsive from '../../hooks/useResponsive';
 import { LoadingSpinner } from '../../components/animate';
+import CustomCheckbox from '../../components/CustomCheckbox';
 
 // ----------------------------------------------------------------------
 
@@ -79,7 +79,7 @@ export default function NewLogin() {
   const phoneSchema = Yup.object().shape({
     phone: Yup.string()
       .required('Phone number is required')
-      .matches(/^(\+?84|0)?(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$/, 'Invalid phone number'),
+      .matches(/^(\+?84|0)?(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5,9]|89|9[0-9])[0-9]{7}$/, 'Invalid phone number'),
   });
 
   const emailSchema = Yup.object().shape({
@@ -293,7 +293,7 @@ export default function NewLogin() {
                 helperText={errors.phone?.message}
               />
               <FormControlLabel
-                control={<Checkbox checked={agree} onChange={e => setAgree(e.target.checked)} color="primary" />}
+                control={<CustomCheckbox checked={agree} onChange={e => setAgree(e.target.checked)} color="primary" />}
                 label={
                   <span>
                     I agree to the{' '}
@@ -345,7 +345,7 @@ export default function NewLogin() {
                 helperText={errors.email?.message}
               />
               <FormControlLabel
-                control={<Checkbox checked={agree} onChange={e => setAgree(e.target.checked)} color="primary" />}
+                control={<CustomCheckbox checked={agree} onChange={e => setAgree(e.target.checked)} color="primary" />}
                 label={
                   <span>
                     I agree to the{' '}

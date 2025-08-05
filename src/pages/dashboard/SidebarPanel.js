@@ -40,10 +40,11 @@ const SidebarPanel = ({ children }) => {
   return (
     <Box
       sx={{
-        width: isScreenLgToXl ? '280px' : `${WIDTH_SIDEBAR_PANEL}px`,
+        width: isScreenLgToXl ? '300px' : `${WIDTH_SIDEBAR_PANEL}px`,
         height: '100%',
         backgroundColor: theme.palette.mode === 'light' ? '#fff' : theme.palette.grey[900],
         borderRadius: '16px',
+        position: 'relative',
       }}
     >
       {children}

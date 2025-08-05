@@ -18,7 +18,16 @@ RHFRadio.propTypes = {
   helperText: PropTypes.node,
 };
 
-export default function RHFRadio({ name, options, label, helperText, ...other }) {
+export default function RHFRadio({
+  name,
+  options,
+  label,
+  helperText,
+  controlSx = {},
+  labelPlacement = 'end',
+  optionSx = {},
+  ...other
+}) {
   const { control } = useFormContext();
 
   const renderHelperText = error => {
@@ -30,7 +39,7 @@ export default function RHFRadio({ name, options, label, helperText, ...other })
   };
 
   return (
-    <FormControl component="fieldset" error={!!helperText} fullWidth>
+    <FormControl component="fieldset" error={!!helperText} fullWidth sx={{ ...controlSx }}>
       {label && <FormLabel component="legend">{label}</FormLabel>}
       <Controller
         name={name}
@@ -39,7 +48,14 @@ export default function RHFRadio({ name, options, label, helperText, ...other })
           <>
             <RadioGroup {...field} {...other}>
               {options.map(option => (
-                <FormControlLabel key={option.value} value={option.value} control={<Radio />} label={option.label} />
+                <FormControlLabel
+                  key={option.value}
+                  value={option.value}
+                  control={<Radio />}
+                  label={option.label}
+                  labelPlacement={labelPlacement}
+                  sx={{ ...optionSx }}
+                />
               ))}
             </RadioGroup>
             {renderHelperText() && <FormHelperText>{renderHelperText(error)}</FormHelperText>}

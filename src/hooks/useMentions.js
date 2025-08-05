@@ -14,8 +14,17 @@ export default function useMentions(value, inputRef) {
   // Hàm lọc mentions có debounce
   const filterMentions = useCallback(
     debounce(inputValue => {
-      const regexMention = /(^|\s)@([a-zA-Z0-9]+)?$/;
-      const match = inputValue.match(regexMention);
+      let cursorPos = 0;
+      if (inputRef.current && typeof inputRef.current.selectionStart === 'number') {
+        cursorPos = inputRef.current.selectionStart;
+      } else {
+        cursorPos = inputValue.length;
+      }
+      const textBeforeCursor = inputValue.slice(0, cursorPos);
+
+      // Match @mention chỉ khi trước @ là dấu cách hoặc đầu dòng, và ngay trước con trỏ
+      const regexMention = /(\s|^)@([a-zA-Z0-9]*)$/;
+      const match = textBeforeCursor.match(regexMention);
 
       if (match) {
         const query = match[2] ? match[2].toLowerCase() : '';
@@ -24,7 +33,8 @@ export default function useMentions(value, inputRef) {
         if (selectedMentions.length > 0) {
           const selectedIds = new Set(selectedMentions.map(m => m.id));
           filtered = mentions.filter(
-            mention => mention.name.toLowerCase().includes(query) && !selectedIds.has(mention.id),
+            mention =>
+              mention.name.toLowerCase().includes(query) && !selectedIds.has(mention.id) && mention.id !== user_id,
           );
         } else {
           filtered = mentions.filter(mention => mention.name.toLowerCase().includes(query) && mention.id !== user_id);

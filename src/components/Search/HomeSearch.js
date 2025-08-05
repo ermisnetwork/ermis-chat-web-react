@@ -116,7 +116,7 @@ const HomeSearch = ({ channels }) => {
 
   return (
     <>
-      <Stack sx={{ width: '100%', position: 'relative', zIndex: 3 }}>
+      <Stack sx={{ width: '100%', position: 'relative', zIndex: 4 }}>
         <Stack direction="row" alignItems="center" gap={1}>
           {visible && (
             <IconButton onClick={onCloseSearch}>
@@ -148,7 +148,7 @@ const HomeSearch = ({ channels }) => {
           left: 0,
           width: '100%',
           height: '100%',
-          zIndex: 2,
+          zIndex: 3,
           backgroundColor: theme.palette.mode === 'light' ? '#fff' : theme.palette.grey[900],
           borderRadius: '16px',
           display: visible ? 'block' : 'none',

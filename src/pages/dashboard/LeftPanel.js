@@ -15,7 +15,6 @@ import {
   RemovePendingChannel,
   RemovePinnedChannel,
   RemoveSkippedChannel,
-  WatchCurrentChannel,
 } from '../../redux/slices/channel';
 import { ClientEvents } from '../../constants/events-const';
 import { getChannelName, getMemberInfo, splitChannelId } from '../../utils/commons';
@@ -25,9 +24,8 @@ import { ChatType, EMOJI_QUICK, MessageType, TabType } from '../../constants/com
 import { convertMessageSystem } from '../../utils/messageSystem';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { convertLastMessageSignal } from '../../utils/messageSignal';
+import { convertMessageSignal } from '../../utils/messageSignal';
 import { UpdateMember } from '../../redux/slices/member';
-import Contacts from './Contacts';
 import Channels from './Channels';
 import SidebarContacts from './SidebarContacts';
 
@@ -192,7 +190,7 @@ const LeftPanel = () => {
           message.type === MessageType.System
             ? convertMessageSystem(message.text, users, isDirect, isNotify)
             : message.type === MessageType.Signal
-              ? convertLastMessageSignal(message.text)
+              ? convertMessageSignal(message.text).text || ''
               : message.text;
         break;
       case ClientEvents.MemberAdded:
@@ -263,7 +261,7 @@ const LeftPanel = () => {
         const channelType = event.channel_type;
         if (user_id === event.user.id) {
           // lời mời mình gửi
-          dispatch(AddActiveChannel(event.cid, event.type));
+          dispatch(AddActiveChannel(event.cid));
         } else {
           // lời mời mình nhận
           const notiData = {
@@ -422,38 +420,25 @@ const LeftPanel = () => {
       const handleInviteReject = event => {
         const splitCID = splitChannelId(event.cid);
         const channelId = splitCID.channelId;
-        const channelType = splitCID.channelType;
-
         if (event.member.user_id === user_id) {
           dispatch(RemovePendingChannel(channelId));
-        } else {
-          dispatch(WatchCurrentChannel(channelId, channelType));
         }
       };
 
       const handleInviteAccept = async event => {
         const splitCID = splitChannelId(event.cid);
         const channelId = splitCID.channelId;
-        const channelType = splitCID.channelType;
 
         if (event.member.user_id === user_id) {
           dispatch(RemovePendingChannel(channelId));
           dispatch(RemoveSkippedChannel(channelId));
-          dispatch(AddActiveChannel(event.cid, event.type));
-        } else {
-          dispatch(WatchCurrentChannel(channelId, channelType));
+          dispatch(AddActiveChannel(event.cid));
         }
       };
 
       const handleInviteSkipped = async event => {
-        const splitCID = splitChannelId(event.cid);
-        const channelId = splitCID.channelId;
-        const channelType = splitCID.channelType;
-
         if (event.member.user_id === user_id) {
           dispatch(AddSkippedChannel(event.cid));
-        } else {
-          dispatch(WatchCurrentChannel(channelId, channelType));
         }
       };
 
@@ -487,7 +472,7 @@ const LeftPanel = () => {
         client.off(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
       };
     }
-  }, [dispatch, user_id, client, mutedChannels, activeChannels, pendingChannels]);
+  }, [dispatch, user_id, client, mutedChannels, activeChannels, pendingChannels, users.length]);
 
   useEffect(() => {
     if (mutedChannels) {

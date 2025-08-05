@@ -4,14 +4,14 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { showSnackbar } from '../redux/slices/app';
 
-const ClipboardCopy = ({ text }) => {
+const ClipboardCopy = ({ text, message = 'Message copied to clipboard' }) => {
   const dispatch = useDispatch();
   const onCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
-      dispatch(showSnackbar({ severity: 'success', message: 'Message copied to clipboard' }));
+      dispatch(showSnackbar({ severity: 'success', message: message }));
     } catch (err) {
-      dispatch(showSnackbar({ severity: 'error', message: 'Unable to copy the message. Please try again' }));
+      dispatch(showSnackbar({ severity: 'error', message: 'Unable to copy. Please try again' }));
     }
   };
   return (

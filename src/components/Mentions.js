@@ -3,6 +3,7 @@ import { useTheme } from '@emotion/react';
 import { Box, Fade, ListItemButton, ListItemAvatar, ListItemText, Popper, styled } from '@mui/material';
 import { FixedSizeList } from 'react-window';
 import MemberAvatar from './MemberAvatar';
+import { AvatarShape } from '../constants/commons-const';
 
 const StyledMentionItem = styled(ListItemButton)(({ theme }) => ({
   cursor: 'pointer',
@@ -44,7 +45,12 @@ const Row = memo(({ index, style, data }) => {
       selected={index === data.highlightedIndex}
     >
       <ListItemAvatar>
-        <MemberAvatar member={{ name: mention.name, avatar: mention.avatar, id: mention.id }} width={24} height={24} />
+        <MemberAvatar
+          member={{ name: mention.name, avatar: mention.avatar, id: mention.id }}
+          width={24}
+          height={24}
+          shape={AvatarShape.Round}
+        />
       </ListItemAvatar>
       <ListItemText primary={mention.name} secondary={mention.mentionName} />
     </StyledMentionItem>
@@ -85,7 +91,7 @@ export default function Mentions({ filteredMentions, anchorEl, onSelectMention, 
               itemCount={filteredMentions.length}
               itemData={{ filteredMentions, onSelectMention, highlightedIndex }}
               style={{ maxHeight: '250px', height: 'auto' }}
-              // className="customScrollbar"
+              className="customScrollbar"
             >
               {Row}
             </FixedSizeList>

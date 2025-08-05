@@ -45,7 +45,14 @@ import {
 import { Clock, Trash } from 'phosphor-react';
 import ScrollToBottom from '../../components/ScrollToBottom';
 import DeleteMessageDialog from '../../sections/dashboard/DeleteMessageDialog';
-import { ChatType, DefaultLastSend, MessageType, RoleMember, UploadType } from '../../constants/commons-const';
+import {
+  ChatType,
+  DefaultLastSend,
+  MessageType,
+  RoleMember,
+  SidebarType,
+  UploadType,
+} from '../../constants/commons-const';
 import BannedBackdrop from '../../components/BannedBackdrop';
 import { client } from '../../client';
 import { onFilesMessage, setSearchMessageId } from '../../redux/slices/messages';
@@ -64,6 +71,7 @@ import PollResultDialog from '../../sections/dashboard/PollResultDialog';
 import { motion } from 'framer-motion';
 import UsersTyping from '../../components/UsersTyping';
 import NoMessageBox from '../../components/NoMessageBox';
+import { setSidebar, SetUserInfo } from '../../redux/slices/app';
 
 const StyledMessage = styled(motion(Stack))(({ theme }) => ({
   '&:hover': {
@@ -238,10 +246,15 @@ const MessageList = ({
     }
   };
 
+  const onSelectMember = user => {
+    dispatch(setSidebar({ type: SidebarType.UserInfo, open: true }));
+    dispatch(SetUserInfo(user));
+  };
+
   if (messages.length === 0) return null;
 
   return (
-    <Box sx={{ padding: isMobileToLg ? '20px' : isLgToXl ? '20px 50px' : '20px 90px' }}>
+    <Box sx={{ padding: isMobileToLg ? '20px' : isLgToXl ? '40px 50px' : '40px 90px' }}>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -344,7 +357,9 @@ const MessageList = ({
                         <Box
                           sx={{
                             position: 'relative',
+                            cursor: 'pointer',
                           }}
+                          onClick={() => onSelectMember(sender)}
                         >
                           <Typography
                             variant="subtitle1"
@@ -362,7 +377,7 @@ const MessageList = ({
                           >
                             {name}
                           </Typography>
-                          <MemberAvatar member={sender} width={36} height={36} openLightbox={true} />
+                          <MemberAvatar member={sender} width={36} height={36} />
                         </Box>
                       )}
 
@@ -407,9 +422,9 @@ const MessageList = ({
                 );
               }
             })}
-          {!isGuest && <ReadBy />}
         </Stack>
       </motion.div>
+      {!isGuest && <ReadBy />}
     </Box>
   );
 };
@@ -520,12 +535,16 @@ const ChatComponent = () => {
                   return [...prev, event.message];
                 }
               });
+
+              // messageListRef.current.scrollTop = 0;
+              if (messageListRef.current) {
+                messageListRef.current.scrollTop = 0;
+              }
             }
 
             setLastReadMessageId('');
             setUnreadCount(0);
             // messageListRef.current.scrollTop = messageListRef.current?.scrollHeight;
-            messageListRef.current.scrollTop = 0;
             onSetCooldownTime(event);
             setNoMessageTitle('');
             break;
@@ -633,7 +652,7 @@ const ChatComponent = () => {
 
         if (event.member.user_id === user_id) {
           dispatch(SetIsGuest(false));
-          dispatch(AddActiveChannel(event.cid, event.type));
+          dispatch(AddActiveChannel(event.cid));
         } else {
           dispatch(WatchCurrentChannel(channelId, channelType));
         }

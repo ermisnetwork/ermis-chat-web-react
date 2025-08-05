@@ -1,4 +1,4 @@
-import { Phone } from 'phosphor-react';
+import { Phone, User } from 'phosphor-react';
 
 export const ChatType = {
   ALL: [],
@@ -96,6 +96,7 @@ export const ConfirmType = {
   TRUNCATE: 'truncate', // tất cả tin nhắn trong cuộc trò chuyện sẽ bị xoá, chỉ sử dụng cho channel direct
   BLOCK: 'block',
   UNBLOCK: 'unblock',
+  UNBANNED: 'unbanned',
 };
 
 export const TabType = {
@@ -116,6 +117,7 @@ export const MessageType = {
 
 export const SidebarType = {
   Channel: 'CHANNEL',
+  ChannelType: 'CHANNEL_TYPE',
   Members: 'MEMBERS',
   Media: 'MEDIA',
   Permissions: 'PERMISSIONS',
@@ -123,6 +125,7 @@ export const SidebarType = {
   BannedUsers: 'BANNED_USERS',
   SearchMessage: 'SEARCH_MESSAGE',
   KeywordFiltering: 'KEYWORD_FILTERING',
+  UserInfo: 'USER_INFO',
 };
 
 export const TabMembers = {
@@ -184,4 +187,16 @@ export const ContactType = {
   Friends: 'friends',
   Channels: 'channels',
   Request: 'requests',
+};
+
+export const TabValueChannelInfo = {
+  Members: 0,
+  Media: 1,
+  Links: 2,
+  Files: 3,
+};
+
+export const TabValueMembers = {
+  Members: 0,
+  InvitedMembers: 1,
 };

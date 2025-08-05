@@ -1,12 +1,10 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Box, Stack, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
-import { useSelector } from 'react-redux';
-import ChannelAvatar from './ChannelAvatar';
 import { AvatarShape } from '../constants/commons-const';
-import { isChannelDirect } from '../utils/commons';
-import useOnlineStatus from '../hooks/useOnlineStatus';
 import CustomCheckbox from './CustomCheckbox';
+import MemberAvatar from './MemberAvatar';
+import useOnlineStatus from '../hooks/useOnlineStatus';
 
 const StyledContactItem = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -22,8 +20,8 @@ const StyledContactItem = styled(Box)(({ theme }) => ({
   },
 }));
 
-const ContactElement = ({
-  channel,
+const UserElement = ({
+  user,
   avatarSize = 44,
   primaryFontSize = '14px',
   secondaryFontSize = '12px',
@@ -32,16 +30,7 @@ const ContactElement = ({
   selectedUsers = [],
 }) => {
   const theme = useTheme();
-  const { user_id } = useSelector(state => state.auth);
-  const isDirect = isChannelDirect(channel);
-
-  const members = useMemo(() => Object.values(channel.state.members) || [], [channel]);
-  const otherMember = useMemo(() => members.find(member => member.user_id !== user_id), [members, user_id]);
-
-  const otherMemberId = otherMember?.user_id || '';
-  const otherMemberName = otherMember?.user?.name || otherMember?.user_id || '';
-  const otherMemberAvatar = otherMember?.user?.avatar || '';
-  const onlineStatus = useOnlineStatus(otherMemberId || '');
+  const onlineStatus = useOnlineStatus(user.id || '');
 
   const toggleUser = (user, selectedUsers = []) => {
     if (!user?.id) return selectedUsers;
@@ -52,49 +41,45 @@ const ContactElement = ({
   };
 
   const onChangeCheckbox = value => {
-    const userObj = { id: otherMemberId, name: otherMemberName, avatar: otherMemberAvatar };
-    const newSelected = toggleUser(userObj, selectedUsers);
-    onCheck(userObj, newSelected);
+    const newSelected = toggleUser(user, selectedUsers);
+    onCheck(user, newSelected);
   };
 
-  const onClickContactItem = () => {
-    const userObj = { id: otherMemberId, name: otherMemberName, avatar: otherMemberAvatar };
+  const onClickUserItem = () => {
     if (onCheck) {
-      const newSelected = toggleUser(userObj, selectedUsers);
-      onCheck(userObj, newSelected);
+      const newSelected = toggleUser(user, selectedUsers);
+      onCheck(user, newSelected);
     } else {
-      onSelect({ channel, user: isDirect ? userObj : null });
+      onSelect({ channel: null, user });
     }
   };
 
   return (
-    <StyledContactItem onClick={onClickContactItem}>
+    <StyledContactItem onClick={onClickUserItem}>
       <Stack direction="row" alignItems="center" gap={onCheck ? 1 : 2} sx={{ width: '100%' }}>
         {onCheck && (
           <CustomCheckbox
-            checked={selectedUsers.some(u => u.id === otherMemberId)}
+            checked={selectedUsers.some(u => u.id === user.id)}
             onClick={e => e.stopPropagation()}
             onChange={onChangeCheckbox}
             sx={{ padding: 0 }}
           />
         )}
-        <ChannelAvatar channel={channel} width={avatarSize} height={avatarSize} shape={AvatarShape.Round} />
+        <MemberAvatar member={user} width={avatarSize} height={avatarSize} shape={AvatarShape.Round} />
 
-        <Stack sx={{ minWidth: 'auto', flex: 1, overflow: 'hidden', paddingLeft: !isDirect ? '10px' : '0px' }}>
+        <Stack sx={{ minWidth: 'auto', flex: 1, overflow: 'hidden' }}>
           <Typography
             variant="subtitle2"
             sx={{
               width: '100%',
               display: 'block',
-              alignItems: 'center',
-              justifyContent: 'space-between',
               fontSize: primaryFontSize,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             }}
           >
-            {channel.data.name}
+            {user.name}
           </Typography>
 
           <Typography
@@ -105,7 +90,7 @@ const ContactElement = ({
               fontWeight: 400,
             }}
           >
-            {!isDirect ? `${channel.data?.member_count} members` : <>{onlineStatus}</>}
+            {onlineStatus}
           </Typography>
         </Stack>
       </Stack>
@@ -113,4 +98,4 @@ const ContactElement = ({
   );
 };
 
-export default ContactElement;
+export default UserElement;

@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { ContactType, SidebarType, TabType } from '../../constants/commons-const';
+import { SidebarType, TabType } from '../../constants/commons-const';
 // ----------------------------------------------------------------------
 
 const initialState = {
@@ -19,6 +19,7 @@ const initialState = {
   authProvider: null,
   isUserConnected: false,
   searchQuery: '',
+  userInfo: null,
 };
 
 const slice = createSlice({
@@ -67,6 +68,9 @@ const slice = createSlice({
     },
     setSearchQuery(state, action) {
       state.searchQuery = action.payload;
+    },
+    setUserInfo(state, action) {
+      state.userInfo = action.payload;
     },
   },
 });
@@ -140,5 +144,11 @@ export function SetIsUserConnected(payload) {
 export function SetSearchQuery(payload) {
   return async (dispatch, getState) => {
     dispatch(slice.actions.setSearchQuery(payload));
+  };
+}
+
+export function SetUserInfo(payload) {
+  return async (dispatch, getState) => {
+    dispatch(slice.actions.setUserInfo(payload));
   };
 }

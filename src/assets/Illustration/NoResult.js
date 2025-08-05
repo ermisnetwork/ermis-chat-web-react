@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
-function NoResult({ width = 300, height = 432, ...other }) {
+function NoResult({ width = 300, height = 300, ...other }) {
   return (
     <Box {...other}>
       <svg xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 350 432" fill="none">

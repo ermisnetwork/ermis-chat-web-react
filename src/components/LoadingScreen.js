@@ -18,6 +18,7 @@ const LoadingScreen = () => {
         backgroundColor: alpha(theme.palette.background.default, 0.5),
         zIndex: 9999,
         backdropFilter: 'blur(4px)',
+        margin: '0px !important',
       }}
     >
       <LoadingSpinner />

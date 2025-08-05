@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 
-const FileTypeBadge = ({ fileName }) => {
+const FileTypeBadge = ({ fileName, size = 50 }) => {
   // const parts = fileName.split('.');
   // const type = parts.length > 1 ? parts.pop().toUpperCase() : '';
 
@@ -58,8 +58,8 @@ const FileTypeBadge = ({ fileName }) => {
     <Box
       className="fileIcon"
       sx={{
-        width: 50,
-        height: 50,
+        width: size,
+        height: size,
         backgroundColor: typeColors[type] || typeColors.DEFAULT,
       }}
     >

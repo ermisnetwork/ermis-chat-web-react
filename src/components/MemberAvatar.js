@@ -25,7 +25,7 @@ const StyledBadgeOnline = styled(Badge)(({ theme, status }) => ({
   },
 }));
 
-export default function MemberAvatar({ member, width, height, openLightbox, shape = 'circle' }) {
+export default function MemberAvatar({ member, width, height, openLightbox = false, shape = 'circle' }) {
   const theme = useTheme();
   const onlineStatus = useOnlineStatus(member?.id || '');
 

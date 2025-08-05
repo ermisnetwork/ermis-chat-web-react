@@ -7,7 +7,7 @@ import { Stack, TextField } from '@mui/material';
 export default function RHFCodes({ keyName = '', inputs = [], ...other }) {
   const codesRef = useRef(null);
 
-  const { control } = useFormContext();
+  const { control, setValue } = useFormContext();
 
   const handleChangeWithNextField = (event, handleChange) => {
     const { maxLength, value, name } = event.target;
@@ -29,6 +29,24 @@ export default function RHFCodes({ keyName = '', inputs = [], ...other }) {
     handleChange(event);
   };
 
+  const handleKeyDown = (event, field, index) => {
+    if (event.key === 'Backspace' || event.key === 'Delete') {
+      if (event.target.value) {
+        // Nếu có value thì xoá value hiện tại
+        setValue(`${keyName}${index + 1}`, '');
+        event.preventDefault();
+      } else {
+        // Nếu không có value thì focus về input trước và xoá luôn value trước đó
+        const prevField = document.querySelector(`input[name=${keyName}${index}]`);
+        if (prevField) {
+          setValue(`${keyName}${index}`, '');
+          prevField.focus();
+          event.preventDefault();
+        }
+      }
+    }
+  };
+
   return (
     <Stack direction="row" spacing={2} justifyContent="space-between" ref={codesRef}>
       {inputs.map((name, index) => (
@@ -46,6 +64,7 @@ export default function RHFCodes({ keyName = '', inputs = [], ...other }) {
                 handleChangeWithNextField(event, field.onChange);
               }}
               onFocus={event => event.currentTarget.select()}
+              onKeyDown={event => handleKeyDown(event, field, index)}
               InputProps={{
                 sx: {
                   width: { xs: 36, sm: 56 },

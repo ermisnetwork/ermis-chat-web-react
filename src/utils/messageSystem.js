@@ -10,7 +10,7 @@ export function convertMessageSystem(input, all_members, isDirect, isNotify = fa
   const myUserId = window.localStorage.getItem(LocalStorageKey.UserId);
   const isMe = myUserId === userId;
   const memberInfo = getMemberInfo(userId, all_members);
-  const userName = memberInfo ? formatString(memberInfo.name) : formatString(userId);
+  const userName = memberInfo ? memberInfo.name : formatString(userId);
   const name = isMe ? 'You' : userName;
 
   let channelName = '';
@@ -184,7 +184,7 @@ export function renderSystemMessage(input, all_members, isDirect, messages = [])
   const myUserId = window.localStorage.getItem(LocalStorageKey.UserId);
   const isMe = myUserId === userId;
   const memberInfo = getMemberInfo(userId, all_members);
-  const userName = memberInfo ? formatString(memberInfo.name) : formatString(userId);
+  const userName = memberInfo ? memberInfo.name : formatString(userId);
   const name = isMe ? 'You' : userName;
 
   let channelName = '';

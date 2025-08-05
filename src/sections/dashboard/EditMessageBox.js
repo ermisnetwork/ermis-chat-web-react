@@ -9,7 +9,6 @@ const EditMessageBox = ({ editMessage }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const { mentions } = useSelector(state => state.channel);
-  const { messageText } = editMessage;
 
   return (
     <Stack direction="row" justifyContent="space-between" sx={{ padding: '15px 15px 5px' }} gap={1}>
@@ -50,7 +49,7 @@ const EditMessageBox = ({ editMessage }) => {
                 overflow: 'hidden',
               }}
               dangerouslySetInnerHTML={{
-                __html: displayMessageWithMentionName(messageText, mentions),
+                __html: displayMessageWithMentionName(editMessage.text, mentions),
               }}
             />
           </Box>

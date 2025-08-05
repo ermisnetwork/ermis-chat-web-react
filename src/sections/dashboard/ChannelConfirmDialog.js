@@ -40,6 +40,7 @@ const ChannelConfirmDialog = () => {
 
   const { openDialog, channel, userId, type } = useSelector(state => state.dialog.channelConfirm);
   const users = client.state.users ? Object.values(client.state.users) : [];
+  const userName = users.find(user => user.id === userId)?.name || 'User';
 
   const channelId = channel.data.id;
   const channelName = channel.data.name;
@@ -73,6 +74,7 @@ const ChannelConfirmDialog = () => {
       channel.on(ClientEvents.ChannelTruncate, handleChannelConfirmed);
       channel.on(ClientEvents.MemberBlocked, handleChannelConfirmed);
       channel.on(ClientEvents.MemberUnblocked, handleChannelConfirmed);
+      channel.on(ClientEvents.MemberUnBanned, handleChannelConfirmed);
 
       return () => {
         channel.off(ClientEvents.ChannelDeleted, handleChannelConfirmed);
@@ -81,6 +83,7 @@ const ChannelConfirmDialog = () => {
         channel.off(ClientEvents.ChannelTruncate, handleChannelConfirmed);
         channel.off(ClientEvents.MemberBlocked, handleChannelConfirmed);
         channel.off(ClientEvents.MemberUnblocked, handleChannelConfirmed);
+        channel.off(ClientEvents.MemberUnBanned, handleChannelConfirmed);
       };
     }
   }, [channel, type]);
@@ -105,6 +108,8 @@ const ChannelConfirmDialog = () => {
         return `Successfully blocked ${directChannelName}`;
       case ConfirmType.UNBLOCK:
         return `Successfully unblocked ${directChannelName}`;
+      case ConfirmType.UNBANNED:
+        return `Successfully unbanned ${userName}`;
       default:
         return '';
     }
@@ -149,6 +154,14 @@ const ChannelConfirmDialog = () => {
             He/she will be able to send you message again
           </>
         );
+      case ConfirmType.UNBANNED:
+        return (
+          <>
+            Are you sure you want to unban <strong>{userName}</strong>.
+            <br />
+            He/she will be able to send you message again
+          </>
+        );
       default:
         return '';
     }
@@ -170,6 +183,8 @@ const ChannelConfirmDialog = () => {
         return 'Block this user';
       case ConfirmType.UNBLOCK:
         return 'Unblock this user';
+      case ConfirmType.UNBANNED:
+        return 'Unban this user';
       default:
         return '';
     }
@@ -191,6 +206,8 @@ const ChannelConfirmDialog = () => {
         return 'Block';
       case ConfirmType.UNBLOCK:
         return 'Unblock';
+      case ConfirmType.UNBANNED:
+        return 'Unban';
       default:
         return 'Yes';
     }
@@ -211,7 +228,9 @@ const ChannelConfirmDialog = () => {
                 ? await channel.blockUser()
                 : type === ConfirmType.UNBLOCK
                   ? await channel.unblockUser()
-                  : null;
+                  : type === ConfirmType.UNBANNED
+                    ? await channel.unbanMembers([userId])
+                    : null;
     } catch (error) {
       onCloseDialog();
       setLoadingButton(false);
@@ -242,6 +261,13 @@ const ChannelConfirmDialog = () => {
           showSnackbar({
             severity: 'error',
             message: 'Unable to unblock the user. Please try again',
+          }),
+        );
+      } else if (type === ConfirmType.UNBANNED) {
+        dispatch(
+          showSnackbar({
+            severity: 'error',
+            message: 'Unable to unban the user. Please try again',
           }),
         );
       } else {

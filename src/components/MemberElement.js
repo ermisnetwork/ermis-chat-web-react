@@ -1,66 +1,85 @@
 import React from 'react';
-import { Box, Stack, Typography, IconButton, Menu, MenuItem } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
-import { DotsThreeVertical, LockOpen, Trash } from 'phosphor-react';
 import MemberAvatar from './MemberAvatar';
-import { formatString } from '../utils/commons';
-import { LocalStorageKey } from '../constants/localStorage-const';
 import { AvatarShape, RoleMember } from '../constants/commons-const';
+import { CrownIcon, MinusCircleIcon } from './Icons';
+import { X } from 'phosphor-react';
+import CustomCheckbox from './CustomCheckbox';
+import { useSelector } from 'react-redux';
+import { myRoleInChannel } from '../utils/commons';
 
-const user_id = window.localStorage.getItem(LocalStorageKey.UserId);
-
-const StyledChatBox = styled(Box)(({ theme }) => ({
-  cursor: 'default',
-}));
-
-const StyledMenu = styled(props => (
-  <Menu
-    elevation={0}
-    anchorOrigin={{
-      vertical: 'bottom',
-      horizontal: 'right',
-    }}
-    transformOrigin={{
-      vertical: 'top',
-      horizontal: 'right',
-    }}
-    {...props}
-  />
-))(({ theme }) => ({
-  '& .MuiPaper-root': {
-    borderRadius: 6,
-    marginTop: theme.spacing(1),
-    minWidth: 180,
-    boxShadow:
-      'rgb(255, 255, 255) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px',
-    '& .MuiMenu-list': {
-      padding: '4px 0',
-    },
+const StyledMemberItem = styled(Box)(({ theme }) => ({
+  width: '100%',
+  borderRadius: '16px',
+  position: 'relative',
+  transition: 'background-color 0.2s ease-in-out',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '5px',
+  '&:hover': {
+    cursor: 'pointer',
+    backgroundColor: theme.palette.divider,
   },
 }));
 
-const MemberElement = ({ data, onRemoveMember, onUnbanMember, showMenu }) => {
+const MemberElement = ({
+  member,
+  avatarSize = 44,
+  primaryFontSize = '14px',
+  secondaryFontSize = '12px',
+  onRemoveMember = null,
+  onUnbanMember = null,
+  onSelectMember = null,
+  onCheck = null,
+  selectedMembers = [],
+}) => {
   const theme = useTheme();
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
-  const name = data.name ? data.name : data.id;
+  const { currentChannel } = useSelector(state => state.channel);
+  const { user_id } = useSelector(state => state.auth);
 
-  const onOpenMenu = event => {
-    setAnchorEl(event.currentTarget);
-  };
+  const myRole = myRoleInChannel(currentChannel);
 
-  const onCloseMenu = () => {
-    setAnchorEl(null);
-  };
+  const isVisibleCrown = [RoleMember.OWNER, RoleMember.MOD].includes(member.channel_role);
+  const canCheck = onCheck !== null;
+  const canUnban = onUnbanMember !== null;
+  const canRemove =
+    onRemoveMember &&
+    ((myRole === RoleMember.OWNER && member.channel_role !== RoleMember.OWNER) ||
+      (myRole === RoleMember.MOD && ![RoleMember.OWNER, RoleMember.MOD].includes(member.channel_role)));
 
   const onRemove = data => {
     onRemoveMember(data);
-    onCloseMenu();
   };
 
   const onUnban = data => {
     onUnbanMember(data);
-    onCloseMenu();
+  };
+
+  const toggleMember = (member, selectedMembers = []) => {
+    if (!member?.user_id) return selectedMembers;
+    if (selectedMembers.some(m => m.user_id === member.user_id)) {
+      return selectedMembers.filter(m => m.user_id !== member.user_id);
+    }
+    return [...selectedMembers, member];
+  };
+
+  const onChangeCheckbox = value => {
+    const newSelected = toggleMember(member, selectedMembers);
+    onCheck(member, newSelected);
+  };
+
+  const onClickMemberItem = () => {
+    if (canCheck) {
+      const newSelected = toggleMember(member, selectedMembers);
+      onCheck(member, newSelected);
+    } else if (canRemove) {
+      onRemove(member);
+    } else if (canUnban) {
+      onUnban(member);
+    } else if (onSelectMember && user_id !== member.user_id) {
+      onSelectMember(member.user);
+    }
   };
 
   const textRoleMember = channel_role => {
@@ -68,58 +87,86 @@ const MemberElement = ({ data, onRemoveMember, onUnbanMember, showMenu }) => {
       case RoleMember.OWNER:
         return 'Owner';
       case RoleMember.MOD:
-        return 'Mod';
+        return 'Moderator';
+      case RoleMember.MEMBER:
+        return 'Member';
+      case RoleMember.PENDING:
+        return 'Pending';
       default:
         return '';
     }
   };
 
+  const getColorRole = channel_role => {
+    switch (channel_role) {
+      case RoleMember.OWNER:
+        return theme.palette.primary.main;
+      case RoleMember.MOD:
+        return theme.palette.primary.main;
+      case RoleMember.MEMBER:
+        return theme.palette.text.secondary;
+      case RoleMember.PENDING:
+        return theme.palette.info.main;
+      default:
+        return theme.palette.text.primary;
+    }
+  };
+
   return (
-    <StyledChatBox
-      sx={{
-        width: '100%',
-        borderRadius: 1,
-        backgroundColor: theme.palette.background.paper,
-      }}
-      p={2}
-    >
-      <Stack direction="row" alignItems={'center'} justifyContent="space-between">
-        <Stack direction="row" alignItems={'center'} spacing={2}>
-          <MemberAvatar member={data} width={40} height={40} openLightbox={true} shape={AvatarShape.Round} />
-          <Stack spacing={0.3}>
-            <Typography variant="subtitle2">{formatString(name)}</Typography>
-            <Typography variant="subtitle2" sx={{ fontSize: '12px', color: theme.palette.grey[500], fontWeight: 400 }}>
-              {textRoleMember(data.channel_role)}
+    <StyledMemberItem onClick={onClickMemberItem}>
+      <Stack direction="row" alignItems="center" gap={1} sx={{ width: '100%' }}>
+        {onCheck && (
+          <CustomCheckbox
+            checked={selectedMembers.some(m => m.user_id === member.user_id)}
+            onClick={e => e.stopPropagation()}
+            onChange={onChangeCheckbox}
+            sx={{ padding: 0 }}
+          />
+        )}
+
+        {onUnbanMember && <MinusCircleIcon />}
+
+        <MemberAvatar
+          member={member.user}
+          width={avatarSize}
+          height={avatarSize}
+          openLightbox={true}
+          shape={AvatarShape.Round}
+        />
+        <Stack sx={{ minWidth: 'auto', flex: 1, overflow: 'hidden' }}>
+          <Stack direction="row" alignItems="center" gap={1}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                minWidth: 'auto',
+                overflow: 'hidden',
+                fontSize: primaryFontSize,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {member.user.name}
             </Typography>
+            {isVisibleCrown && <CrownIcon />}
           </Stack>
+
+          <Typography
+            variant="caption"
+            sx={{
+              color: getColorRole(member.channel_role),
+              fontSize: secondaryFontSize,
+              fontWeight: 400,
+            }}
+          >
+            {textRoleMember(member.channel_role)}
+          </Typography>
         </Stack>
 
-        {showMenu && (
-          <Stack direction={'row'} spacing={2} alignItems={'center'}>
-            <IconButton onClick={onOpenMenu}>
-              <DotsThreeVertical size={22} />
-            </IconButton>
-
-            <StyledMenu anchorEl={anchorEl} open={open} onClose={onCloseMenu}>
-              {onRemoveMember && (
-                <MenuItem onClick={() => onRemove(data)} sx={{ color: theme.palette.error.main }}>
-                  <Trash size={18} style={{ marginRight: 10 }} />
-                  Remove
-                </MenuItem>
-              )}
-
-              {onUnbanMember && (
-                <MenuItem onClick={() => onUnban(data)} sx={{ color: theme.palette.error.main }}>
-                  <LockOpen size={18} style={{ marginRight: 10 }} />
-                  Unban
-                </MenuItem>
-              )}
-            </StyledMenu>
-          </Stack>
-        )}
+        {canRemove && <X size={18} />}
       </Stack>
-    </StyledChatBox>
+    </StyledMemberItem>
   );
 };
 
-export { MemberElement };
+export default MemberElement;
