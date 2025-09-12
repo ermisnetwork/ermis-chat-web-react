@@ -34,9 +34,11 @@ import ReactionsMessage from '../../components/ReactionsMessage';
 import ChannelInvitation from '../../sections/dashboard/ChannelInvitation';
 import {
   AddActiveChannel,
+  AddMention,
   RemoveActiveChannel,
   SetCooldownTime,
   SetFilterWords,
+  SetIsBanned,
   SetIsGuest,
   SetMarkReadChannel,
   SetMemberCapabilities,
@@ -72,6 +74,9 @@ import { motion } from 'framer-motion';
 import UsersTyping from '../../components/UsersTyping';
 import NoMessageBox from '../../components/NoMessageBox';
 import { setSidebar, SetUserInfo } from '../../redux/slices/app';
+import TopicPanel from './TopicPanel';
+import ClosedTopicBackdrop from '../../components/ClosedTopicBackdrop';
+import { SetIsClosedTopic, SetOpenTopicPanel } from '../../redux/slices/topic';
 
 const StyledMessage = styled(motion(Stack))(({ theme }) => ({
   '&:hover': {
@@ -110,6 +115,7 @@ const MessageList = ({
   onScrollToReplyMsg,
   highlightMsg,
   setHighlightMsg,
+  currentChat,
 }) => {
   const users = client.state.users ? Object.values(client.state.users) : [];
   const dispatch = useDispatch();
@@ -119,7 +125,7 @@ const MessageList = ({
   const isLgToXl = useResponsive('between', null, 'lg', 'xl');
   const isMobileToLg = useResponsive('down', 'lg');
   const { user_id } = useSelector(state => state.auth);
-  const { activeChannels, isGuest } = useSelector(state => state.channel);
+  const { activeChannels, isGuest, isBlocked, isBanned } = useSelector(state => state.channel);
 
   const lastReadIndex = messages.findIndex(msg => msg.id === lastReadMessageId);
 
@@ -185,6 +191,7 @@ const MessageList = ({
     const isMyMessage = checkMyMessage(user_id, el.user.id);
     const messageType = el.type;
     const forwardChannelName = getForwardChannelName(el?.forward_cid);
+    const quotedMessage = el?.quoted_message;
 
     if (el.deleted_at) {
       return (
@@ -207,6 +214,8 @@ const MessageList = ({
           </Box>
         </Stack>
       );
+    } else if (quotedMessage) {
+      return <ReplyMsg el={{ ...el, isMyMessage }} all_members={users} onScrollToReplyMsg={onScrollToReplyMsg} />;
     } else {
       if (messageType === MessageType.Regular) {
         if (el.attachments && el.attachments.length > 0) {
@@ -225,12 +234,6 @@ const MessageList = ({
               return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
             }
           }
-        } else {
-          return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
-        }
-      } else if (messageType === MessageType.Reply) {
-        if (el.quoted_message) {
-          return <ReplyMsg el={{ ...el, isMyMessage }} all_members={users} onScrollToReplyMsg={onScrollToReplyMsg} />;
         } else {
           return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
         }
@@ -424,7 +427,7 @@ const MessageList = ({
             })}
         </Stack>
       </motion.div>
-      {!isGuest && <ReadBy />}
+      {!isGuest && !isBlocked && !isBanned && <ReadBy />}
     </Box>
   );
 };
@@ -434,11 +437,12 @@ const ChatComponent = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const messageListRef = useRef(null);
-  const { currentChannel, isBlocked, isGuest } = useSelector(state => state.channel);
+  const { currentChannel, isBlocked, isGuest, isBanned } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
   const { deleteMessage, messageIdError, searchMessageId, forwardMessage, filesMessage } = useSelector(
     state => state.messages,
   );
+  const { currentTopic, isClosedTopic } = useSelector(state => state.topic);
   const [messages, setMessages] = useState([]);
   const [usersTyping, setUsersTyping] = useState([]);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -455,34 +459,38 @@ const ChatComponent = () => {
   const users = client.state.users ? Object.values(client.state.users) : [];
   const isLgToXl = useResponsive('between', null, 'lg', 'xl');
   const isMobileToLg = useResponsive('down', 'lg');
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
   useEffect(() => {
-    if (currentChannel) {
-      const channelName = currentChannel.data.name ? currentChannel.data.name : getChannelName(currentChannel, users);
+    setUsersTyping([]);
+    setMessages([]);
+
+    if (currentChat) {
+      const channelName = currentChat.data.name ? currentChat.data.name : getChannelName(currentChat, users);
       document.title = channelName;
       if (messageListRef.current) {
         messageListRef.current.scrollTop = 0;
       }
-      const listMessage = currentChannel.state.messages || [];
-      const members = Object.values(currentChannel.state.members);
+      const listMessage = currentChat.state.messages || [];
+      const members = Object.values(currentChat.state.members);
       const receiverInfo = members.find(member => member.user_id !== user_id);
       setIsAlertInvitePending(
         isDirect && [RoleMember.PENDING, RoleMember.SKIPPED].includes(receiverInfo?.channel_role),
       );
       setMessages(listMessage);
-      setIsPendingInvite(checkPendingInvite(currentChannel));
-      setUnreadCount(currentChannel.state.unreadCount);
-      dispatch(SetIsGuest(isGuestInPublicChannel(currentChannel)));
+      setIsPendingInvite(checkPendingInvite(currentChat));
+      setUnreadCount(currentChat.state.unreadCount);
+      dispatch(SetIsGuest(isGuestInPublicChannel(currentChat)));
       setNoMessageTitle(listMessage.length ? '' : 'No messages here yet...');
 
-      const read = currentChannel.state.read[user_id];
+      const read = currentChat.state.read[user_id];
       const lastReadMsgId = read.unread_messages ? read.last_read_message_id : '';
       setLastReadMessageId(lastReadMsgId);
       let lastSend = read.last_send || DefaultLastSend;
-      let duration = currentChannel.data.member_message_cooldown || 0;
+      let duration = currentChat.data.member_message_cooldown || 0;
 
       const onSetCooldownTime = event => {
-        const myRole = myRoleInChannel(currentChannel);
+        const myRole = myRoleInChannel(currentChat);
         if (event.type === ClientEvents.MessageNew) {
           if (event.user.id === user_id && event.channel_type === ChatType.TEAM && myRole === RoleMember.MEMBER) {
             lastSend = event.message.created_at;
@@ -521,10 +529,10 @@ const ChatComponent = () => {
               setMessages(prev => {
                 return [...prev, event.message];
               });
-              const myRole = myRoleInChannel(currentChannel);
+              const myRole = myRoleInChannel(currentChat);
               if (![RoleMember.PENDING, RoleMember.SKIPPED].includes(myRole)) {
                 setTimeout(() => {
-                  dispatch(SetMarkReadChannel(currentChannel));
+                  dispatch(SetMarkReadChannel(currentChat));
                 }, 100);
               }
             } else {
@@ -624,10 +632,16 @@ const ChatComponent = () => {
       };
 
       const handleInviteAccept = async event => {
+        const splitCID = splitChannelId(event.cid);
+        const channelId = splitCID.channelId;
+        const channelType = splitCID.channelType;
+        dispatch(WatchCurrentChannel(channelId, channelType));
+
         if (event.member.user_id === user_id) {
           setIsPendingInvite(false);
         } else {
           setIsAlertInvitePending(false);
+          dispatch(AddMention(event.member.user_id));
         }
       };
 
@@ -655,6 +669,7 @@ const ChatComponent = () => {
           dispatch(AddActiveChannel(event.cid));
         } else {
           dispatch(WatchCurrentChannel(channelId, channelType));
+          dispatch(AddMention(event.member.user_id));
         }
       };
 
@@ -689,6 +704,18 @@ const ChatComponent = () => {
         dispatch(WatchCurrentChannel(channelId, channelType));
       };
 
+      const handleMemberBanned = event => {
+        if (event.member.user_id === user_id) {
+          dispatch(SetIsBanned(event.member.banned));
+        }
+      };
+
+      const handleMemberUnBanned = event => {
+        if (event.member.user_id === user_id) {
+          dispatch(SetIsBanned(event.member.banned));
+        }
+      };
+
       const handleChannelTruncate = event => {
         const channelId = event.channel_id;
         const channelType = event.channel_type;
@@ -696,42 +723,78 @@ const ChatComponent = () => {
         dispatch(WatchCurrentChannel(channelId, channelType));
       };
 
-      currentChannel.on(ClientEvents.MessageNew, handleMessages);
-      currentChannel.on(ClientEvents.ReactionNew, handleMessages);
-      currentChannel.on(ClientEvents.ReactionDeleted, handleMessages);
-      currentChannel.on(ClientEvents.MessageDeleted, handleMessages);
-      currentChannel.on(ClientEvents.MessageUpdated, handleMessages);
-      currentChannel.on(ClientEvents.TypingStart, handleTypingStart);
-      currentChannel.on(ClientEvents.TypingStop, handleTypingStop);
-      currentChannel.on(ClientEvents.Notification.InviteAccepted, handleInviteAccept);
-      currentChannel.on(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
-      currentChannel.on(ClientEvents.ChannelUpdated, handleChannelUpdated);
-      currentChannel.on(ClientEvents.MemberJoined, handleMemberJoined);
-      currentChannel.on(ClientEvents.MemberAdded, handleMemberAdded);
-      currentChannel.on(ClientEvents.MemberRemoved, handleMemberRemoved);
-      currentChannel.on(ClientEvents.MemberPromoted, handleMemberPromoted);
-      currentChannel.on(ClientEvents.MemberDemoted, handleMemberDemoted);
-      currentChannel.on(ClientEvents.PollChoiceNew, handleMessages);
-      currentChannel.on(ClientEvents.ChannelTruncate, handleChannelTruncate);
+      const handleChannelTopicEnabled = event => {
+        const splitCID = splitChannelId(event.cid);
+        const channelId = splitCID.channelId;
+        const channelType = splitCID.channelType;
+        dispatch(WatchCurrentChannel(channelId, channelType));
+        dispatch(SetOpenTopicPanel(true));
+      };
+
+      const handleChannelTopicDisabled = event => {
+        const splitCID = splitChannelId(event.cid);
+        const channelId = splitCID.channelId;
+        const channelType = splitCID.channelType;
+        dispatch(WatchCurrentChannel(channelId, channelType));
+        dispatch(SetOpenTopicPanel(false));
+      };
+
+      const handleChannelTopicClosed = event => {
+        dispatch(SetIsClosedTopic(true));
+      };
+
+      const handleChannelTopicReopen = event => {
+        dispatch(SetIsClosedTopic(false));
+      };
+
+      currentChat.on(ClientEvents.MessageNew, handleMessages);
+      currentChat.on(ClientEvents.ReactionNew, handleMessages);
+      currentChat.on(ClientEvents.ReactionDeleted, handleMessages);
+      currentChat.on(ClientEvents.MessageDeleted, handleMessages);
+      currentChat.on(ClientEvents.MessageUpdated, handleMessages);
+      currentChat.on(ClientEvents.TypingStart, handleTypingStart);
+      currentChat.on(ClientEvents.TypingStop, handleTypingStop);
+      currentChat.on(ClientEvents.Notification.InviteAccepted, handleInviteAccept);
+      currentChat.on(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
+      currentChat.on(ClientEvents.ChannelUpdated, handleChannelUpdated);
+      currentChat.on(ClientEvents.MemberJoined, handleMemberJoined);
+      currentChat.on(ClientEvents.MemberAdded, handleMemberAdded);
+      currentChat.on(ClientEvents.MemberRemoved, handleMemberRemoved);
+      currentChat.on(ClientEvents.MemberPromoted, handleMemberPromoted);
+      currentChat.on(ClientEvents.MemberDemoted, handleMemberDemoted);
+      currentChat.on(ClientEvents.MemberBanned, handleMemberBanned);
+      currentChat.on(ClientEvents.MemberUnBanned, handleMemberUnBanned);
+      currentChat.on(ClientEvents.PollChoiceNew, handleMessages);
+      currentChat.on(ClientEvents.ChannelTruncate, handleChannelTruncate);
+      currentChat.on(ClientEvents.ChannelTopicEnabled, handleChannelTopicEnabled);
+      currentChat.on(ClientEvents.ChannelTopicDisabled, handleChannelTopicDisabled);
+      currentChat.on(ClientEvents.ChannelTopicClosed, handleChannelTopicClosed);
+      currentChat.on(ClientEvents.ChannelTopicReopen, handleChannelTopicReopen);
 
       return () => {
-        currentChannel.off(ClientEvents.MessageNew, handleMessages);
-        currentChannel.off(ClientEvents.ReactionNew, handleMessages);
-        currentChannel.off(ClientEvents.ReactionDeleted, handleMessages);
-        currentChannel.off(ClientEvents.MessageDeleted, handleMessages);
-        currentChannel.off(ClientEvents.MessageUpdated, handleMessages);
-        currentChannel.off(ClientEvents.TypingStart, handleTypingStart);
-        currentChannel.off(ClientEvents.TypingStop, handleTypingStop);
-        currentChannel.off(ClientEvents.Notification.InviteAccepted, handleInviteAccept);
-        currentChannel.off(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
-        currentChannel.off(ClientEvents.ChannelUpdated, handleChannelUpdated);
-        currentChannel.off(ClientEvents.MemberJoined, handleMemberJoined);
-        currentChannel.off(ClientEvents.MemberAdded, handleMemberAdded);
-        currentChannel.off(ClientEvents.MemberRemoved, handleMemberRemoved);
-        currentChannel.off(ClientEvents.MemberPromoted, handleMemberPromoted);
-        currentChannel.off(ClientEvents.MemberDemoted, handleMemberDemoted);
-        currentChannel.off(ClientEvents.PollChoiceNew, handleMessages);
-        currentChannel.on(ClientEvents.ChannelTruncate, handleChannelTruncate);
+        currentChat.off(ClientEvents.MessageNew, handleMessages);
+        currentChat.off(ClientEvents.ReactionNew, handleMessages);
+        currentChat.off(ClientEvents.ReactionDeleted, handleMessages);
+        currentChat.off(ClientEvents.MessageDeleted, handleMessages);
+        currentChat.off(ClientEvents.MessageUpdated, handleMessages);
+        currentChat.off(ClientEvents.TypingStart, handleTypingStart);
+        currentChat.off(ClientEvents.TypingStop, handleTypingStop);
+        currentChat.off(ClientEvents.Notification.InviteAccepted, handleInviteAccept);
+        currentChat.off(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
+        currentChat.off(ClientEvents.ChannelUpdated, handleChannelUpdated);
+        currentChat.off(ClientEvents.MemberJoined, handleMemberJoined);
+        currentChat.off(ClientEvents.MemberAdded, handleMemberAdded);
+        currentChat.off(ClientEvents.MemberRemoved, handleMemberRemoved);
+        currentChat.off(ClientEvents.MemberPromoted, handleMemberPromoted);
+        currentChat.off(ClientEvents.MemberDemoted, handleMemberDemoted);
+        currentChat.off(ClientEvents.MemberBanned, handleMemberBanned);
+        currentChat.off(ClientEvents.MemberUnBanned, handleMemberUnBanned);
+        currentChat.off(ClientEvents.PollChoiceNew, handleMessages);
+        currentChat.off(ClientEvents.ChannelTruncate, handleChannelTruncate);
+        currentChat.off(ClientEvents.ChannelTopicEnabled, handleChannelTopicEnabled);
+        currentChat.off(ClientEvents.ChannelTopicDisabled, handleChannelTopicDisabled);
+        currentChat.off(ClientEvents.ChannelTopicClosed, handleChannelTopicClosed);
+        currentChat.off(ClientEvents.ChannelTopicReopen, handleChannelTopicReopen);
       };
     } else {
       if (messageListRef.current) {
@@ -740,7 +803,7 @@ const ChatComponent = () => {
       setMessages([]);
       setUsersTyping([]);
     }
-  }, [currentChannel, user_id, messageListRef]);
+  }, [currentChat, user_id, messageListRef]);
 
   useEffect(() => {
     if (messageIdError) {
@@ -765,7 +828,7 @@ const ChatComponent = () => {
       setLoadingMore(true);
       const msgId = messages[0]?.id;
 
-      const response = await currentChannel.queryMessagesLessThanId(msgId);
+      const response = await currentChat.queryMessagesLessThanId(msgId);
 
       if (response && Array.isArray(response) && response.length > 0) {
         setMessages(prev => {
@@ -780,8 +843,8 @@ const ChatComponent = () => {
   };
 
   const queryMessages = async msgId => {
-    const channelType = currentChannel.data.type;
-    const channelId = currentChannel.data.id;
+    const channelType = currentChat.data.type;
+    const channelId = currentChat.data.id;
     const channel = client.channel(channelType, channelId);
 
     const response = await channel.query({
@@ -852,134 +915,145 @@ const ChatComponent = () => {
     });
   }
 
+  const showChatFooter = !isGuest && !isBanned && !isClosedTopic;
+  const showButtonScrollToBottom = !isBlocked || !isBanned;
+  const disabledScroll = isBlocked || isBanned;
+  const showTopicPanel = !isGuest && !isDirect && currentChannel?.data?.topics_enabled;
+
   return (
-    <Stack sx={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-      <ChatHeader currentChannel={currentChannel} isBlocked={isBlocked} />
+    <Stack direction="row" sx={{ width: '100%', height: '100%', overflow: 'hidden' }}>
+      {showTopicPanel && <TopicPanel />}
 
-      {currentChannel && (
-        <Box
-          sx={{
-            width: '100%',
-            position: 'absolute',
-            top: '75px',
-            zIndex: 2,
-            padding: isMobileToLg ? '4px 20px' : isLgToXl ? '4px 50px' : '4px 90px',
-          }}
-        >
-          {isAlertInvitePending && (
-            <Box sx={{ width: '100%' }}>
-              <Alert severity="info" sx={{ fontWeight: 400 }}>
-                <strong>{formatString(currentChannel?.data.name)}</strong>
-                &nbsp;needs to accept your invitation to see the messages you've sent
-              </Alert>
-            </Box>
-          )}
+      <Stack sx={{ minWidth: 'auto', height: '100%', position: 'relative', flex: 1, overflow: 'hidden' }}>
+        <ChatHeader />
 
-          <PinnedMessages />
-
-          {(showChipUnread || unreadCount >= MESSAGE_LIMIT) && (
-            <Stack direction="row" alignItems="center" justifyContent="center">
-              <Chip
-                label={`${unreadCount} Unread messages`}
-                color="primary"
-                onClick={onScrollToFirstUnread}
-                onDelete={onDeleteUnread}
-              />
-            </Stack>
-          )}
-        </Box>
-      )}
-
-      <Dropzone onDrop={onDropFiles} noClick noKeyboard noDragEventsBubbling>
-        {({ getRootProps, isDragActive }) => (
+        {currentChat && (
           <Box
-            {...getRootProps()}
             sx={{
-              position: 'relative',
-              overflow: 'hidden',
-              display: 'flex',
-              minWidth: 'auto',
-              minHeight: 'auto',
-              flex: 1,
+              width: '100%',
+              position: 'absolute',
+              top: '75px',
+              zIndex: 2,
+              padding: isMobileToLg ? '4px 20px' : isLgToXl ? '4px 50px' : '4px 90px',
             }}
-            className={`${isDragActive ? 'isDragActive' : ''}`}
           >
-            <Box
-              id="scrollableDiv"
-              className="customScrollbar"
-              ref={messageListRef}
-              width={'100%'}
-              sx={{
-                position: 'relative',
-                flexGrow: 1,
-                overflowY: isBlocked ? 'hidden' : 'auto',
-                overflowX: 'hidden',
-                display: 'flex',
-                flexDirection: 'column-reverse',
-              }}
-            >
-              {currentChannel && (
-                <InfiniteScroll
-                  dataLength={messages.length}
-                  next={fetchMoreMessages}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column-reverse',
-                    position: 'relative',
-                    overflowX: 'hidden',
-                  }}
-                  inverse={true}
-                  hasMore={true}
-                  loader={
-                    loadingMore && (
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
-                        <LoadingSpinner />
-                      </div>
-                    )
-                  }
-                  scrollableTarget="scrollableDiv"
-                  scrollThreshold={0.95}
-                >
-                  {/* <SimpleBarStyle timeout={500} clickOnTrack={false}> */}
-                  <MessageList
-                    messageListRef={messageListRef}
-                    messages={addDateLabels(messages)}
-                    lastReadMessageId={lastReadMessageId}
-                    targetId={targetId}
-                    setTargetId={setTargetId}
-                    isDirect={isDirect}
-                    setShowChipUnread={setShowChipUnread}
-                    onScrollToReplyMsg={onScrollToReplyMsg}
-                    highlightMsg={highlightMsg}
-                    setHighlightMsg={setHighlightMsg}
-                  />
-                  {/* </SimpleBarStyle> */}
-                </InfiniteScroll>
-              )}
+            {isAlertInvitePending && (
+              <Box sx={{ width: '100%' }}>
+                <Alert severity="info" sx={{ fontWeight: 400 }}>
+                  <strong>{formatString(currentChat?.data.name)}</strong>
+                  &nbsp;needs to accept your invitation to see the messages you've sent
+                </Alert>
+              </Box>
+            )}
 
-              {noMessageTitle && <NoMessageBox channel={currentChannel} />}
-            </Box>
+            <PinnedMessages />
+
+            {(showChipUnread || unreadCount >= MESSAGE_LIMIT) && (
+              <Stack direction="row" alignItems="center" justifyContent="center">
+                <Chip
+                  label={`${unreadCount} Unread messages`}
+                  color="primary"
+                  onClick={onScrollToFirstUnread}
+                  onDelete={onDeleteUnread}
+                />
+              </Stack>
+            )}
           </Box>
         )}
-      </Dropzone>
 
-      {currentChannel ? <ScrollToBottom messageListRef={messageListRef} /> : null}
-      {!isGuest && (
-        <Box
-          sx={{
-            padding: '15px',
-            position: 'relative',
-          }}
-        >
-          {usersTyping && usersTyping.length > 0 && <UsersTyping usersTyping={usersTyping} />}
-          <ChatFooter currentChannel={currentChannel} setMessages={setMessages} isDialog={false} />
-        </Box>
-      )}
-      {isPendingInvite && <ChannelInvitation />}
+        <Dropzone onDrop={onDropFiles} noClick noKeyboard noDragEventsBubbling>
+          {({ getRootProps, isDragActive }) => (
+            <Box
+              {...getRootProps()}
+              sx={{
+                position: 'relative',
+                overflow: 'hidden',
+                display: 'flex',
+                minWidth: 'auto',
+                minHeight: 'auto',
+                flex: 1,
+              }}
+              className={`${isDragActive ? 'isDragActive' : ''}`}
+            >
+              <Box
+                id="scrollableDiv"
+                className="customScrollbar"
+                ref={messageListRef}
+                width={'100%'}
+                sx={{
+                  position: 'relative',
+                  flexGrow: 1,
+                  overflowY: disabledScroll ? 'hidden' : 'auto',
+                  overflowX: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column-reverse',
+                }}
+              >
+                {currentChat && (
+                  <InfiniteScroll
+                    dataLength={messages.length}
+                    next={fetchMoreMessages}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column-reverse',
+                      position: 'relative',
+                      overflowX: 'hidden',
+                    }}
+                    inverse={true}
+                    hasMore={true}
+                    loader={
+                      loadingMore && (
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
+                          <LoadingSpinner />
+                        </div>
+                      )
+                    }
+                    scrollableTarget="scrollableDiv"
+                    scrollThreshold={0.95}
+                  >
+                    {/* <SimpleBarStyle timeout={500} clickOnTrack={false}> */}
+                    <MessageList
+                      messageListRef={messageListRef}
+                      messages={addDateLabels(messages)}
+                      lastReadMessageId={lastReadMessageId}
+                      targetId={targetId}
+                      setTargetId={setTargetId}
+                      isDirect={isDirect}
+                      setShowChipUnread={setShowChipUnread}
+                      onScrollToReplyMsg={onScrollToReplyMsg}
+                      highlightMsg={highlightMsg}
+                      setHighlightMsg={setHighlightMsg}
+                      currentChat={currentChat}
+                    />
+                    {/* </SimpleBarStyle> */}
+                  </InfiniteScroll>
+                )}
+
+                {noMessageTitle && <NoMessageBox channel={currentChat} />}
+              </Box>
+            </Box>
+          )}
+        </Dropzone>
+
+        {showButtonScrollToBottom && <ScrollToBottom messageListRef={messageListRef} />}
+        {showChatFooter && (
+          <Box
+            sx={{
+              padding: '15px',
+              position: 'relative',
+            }}
+          >
+            {usersTyping && usersTyping.length > 0 && <UsersTyping usersTyping={usersTyping} />}
+            <ChatFooter setMessages={setMessages} isDialog={false} />
+          </Box>
+        )}
+        {isClosedTopic && <ClosedTopicBackdrop />}
+        {isPendingInvite && <ChannelInvitation />}
+        {isBanned && <BannedBackdrop />}
+        {isBlocked && <BlockedBackdrop />}
+      </Stack>
       {deleteMessage.openDialog && <DeleteMessageDialog />}
       {forwardMessage.openDialog && <ForwardMessageDialog />}
-      {!isDirect && <BannedBackdrop />}
-      {isDirect && <BlockedBackdrop />}
       <MessagesHistoryDialog />
       {filesMessage.openDialog && <UploadFilesDialog setMessages={setMessages} />}
       <CreatePollDialog />

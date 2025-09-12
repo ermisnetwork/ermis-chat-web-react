@@ -136,7 +136,7 @@ iframe#webpack-dev-server-client-overlay {
 
 a.linkUrl {
   display: inline-block;
-  text-decoration: none;
+  text-decoration: underline;
   margin-bottom: 5px;
 }
 

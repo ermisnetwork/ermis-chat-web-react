@@ -10,6 +10,7 @@ import { CHAT_PROJECT_ID } from '../../config';
 import { LocalStorageKey } from '../../constants/localStorage-const';
 import CreateChannel from '../../sections/dashboard/CreateChannel';
 import NewDirectMessage from '../../sections/dashboard/NewDirectMessage';
+import AddFriendDialog from '../../sections/dashboard/AddFriendDialog';
 import ChannelConfirmDialog from '../../sections/dashboard/ChannelConfirmDialog';
 import ProfileDialog from '../../sections/dashboard/ProfileDialog';
 import ClientsTabPanel from '../../pages/dashboard/ClientsTabPanel';
@@ -23,9 +24,13 @@ const DashboardLayout = () => {
   const theme = useTheme();
 
   const { isLoggedIn, user_id } = useSelector(state => state.auth);
-  const { openDialogNewDirectMessage, openDialogCreateChannel, openDialogProfile, channelConfirm } = useSelector(
-    state => state.dialog,
-  );
+  const {
+    openDialogNewDirectMessage,
+    openAddFriendDialog,
+    openDialogCreateChannel,
+    openDialogProfile,
+    channelConfirm,
+  } = useSelector(state => state.dialog);
   const { unreadChannels } = useSelector(state => state.channel);
 
   const accessToken = localStorage.getItem(LocalStorageKey.AccessToken);
@@ -109,6 +114,7 @@ const DashboardLayout = () => {
       <CallDirectDialog2 />
       {openDialogCreateChannel && <CreateChannel />}
       {openDialogNewDirectMessage && <NewDirectMessage />}
+      {openAddFriendDialog && <AddFriendDialog />}
       {openDialogProfile && <ProfileDialog />}
       {channelConfirm?.openDialog && <ChannelConfirmDialog />}
     </>

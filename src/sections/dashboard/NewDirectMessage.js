@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, Slide, Stack } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { client } from '../../client';
-import { ChatType } from '../../constants/commons-const';
-import { SetSearchQuery, showSnackbar } from '../../redux/slices/app';
+import { ChatType, RoleMember } from '../../constants/commons-const';
+import { showSnackbar } from '../../redux/slices/app';
 import { CloseDialogNewDirectMessage } from '../../redux/slices/dialog';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PATH } from '../../config';
@@ -22,7 +22,26 @@ const NewDirectMessage = () => {
   const { openDialogNewDirectMessage } = useSelector(state => state.dialog);
   const { isLoading } = useSelector(state => state.app);
   const { user_id } = useSelector(state => state.auth);
+  const { activeChannels, skippedChannels, pendingChannels } = useSelector(state => state.channel);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // invitedChannels: các channel direct mà bạn đã gửi lời mời, đối phương chưa xác nhận tham gia.
+  const invitedChannels = useMemo(() => {
+    return activeChannels.filter(channel => {
+      const isDirect = channel.type === ChatType.MESSAGING;
+      const otherMember = Object.values(channel.state.members).find(member => member.user_id !== user_id);
+      return isDirect && otherMember && otherMember.channel_role === RoleMember.PENDING;
+    });
+  }, [activeChannels, user_id]);
+
+  // pendingDirectChannels: các channel direct mà người dùng đã gửi lời mời cho bạn, bạn chưa xác nhận tham gia.
+  const pendingDirectChannels = useMemo(() => {
+    return pendingChannels.filter(channel => {
+      const isDirect = channel.type === ChatType.MESSAGING;
+      const myMember = channel.state.members[user_id];
+      return isDirect && myMember && myMember.channel_role === RoleMember.PENDING;
+    });
+  }, [pendingChannels, user_id]);
 
   const onCloseDialogNewDirectMessage = () => {
     dispatch(CloseDialogNewDirectMessage());
@@ -36,7 +55,6 @@ const NewDirectMessage = () => {
 
       await channel.create();
       dispatch(showSnackbar({ severity: 'success', message: 'Invitation sent' }));
-      dispatch(SetSearchQuery(''));
       onCloseDialogNewDirectMessage();
     } catch (error) {
       dispatch(showSnackbar({ severity: 'error', message: 'Failed to send invite. Please retry' }));
@@ -44,9 +62,14 @@ const NewDirectMessage = () => {
   };
 
   const onSelectChannel = async (channel, user) => {
-    if (channel) {
-      navigate(`${DEFAULT_PATH}/${channel.type}:${channel.id}`);
-      dispatch(SetSearchQuery(''));
+    const existChannel = [...invitedChannels, ...skippedChannels, ...pendingDirectChannels].find(
+      channel => channel.state.members[user.id],
+    );
+
+    if (channel || existChannel) {
+      const channelId = channel ? channel.id : existChannel.id;
+      const channelType = channel ? channel.type : existChannel.type;
+      navigate(`${DEFAULT_PATH}/${channelType}:${channelId}`);
       onCloseDialogNewDirectMessage();
       return;
     } else if (user) {

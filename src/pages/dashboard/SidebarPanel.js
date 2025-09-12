@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, useTheme, Drawer } from '@mui/material';
 import useResponsive from '../../hooks/useResponsive';
 import { WIDTH_SIDEBAR_PANEL } from '../../config';
 import { useDispatch, useSelector } from 'react-redux';
-import { ToggleSidebar } from '../../redux/slices/app';
+import { setSidebar, ToggleSidebar } from '../../redux/slices/app';
+import { SidebarType } from '../../constants/commons-const';
 
 const SidebarPanel = ({ children }) => {
   const theme = useTheme();
@@ -13,6 +14,13 @@ const SidebarPanel = ({ children }) => {
   const isScreenLgToXl = useResponsive('between', null, 'lg', 'xl');
 
   const drawerWidth = 330;
+
+  useEffect(() => {
+    return () => {
+      // Cleanup if necessary
+      dispatch(setSidebar({ type: SidebarType.Channel, open: false, mode: '' })); // Reset sidebar state on unmount
+    };
+  }, []);
 
   if (isMobileToLg) {
     return (

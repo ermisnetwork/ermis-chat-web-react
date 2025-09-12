@@ -74,21 +74,24 @@ export default function ReadBy() {
   const dispatch = useDispatch();
   const isLgToXl = useResponsive('between', null, 'lg', 'xl');
   const isMobileToLg = useResponsive('down', 'lg');
-  const { currentChannel } = useSelector(state => state.channel);
+  // const { currentChannel } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
   const { messageReadType } = useSelector(state => state.messages);
+  const { currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
 
   const [readBy, setReadBy] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const users = client.state.users ? Object.values(client.state.users) : [];
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
   useEffect(() => {
-    if (currentChannel) {
+    if (currentChat) {
       const messages =
-        currentChannel.state.messages.filter(msg => ![MessageType.System, MessageType.Signal].includes(msg.type)) || [];
+        currentChat.state.messages.filter(msg => ![MessageType.System, MessageType.Signal].includes(msg.type)) || [];
 
       if (messages.length) {
-        const readMembers = Object.values(currentChannel.state.read).filter(
+        const readMembers = Object.values(currentChat.state.read).filter(
           item => item.user.id !== user_id && item.unread_messages === 0,
         );
 
@@ -153,24 +156,23 @@ export default function ReadBy() {
 
       const handleMessageDeleted = event => {
         const messages =
-          currentChannel.state.messages.filter(msg => ![MessageType.System, MessageType.Signal].includes(msg.type)) ||
-          [];
+          currentChat.state.messages.filter(msg => ![MessageType.System, MessageType.Signal].includes(msg.type)) || [];
         if (messages.length === 0) {
           dispatch(setMessageReadType(MessageReadType.Empty));
         }
       };
 
-      currentChannel.on(ClientEvents.MessageNew, handleMessageNew);
-      currentChannel.on(ClientEvents.MessageRead, handleMessageRead);
-      currentChannel.on(ClientEvents.MessageDeleted, handleMessageDeleted);
+      currentChat.on(ClientEvents.MessageNew, handleMessageNew);
+      currentChat.on(ClientEvents.MessageRead, handleMessageRead);
+      currentChat.on(ClientEvents.MessageDeleted, handleMessageDeleted);
 
       return () => {
-        currentChannel.off(ClientEvents.MessageNew, handleMessageNew);
-        currentChannel.off(ClientEvents.MessageRead, handleMessageRead);
-        currentChannel.off(ClientEvents.MessageDeleted, handleMessageDeleted);
+        currentChat.off(ClientEvents.MessageNew, handleMessageNew);
+        currentChat.off(ClientEvents.MessageRead, handleMessageRead);
+        currentChat.off(ClientEvents.MessageDeleted, handleMessageDeleted);
       };
     }
-  }, [currentChannel, user_id]);
+  }, [currentChat, user_id]);
 
   const renderReadBy = useCallback(() => {
     switch (messageReadType) {
@@ -185,29 +187,31 @@ export default function ReadBy() {
       case MessageReadType.Read:
         return (
           <Tooltip title={`${readBy.length} members have seen`} placement="left">
-            <AnimatePresence initial={false}>
-              <StyledAvatarGroup max={5} spacing={1} onClick={() => setIsOpen(true)}>
-                {readBy.map(item => {
-                  const userInfo = users.find(user => user.id === item.user.id);
-                  const member = {
-                    name: item.user?.name ? item.user.name : userInfo ? userInfo.name : item.user.id,
-                    avatar: item.user?.avatar ? item.user.avatar : userInfo ? userInfo.avatar : '',
-                  };
-                  return (
-                    <motion.div
-                      key={item.user.id}
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.5, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                      style={{ display: 'flex', width: '18px', height: '18px' }}
-                    >
-                      <MemberAvatar member={member} width={18} height={18} />
-                    </motion.div>
-                  );
-                })}
-              </StyledAvatarGroup>
-            </AnimatePresence>
+            <div>
+              <AnimatePresence initial={false}>
+                <StyledAvatarGroup max={5} spacing={1} onClick={() => setIsOpen(true)}>
+                  {readBy.map(item => {
+                    const userInfo = users.find(user => user.id === item.user.id);
+                    const member = {
+                      name: item.user?.name ? item.user.name : userInfo ? userInfo.name : item.user.id,
+                      avatar: item.user?.avatar ? item.user.avatar : userInfo ? userInfo.avatar : '',
+                    };
+                    return (
+                      <motion.div
+                        key={item.user.id}
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.5, opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                        style={{ display: 'flex', width: '18px', height: '18px' }}
+                      >
+                        <MemberAvatar member={member} width={18} height={18} />
+                      </motion.div>
+                    );
+                  })}
+                </StyledAvatarGroup>
+              </AnimatePresence>
+            </div>
           </Tooltip>
         );
       default:

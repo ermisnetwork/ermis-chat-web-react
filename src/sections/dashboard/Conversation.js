@@ -88,17 +88,18 @@ const MoreOptions = ({ message, setIsOpen, orderMore, isMyMessage }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const { currentChannel, pinnedMessages } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
   const { canEditMessage, canDeleteMessage, canPinMessage } = useSelector(state => state.channel.channelPermissions);
 
   const [anchorEl, setAnchorEl] = useState(null);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
-  const membership = currentChannel.state.membership;
+  const membership = currentChannel.state?.membership;
   const channelType = currentChannel.type;
-  const channelId = currentChannel.id;
   const messageId = message.id;
   const messageText = message.text;
-  const isDelete = checkPermissionDeleteMessage(message, channelType, membership.user_id, membership.channel_role);
-  const isEdit = isMyMessage && message.text && [MessageType.Regular, MessageType.Reply].includes(message.type);
+  const isDelete = checkPermissionDeleteMessage(message, channelType, membership?.user_id, membership?.channel_role);
+  const isEdit = isMyMessage && message.text && [MessageType.Regular].includes(message.type);
   const isDownload = message.attachments;
   const isUnPin = pinnedMessages.some(msg => msg.id === messageId);
 
@@ -159,6 +160,7 @@ const MoreOptions = ({ message, setIsOpen, orderMore, isMyMessage }) => {
 
   const onTogglePin = async () => {
     try {
+      setAnchorEl(null);
       if (!canPinMessage) {
         dispatch(
           showSnackbar({ severity: 'error', message: 'You do not have permission to pin message in this channel' }),
@@ -174,11 +176,10 @@ const MoreOptions = ({ message, setIsOpen, orderMore, isMyMessage }) => {
           }),
         );
       } else {
-        const response = await currentChannel.pinMessage(messageId);
+        const response = await currentChat.pinMessage(messageId);
 
         if (response) {
           dispatch(showSnackbar({ severity: 'success', message: 'Message pinned' }));
-          setAnchorEl(null);
         }
       }
     } catch (error) {
@@ -188,7 +189,6 @@ const MoreOptions = ({ message, setIsOpen, orderMore, isMyMessage }) => {
           message: 'Unable to pin the message. Please try again',
         }),
       );
-      setAnchorEl(null);
     }
   };
 
@@ -315,7 +315,7 @@ const MessageOption = ({ isMyMessage, message }) => {
   const { isGuest } = useSelector(state => state.channel);
 
   const [isOpen, setIsOpen] = useState(false);
-  const isForward = [MessageType.Regular, MessageType.Reply, MessageType.Sticker].includes(message.type);
+  const isForward = [MessageType.Regular, MessageType.Sticker].includes(message.type);
   const orderReply = isMyMessage ? 3 : 1;
   const orderForward = 2;
   const orderMore = isMyMessage ? 1 : 3;
@@ -462,7 +462,7 @@ const TextLine = ({ message }) => {
             {part}
           </a>
         );
-      } else if (part.match(mentionRegex)) {
+      } else if (part.match(mentionRegex) && message.mentioned_users) {
         const mentionObj = mentions.find(m => m.mentionId === part || m.mentionName === part);
         if (mentionObj) {
           const customClass =
@@ -530,6 +530,8 @@ const PollBox = ({ message, all_members }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const { currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
   const { user_id } = useSelector(state => state.auth);
   const pollType = message.poll_type; // 'single' hoặc 'multiple'
   const pollOptions = message.poll_choice_counts || {}; // {option: count, ...}
@@ -558,10 +560,10 @@ const PollBox = ({ message, all_members }) => {
 
     if (pollType === 'multiple' && Array.isArray(selected)) {
       for (const choice of selected) {
-        await currentChannel.votePoll(message.id, choice);
+        await currentChat.votePoll(message.id, choice);
       }
     } else {
-      await currentChannel.votePoll(message.id, selected);
+      await currentChat.votePoll(message.id, selected);
     }
   };
 
@@ -800,7 +802,7 @@ const ReplyMsg = ({ el, all_members, onScrollToReplyMsg }) => {
   const voiceMsg = el.attachments ? el.attachments.find(attachment => attachment.type === 'voiceRecording') : null;
   const linkPreviewMsg =
     el.attachments && el.attachments[0]?.type === 'linkPreview' && el.attachments[0]?.title ? el.attachments[0] : null;
-  const stickerOfQuoted = quotedMessage.type === MessageType.Sticker ? quotedMessage.sticker_url : null;
+  const stickerOfQuoted = quotedMessage?.sticker_url ? quotedMessage.sticker_url : null;
 
   return (
     <Stack direction="row" justifyContent={el.isMyMessage ? 'end' : 'start'} alignItems="center">
@@ -835,12 +837,22 @@ const ReplyMsg = ({ el, all_members, onScrollToReplyMsg }) => {
             />
             {stickerOfQuoted && (
               <Box sx={{ paddingLeft: '10px' }}>
-                <ImageCanvas
-                  dataUrl={stickerOfQuoted}
-                  width={'50px'}
-                  height={'auto'}
-                  styleCustom={{ borderRadius: '6px' }}
-                />
+                {stickerOfQuoted.endsWith('.tgs') ? (
+                  <tgs-player
+                    autoplay
+                    loop
+                    mode="normal"
+                    src={stickerOfQuoted}
+                    style={{ width: '50px', height: 'auto' }}
+                  ></tgs-player>
+                ) : (
+                  <ImageCanvas
+                    dataUrl={stickerOfQuoted}
+                    width={'50px'}
+                    height={'auto'}
+                    styleCustom={{ borderRadius: '6px' }}
+                  />
+                )}
               </Box>
             )}
             {media && (
@@ -1046,12 +1058,24 @@ const StickerMsg = ({ el, forwardChannelName }) => {
       >
         <ForwardTo message={el} forwardChannelName={forwardChannelName} />
         <Stack direction="column" alignItems="flex-end" width={'200px'} justifyContent="center">
-          <ImageCanvas
-            dataUrl={el.sticker_url}
-            width={'200px'}
-            height={'200px'}
-            styleCustom={{ borderRadius: '12px' }}
-          />
+          {el.sticker_url.endsWith('.tgs') ? (
+            <tgs-player
+              autoplay
+              loop
+              mode="normal"
+              src={el.sticker_url}
+              style={{ width: '200px', height: '200px' }}
+            ></tgs-player>
+          ) : (
+            <ImageCanvas
+              dataUrl={el.sticker_url}
+              width={'200px'}
+              height={'200px'}
+              styleCustom={{ borderRadius: '12px' }}
+              openLightbox={true}
+            />
+          )}
+
           <DateLine date={isEdited ? el.updated_at : el.created_at} isMyMessage={el.isMyMessage} />
         </Stack>
 

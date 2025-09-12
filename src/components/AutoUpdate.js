@@ -1,11 +1,7 @@
-import { useEffect, useState } from 'react';
-import { Snackbar, Alert, Button, Stack } from '@mui/material';
+import { useEffect } from 'react';
 import { LocalStorageKey } from '../constants/localStorage-const';
 
 function AutoUpdate() {
-  const [open, setOpen] = useState(false);
-  const [newVersion, setNewVersion] = useState('');
-
   useEffect(() => {
     const storedVersion = window.localStorage.getItem(LocalStorageKey.AppVersion);
 
@@ -14,14 +10,14 @@ function AutoUpdate() {
         const response = await fetch('/version.json?t=' + new Date().getTime()); // Tránh cache
         const data = await response.json();
 
-        // Chỉ hiển thị thông báo nếu có phiên bản mới
+        // Nếu có phiên bản mới thì reload lại trang
         if (storedVersion && storedVersion !== data.version) {
-          setNewVersion(data.version);
-          setOpen(true); // Hiển thị thông báo
+          window.localStorage.setItem(LocalStorageKey.AppVersion, data.version);
+          window.location.reload();
+        } else {
+          // Lưu phiên bản hiện tại vào localStorage nếu chưa có
+          window.localStorage.setItem(LocalStorageKey.AppVersion, data.version);
         }
-
-        // Lưu phiên bản mới vào localStorage
-        window.localStorage.setItem(LocalStorageKey.AppVersion, data.version);
       } catch (error) {
         console.error('⚠️ Lỗi khi lấy version.json:', error);
       }
@@ -33,30 +29,8 @@ function AutoUpdate() {
     return () => clearInterval(interval);
   }, []);
 
-  return (
-    <Snackbar
-      open={open}
-      anchorOrigin={{ vertical: 'top', horizontal: 'left' }} // Góc trên bên trái
-      autoHideDuration={null} // Không tự động ẩn
-      sx={{ top: '0px !important', left: '100px !important' }}
-    >
-      <Alert severity="info">
-        🚀 A new version ({newVersion}) is available!
-        <Stack direction="row" justifyContent="flex-end" sx={{ marginTop: '10px' }}>
-          {' '}
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            onClick={() => window.location.reload()}
-            sx={{ textTransform: 'initial' }}
-          >
-            Refresh Now
-          </Button>
-        </Stack>
-      </Alert>
-    </Snackbar>
-  );
+  // Không cần render gì cả vì sẽ tự động reload khi có phiên bản mới
+  return null;
 }
 
 export default AutoUpdate;

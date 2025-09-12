@@ -2,10 +2,8 @@ import React from 'react';
 import { Stack, styled, useTheme, Typography, Button } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import ChannelAvatar from '../../components/ChannelAvatar';
-import { formatString, handleError, isPublicChannel } from '../../utils/commons';
+import { formatString, handleError } from '../../utils/commons';
 import { AvatarShape, ChatType, RoleMember } from '../../constants/commons-const';
-import AvatarComponent from '../../components/AvatarComponent';
-import { useNavigate } from 'react-router-dom';
 
 const StyledInvitation = styled(Stack)(({ theme }) => ({
   position: 'absolute',
@@ -24,10 +22,8 @@ const StyledButton = styled(Button)(({ theme }) => ({
 const ChannelInvitation = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const { currentChannel } = useSelector(state => state.channel);
-  const isPublic = isPublicChannel(currentChannel);
 
   const channelType = currentChannel?.type;
   const membership = currentChannel?.state?.membership;
@@ -78,19 +74,13 @@ const ChannelInvitation = () => {
           boxShadow: '0px 0px 2px rgba(0, 0, 0, 0.25)',
         }}
       >
-        {isPublic ? (
-          <AvatarComponent
-            name={currentChannel.data?.name}
-            url={currentChannel.data?.image || ''}
-            width={100}
-            height={100}
-            isPublic={isPublic}
-            openLightbox={true}
-            shape={AvatarShape.Round}
-          />
-        ) : (
-          <ChannelAvatar channel={currentChannel} width={100} height={100} openLightbox={true} />
-        )}
+        <ChannelAvatar
+          channel={currentChannel}
+          width={100}
+          height={100}
+          openLightbox={true}
+          shape={AvatarShape.Round}
+        />
         <Typography variant="h6" sx={{ color: theme.palette.text.primary, margin: '15px 0' }}>
           {formatString(currentChannel.data.name)}
         </Typography>

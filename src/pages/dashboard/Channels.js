@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Stack, Typography, Tabs, Tab, Chip } from '@mui/material';
+import { Stack, Typography, Tabs, Tab, Chip, Button } from '@mui/material';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import ChatElement from '../../components/ChatElement';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,6 +8,8 @@ import HomeSearch from '../../components/Search/HomeSearch';
 import SkeletonChannels from '../../components/SkeletonChannels';
 import FlipMove from 'react-flip-move';
 import NoResult from '../../assets/Illustration/NoResult';
+import { MagnifyingGlass } from 'phosphor-react';
+import { SetOpenHomeSearch } from '../../redux/slices/app';
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   minHeight: 'auto',
@@ -57,13 +59,18 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
 const Channels = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { activeChannels, loadingChannels, pinnedChannels, unreadChannels } = useSelector(state => state.channel);
+  const { activeChannels, loadingChannels, pinnedChannels, unreadChannels, currentChannel } = useSelector(
+    state => state.channel,
+  );
+  const { openHomeSearch } = useSelector(state => state.app);
+  const { openTopicPanel } = useSelector(state => state.topic);
   const [listTab, setListTab] = useState([
     { label: 'All', value: TabValueChannel.All, count: 0 },
     { label: 'Group', value: TabValueChannel.Group, count: 0 },
     { label: 'Unread', value: TabValueChannel.Unread, count: 0 },
   ]);
   const [tabSeledected, setTabSelected] = useState(TabValueChannel.All);
+  const isEnabledTopics = currentChannel?.data?.topics_enabled && openTopicPanel;
 
   useEffect(() => {
     setListTab([
@@ -140,12 +147,12 @@ const Channels = () => {
               key="no-channels"
               sx={{ width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '50px!important' }}
             >
-              <NoResult width={180} height={180} />
+              <NoResult width={isEnabledTopics ? 80 : 180} height={isEnabledTopics ? 80 : 180} />
               <Typography
                 variant="subtitle2"
                 sx={{
                   textAlign: 'center',
-                  fontSize: '16px',
+                  fontSize: isEnabledTopics ? '10px' : '16px',
                   color: theme.palette.text.primary,
                   marginTop: '15px',
                 }}
@@ -157,18 +164,40 @@ const Channels = () => {
         </>
       );
     }
-  }, [activeChannels, pinnedChannels, loadingChannels, unreadChannels, tabSeledected, theme]);
+  }, [activeChannels, pinnedChannels, loadingChannels, unreadChannels, tabSeledected, theme, isEnabledTopics]);
+
+  const onToggleHomeSearch = () => {
+    dispatch(SetOpenHomeSearch(!openHomeSearch));
+  };
 
   return (
     <Stack spacing={2} sx={{ height: '100%', width: '100%', padding: '15px' }}>
       <Stack spacing={2}>
-        <HomeSearch channels={activeChannels} />
+        {isEnabledTopics ? (
+          <Button
+            size="large"
+            variant="contained"
+            color="inherit"
+            sx={{ borderRadius: '16px', backgroundColor: theme.palette.background.neutral, boxShadow: 'none' }}
+            onClick={onToggleHomeSearch}
+          >
+            <MagnifyingGlass size={22} color={theme.palette.text.primary} />
+          </Button>
+        ) : (
+          <HomeSearch />
+        )}
+
         <StyledTabs
           value={tabSeledected}
           onChange={(event, newValue) => {
             setTabSelected(newValue);
           }}
           variant="scrollable"
+          sx={{
+            transition: 'all 0.2s ease',
+            marginLeft: isEnabledTopics ? '-15px !important' : '0px',
+            marginRight: isEnabledTopics ? '-15px !important' : '0px',
+          }}
         >
           {listTab.map((item, index) => {
             return (

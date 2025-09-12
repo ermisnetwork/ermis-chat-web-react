@@ -13,8 +13,10 @@ const DeleteMessageDialog = () => {
   const dispatch = useDispatch();
   const { openDialog, messageId } = useSelector(state => state.messages.deleteMessage);
   const { currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
 
   const [loadingButton, setLoadingButton] = useState(false);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
   const onCloseDialog = () => {
     dispatch(onDeleteMessage({ openDialog: false, messageId: '' }));
@@ -23,7 +25,7 @@ const DeleteMessageDialog = () => {
   const onSubmit = async () => {
     try {
       setLoadingButton(true);
-      const response = await currentChannel.deleteMessage(messageId);
+      const response = await currentChat.deleteMessage(messageId);
       if (response) {
         onCloseDialog();
         setLoadingButton(false);

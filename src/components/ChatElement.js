@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Badge, Box, Stack, Typography, Menu, MenuItem } from '@mui/material';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { Badge, Box, Stack, Typography, Menu, MenuItem, Tooltip } from '@mui/material';
 import { styled, useTheme, alpha } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -9,26 +9,28 @@ import {
   UpdateUnreadChannel,
 } from '../redux/slices/channel';
 import ChannelAvatar from './ChannelAvatar';
-import { isChannelDirect, isPublicChannel, myRoleInChannel } from '../utils/commons';
+import { isChannelDirect, myRoleInChannel } from '../utils/commons';
 import { ClientEvents } from '../constants/events-const';
 import { onEditMessage, onReplyMessage } from '../redux/slices/messages';
-import { EnvelopeSimpleOpen, Play, PushPin, PushPinSlash, SignOut, Trash } from 'phosphor-react';
-import { AvatarShape, ConfirmType, MessageType, RoleMember } from '../constants/commons-const';
+import { Play, PushPin, PushPinSlash, SignOut, Trash } from 'phosphor-react';
+import { AvatarShape, ChatType, ConfirmType, MessageType, RoleMember } from '../constants/commons-const';
 import { setChannelConfirm } from '../redux/slices/dialog';
 import { convertMessageSystem } from '../utils/messageSystem';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PATH } from '../config';
-import AvatarComponent from './AvatarComponent';
 import { convertMessageSignal } from '../utils/messageSignal';
 import { getDisplayDate } from '../utils/formatTime';
 import { client } from '../client';
 import { SpearkerOffIcon } from './Icons';
+import AvatarGeneralDefault from './AvatarGeneralDefault';
+import TopicAvatar from './TopicAvatar';
+import { SetOpenTopicPanel } from '../redux/slices/topic';
 
 const StyledChatBox = styled(Box)(({ theme }) => ({
-  width: '100%',
+  // width: '100%',
   borderRadius: '16px',
   position: 'relative',
-  transition: 'background-color 0.2s ease-in-out',
+  transition: 'all 0.2s ease-in-out',
   display: 'flex',
   alignItems: 'center',
   '&:hover': {
@@ -66,22 +68,87 @@ const StyledMenu = styled(Menu)(({ theme }) => ({
   },
 }));
 
+const ListTopic = ({ topics }) => {
+  const theme = useTheme();
+  const maxTopics = 2; // Số topic tối đa hiển thị
+
+  const visibleTopics = topics.slice(0, maxTopics);
+  const hasMore = topics.length > maxTopics;
+
+  return (
+    <Stack direction="row" alignItems="center" gap={2}>
+      <Stack direction="row" alignItems="center">
+        <Typography
+          variant="caption"
+          sx={{
+            color: theme.palette.text.primary,
+            fontSize: '12px',
+            fontWeight: 400,
+          }}
+        >
+          General&nbsp;
+        </Typography>
+        <AvatarGeneralDefault size={16} />
+      </Stack>
+
+      {visibleTopics.map(topic => {
+        return (
+          <Stack key={topic.id} direction="row" alignItems="center" sx={{ maxWidth: 120, minWidth: 0 }}>
+            <Typography
+              variant="caption"
+              noWrap
+              sx={{
+                color: theme.palette.text.primary,
+                fontSize: '12px',
+                fontWeight: 400,
+                maxWidth: 70,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {topic.data.name}&nbsp;
+            </Typography>
+            <TopicAvatar
+              url={topic.data?.image || ''}
+              name={topic.data?.name || ''}
+              size={20}
+              shape={AvatarShape.Round}
+            />
+          </Stack>
+        );
+      })}
+
+      {hasMore && (
+        <Typography
+          variant="caption"
+          sx={{
+            color: theme.palette.text.secondary,
+            fontSize: '16px',
+            fontWeight: 600,
+          }}
+        >
+          ...
+        </Typography>
+      )}
+    </Stack>
+  );
+};
+
 const ChatElement = ({ channel }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const navigate = useNavigate();
   const { currentChannel, mutedChannels, unreadChannels } = useSelector(state => state.channel);
+  const { openTopicPanel } = useSelector(state => state.topic);
   const { user_id } = useSelector(state => state.auth);
   const users = client.state.users ? Object.values(client.state.users) : [];
   const channelId = channel?.id || '';
   const channelType = channel?.type || '';
   const isDirect = isChannelDirect(channel);
   const myRole = myRoleInChannel(channel);
-  const isPublic = isPublicChannel(channel);
   const isPinned = channel.data.is_pinned;
 
   const [lastMessage, setLastMessage] = useState('');
-  const [count, setCount] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const openMenu = Boolean(anchorEl);
   const [isRightClick, setIsRightClick] = useState(false);
@@ -91,6 +158,13 @@ const ChatElement = ({ channel }) => {
   const showItemLeaveChannel = !isDirect && [RoleMember.MOD, RoleMember.MEMBER].includes(myRole);
   const showItemDeleteChannel = !isDirect && [RoleMember.OWNER].includes(myRole);
   const showItemDeleteConversation = isDirect;
+  const showItemMarkAsRead =
+    unreadChannels && unreadChannels.some(item => item.id === channelId && item.unreadCount > 0);
+  const isMuted = mutedChannels.some(channel => channel.id === channelId);
+  const isEnabledTopics = channel.data?.topics_enabled;
+  const topics = channel.state?.topics ? channel.state?.topics : [];
+  const hasUnread = unreadChannels && unreadChannels.some(item => item.id === channelId);
+  const isCurrentChannelEnabledTopic = currentChannel?.data?.topics_enabled;
 
   const replaceMentionsWithNames = inputValue => {
     users.forEach(user => {
@@ -182,58 +256,170 @@ const ChatElement = ({ channel }) => {
     }
   };
 
+  // Hàm tối ưu để tìm tin nhắn mới nhất
+  const getOptimizedLastMessage = useCallback(channel => {
+    const channelMessages = channel.state.messages || [];
+    const channelLastMsg = channelMessages.length > 0 ? channelMessages[channelMessages.length - 1] : null;
+
+    // Nếu không phải TEAM channel hoặc không có topics
+    if (channel.type !== ChatType.TEAM || !channel.data.topics_enabled || !channel.state?.topics) {
+      return channelLastMsg;
+    }
+
+    const topics = channel.state.topics;
+    if (topics.length === 0) {
+      return channelLastMsg;
+    }
+
+    // Tìm tin nhắn mới nhất từ topics
+    let latestTopicMessage = null;
+    let latestTopicTimestamp = 0;
+
+    for (const topic of topics) {
+      const topicMessages = topic.state?.messages;
+      if (topicMessages && topicMessages.length > 0) {
+        const topicLastMessage = topicMessages[topicMessages.length - 1];
+        const messageTimestamp = new Date(topicLastMessage.updated_at || topicLastMessage.created_at).getTime();
+
+        if (messageTimestamp > latestTopicTimestamp) {
+          latestTopicMessage = topicLastMessage;
+          latestTopicTimestamp = messageTimestamp;
+        }
+      }
+    }
+
+    // So sánh giữa channel và topic để chọn tin nhắn mới nhất
+    if (!latestTopicMessage) return channelLastMsg;
+    if (!channelLastMsg) return latestTopicMessage;
+
+    const channelTimestamp = new Date(channelLastMsg.updated_at || channelLastMsg.created_at).getTime();
+    return latestTopicTimestamp > channelTimestamp ? latestTopicMessage : channelLastMsg;
+  }, []);
+
+  // Memoize tin nhắn cuối cùng để tránh tính toán lại không cần thiết
+  const optimizedLastMessage = useMemo(() => {
+    return getOptimizedLastMessage(channel);
+  }, [channel.state.messages, channel.state?.topics, getOptimizedLastMessage, channel]);
+
   useEffect(() => {
-    const lastMsg =
-      channel.state.messages.length > 0 ? channel.state.messages[channel.state.messages.length - 1] : null;
-    getLastMessage(lastMsg);
+    getLastMessage(optimizedLastMessage);
 
     const membership = channel.state.membership;
     const blocked = membership?.blocked ?? false;
     setIsBlocked(blocked);
-    setCount(channel.state.unreadCount);
 
     const handleMessageNew = event => {
-      if (event.channel_id === channel.data.id) {
-        setCount(event.unread_count);
+      const isCurrentChannel = event.channel_id === channel.data.id;
+      // Kiểm tra parent_cid để xác định message có phải từ topic trong channel này không
+      const isTopicInChannel = event?.parent_cid === channel.cid;
 
+      if (event.user.id !== user_id) {
+        if (isTopicInChannel) {
+          // Là topic
+          const existingChannel = unreadChannels && unreadChannels.find(item => item.id === channel.data.id);
+          const existingTopic = existingChannel && existingChannel.unreadTopics.find(t => t.id === event.channel_id);
+
+          if (existingTopic) {
+            // Cập nhật số lượng tin nhắn chưa đọc cho topic
+            const topic = {
+              ...existingTopic,
+              unreadCount: event.unread_count,
+            };
+            const unreadChannel = {
+              ...existingChannel,
+              unreadTopics: existingChannel.unreadTopics.map(t => (t.id === event.channel_id ? topic : t)),
+            };
+
+            dispatch(UpdateUnreadChannel(unreadChannel));
+          } else {
+            // Thêm topic mới vào danh sách unreadChannels
+            const topic = {
+              id: event.channel_id,
+              unreadCount: event.unread_count,
+            };
+
+            const unreadChannel = {
+              id: channel.data.id,
+              unreadCount: existingChannel ? existingChannel.unreadCount : 0,
+              unreadTopics: [...(existingChannel ? existingChannel.unreadTopics : []), topic],
+            };
+
+            dispatch(AddUnreadChannel(unreadChannel));
+          }
+        } else if (isCurrentChannel) {
+          // Là channel
+          const existingChannel = unreadChannels && unreadChannels.find(item => item.id === event.channel_id);
+
+          if (existingChannel) {
+            // Cập nhật số lượng tin nhắn chưa đọc
+            const updatedChannel = {
+              ...existingChannel,
+              unreadCount: event.unread_count,
+            };
+            dispatch(UpdateUnreadChannel(updatedChannel));
+          } else {
+            // Thêm channel mới vào danh sách unreadChannels
+            const unreadChannel = {
+              id: event.channel_id,
+              unreadCount: event.unread_count,
+              unreadTopics: [],
+            };
+            dispatch(AddUnreadChannel(unreadChannel));
+          }
+        }
+      }
+
+      if (isCurrentChannel || isTopicInChannel) {
         if (!(event.message.type === MessageType.Signal && ['1', '4'].includes(event.message.text[0]))) {
           // không cần hiển thị last message với AudioCallStarted (1) hoặc VideoCallStarted (4) khi có cuộc gọi
           getLastMessage(event.message);
-        }
-
-        if (event.user.id !== user_id && unreadChannels) {
-          const existingChannel = unreadChannels.find(item => item.id === event.channel_id);
-          dispatch(
-            existingChannel && event.unread_count > 0
-              ? UpdateUnreadChannel(event.channel_id, event.unread_count, event.channel_type)
-              : AddUnreadChannel(event.channel_id, event.unread_count, event.channel_type),
-          );
         }
       }
     };
 
     const handleMessageUpdated = event => {
-      if (event.channel_id === channel.data.id) {
-        const lastMsg =
-          channel.state.messages.length > 0 ? channel.state.messages[channel.state.messages.length - 1] : null;
-        getLastMessage(lastMsg);
+      const isCurrentChannel = event.channel_id === channel.data.id;
+      const isTopicInChannel = event.parent_cid === channel.cid;
+
+      if (isCurrentChannel || isTopicInChannel) {
+        // Sử dụng hàm tối ưu thay vì tính toán lại
+        const updatedLastMsg = getOptimizedLastMessage(channel);
+        getLastMessage(updatedLastMsg);
       }
     };
 
     const handleMessageDeleted = event => {
-      if (event.channel_id === channel.data.id) {
-        const lastMsg =
-          channel.state.messages.length > 0 ? channel.state.messages[channel.state.messages.length - 1] : null;
-        getLastMessage(lastMsg);
+      const isCurrentChannel = event.channel_id === channel.data.id;
+      const isTopicInChannel = event.parent_cid === channel.cid;
+
+      if (isCurrentChannel || isTopicInChannel) {
+        // Sử dụng hàm tối ưu thay vì tính toán lại
+        const updatedLastMsg = getOptimizedLastMessage(channel);
+        getLastMessage(updatedLastMsg);
       }
     };
 
     const handleMessageRead = event => {
-      if (event.user.id === user_id && event.channel_id === channel.data.id) {
-        setCount(0);
+      if (event.user.id === user_id) {
+        const isCurrentChannel = event.channel_id === channel.data.id;
 
-        if (unreadChannels.some(item => item.id === event.channel_id)) {
-          dispatch(RemoveUnreadChannel(event.channel_id));
+        // Kiểm tra channel_id là topic hay channel
+        const topicInChannel = channel.state.topics && channel.state.topics.find(t => t.id === event.channel_id);
+
+        if (topicInChannel) {
+          // Là topic
+          const existingChannel = unreadChannels && unreadChannels.find(item => item.id === channel.data.id);
+          if (existingChannel) {
+            const existingTopic = existingChannel.unreadTopics.find(t => t.id === topicInChannel.id);
+            if (existingTopic) {
+              dispatch(RemoveUnreadChannel(channel.data.id, topicInChannel.id));
+            }
+          }
+        } else if (isCurrentChannel) {
+          // Là channel
+          if (unreadChannels.some(item => item.id === event.channel_id)) {
+            dispatch(RemoveUnreadChannel(event.channel_id));
+          }
         }
       }
     };
@@ -264,13 +450,15 @@ const ChatElement = ({ channel }) => {
       client.off(ClientEvents.MemberBlocked, handleMemberBlocked);
       client.off(ClientEvents.MemberUnblocked, handleMemberUnBlocked);
     };
-  }, [channel, user_id, users.length, unreadChannels]);
+  }, [channel, user_id, users.length, unreadChannels, getOptimizedLastMessage]);
 
   const onLeftClick = () => {
-    if (!isRightClick && currentChannel?.id !== channelId) {
-      navigate(`${DEFAULT_PATH}/${channelType}:${channelId}`);
+    if (!isRightClick) {
+      navigate(`${DEFAULT_PATH}/${channel.cid}`);
       dispatch(onReplyMessage(null));
       dispatch(onEditMessage(null));
+
+      dispatch(SetOpenTopicPanel(isEnabledTopics ? true : false));
     }
     setAnchorEl(null);
   };
@@ -287,9 +475,7 @@ const ChatElement = ({ channel }) => {
   };
 
   const onMarkAsRead = () => {
-    if (count > 0) {
-      dispatch(SetMarkReadChannel(channel));
-    }
+    dispatch(SetMarkReadChannel(channel));
   };
 
   const onLeave = () => {
@@ -307,12 +493,12 @@ const ChatElement = ({ channel }) => {
       openDialog: true,
       channel,
       userId: user_id,
-      type: ConfirmType.DELETE,
+      type: ConfirmType.DELETE_CHANNEL,
     };
     dispatch(setChannelConfirm(payload));
   };
 
-  const onTruncate = () => {
+  const onClearChatHistory = () => {
     const payload = {
       openDialog: true,
       channel,
@@ -330,36 +516,49 @@ const ChatElement = ({ channel }) => {
     }
   };
 
-  const isMuted = mutedChannels.some(channel => channel.id === channelId);
-  const isSelectedChannel = currentChannel?.id === channelId;
-
   return (
     <>
       <StyledChatBox
         onClick={onLeftClick}
         onContextMenu={onRightClick}
         sx={{
-          backgroundColor: isSelectedChannel ? `${alpha(theme.palette.primary.main, 0.2)} !important` : 'transparent',
-          padding: '6px',
+          backgroundColor:
+            currentChannel?.id === channelId ? `${alpha(theme.palette.primary.main, 0.2)} !important` : 'transparent',
+          padding: '8px',
+          margin: '-8px',
         }}
         gap={2}
       >
         {/* -------------------------------avatar------------------------------- */}
-        {isPublic ? (
-          <AvatarComponent
-            name={channel.data.name}
-            url={channel.data?.image || ''}
-            width={60}
-            height={60}
-            isPublic={isPublic}
-            shape={AvatarShape.Round}
-          />
-        ) : (
+        <Box sx={{ position: 'relative', width: 60, height: 60 }}>
+          {hasUnread && openTopicPanel ? (
+            <Badge
+              variant="dot"
+              color="error"
+              sx={{
+                position: 'absolute',
+                top: '5px',
+                right: '5px',
+                zIndex: 2,
+                '& .MuiBadge-badge': {
+                  minWidth: '12px',
+                  width: '12px',
+                  height: '12px',
+                },
+              }}
+            />
+          ) : null}
           <ChannelAvatar channel={channel} width={60} height={60} shape={AvatarShape.Round} />
-        )}
+        </Box>
 
         {/* -------------------------------content------------------------------- */}
-        <Box sx={{ flex: 1, minWidth: 'auto', overflow: 'hidden' }}>
+        <Box
+          sx={{
+            flex: openTopicPanel ? 0 : 1,
+            minWidth: 'auto',
+            overflow: 'hidden',
+          }}
+        >
           {/* -------------------------------channel name------------------------------- */}
           <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
             <Typography
@@ -397,13 +596,16 @@ const ChatElement = ({ channel }) => {
             </Stack>
           </Stack>
 
+          {/* -------------------------------list topic------------------------------- */}
+          {isEnabledTopics && <ListTopic topics={topics} />}
+
           {/* -------------------------------last message------------------------------- */}
           {!isBlocked && (
             <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
               <Typography
                 variant="caption"
                 sx={{
-                  color: count > 0 ? 'inherit' : theme.palette.text.secondary,
+                  color: hasUnread ? 'inherit' : theme.palette.text.secondary,
                   flex: 1,
                   minWidth: 'auto',
                   whiteSpace: 'nowrap',
@@ -411,13 +613,13 @@ const ChatElement = ({ channel }) => {
                   textOverflow: 'ellipsis',
                   fontSize: '14px',
                   display: 'block',
-                  fontWeight: count > 0 ? 600 : 400,
+                  fontWeight: hasUnread ? 600 : 400,
                 }}
               >
                 {isBlocked ? 'You have block this user' : lastMessage}
               </Typography>
 
-              {count > 0 ? <Badge variant="dot" color="error" sx={{ margin: '0 10px 0 15px' }} /> : null}
+              {hasUnread ? <Badge variant="dot" color="error" sx={{ margin: '0 10px 0 15px' }} /> : null}
             </Stack>
           )}
         </Box>
@@ -445,12 +647,12 @@ const ChatElement = ({ channel }) => {
         </MenuItem>
 
         {/* --------------------Mark as read---------------- */}
-        {count > 0 && (
+        {/* {showItemMarkAsRead && (
           <MenuItem onClick={onMarkAsRead}>
             <EnvelopeSimpleOpen />
             Mark as read
           </MenuItem>
-        )}
+        )} */}
 
         {/* --------------------Delete channel---------------- */}
         {showItemDeleteChannel && (
@@ -468,11 +670,11 @@ const ChatElement = ({ channel }) => {
           </MenuItem>
         )}
 
-        {/* --------------------Delete chat---------------- */}
+        {/* --------------------Clear chat history---------------- */}
         {showItemDeleteConversation && (
-          <MenuItem sx={{ color: theme.palette.error.main }} onClick={onTruncate}>
+          <MenuItem sx={{ color: theme.palette.error.main }} onClick={onClearChatHistory}>
             <Trash color={theme.palette.error.main} />
-            Delete chat
+            Clear chat history
           </MenuItem>
         )}
       </StyledMenu>

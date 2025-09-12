@@ -61,11 +61,11 @@ const ChannelConfirmDialog = () => {
         onCloseDialog();
         setLoadingButton(false);
 
-        if ([ConfirmType.LEAVE, ConfirmType.DELETE].includes(type)) {
-          dispatch(setSidebar({ type: SidebarType.Channel, open: false }));
-          dispatch(RemoveActiveChannel(channelId));
-          navigate(`${DEFAULT_PATH}`);
-        }
+        // if ([ConfirmType.LEAVE, ConfirmType.DELETE_CHANNEL].includes(type)) {
+        //   dispatch(setSidebar({ type: SidebarType.Channel, open: false }));
+        //   dispatch(RemoveActiveChannel(channelId));
+        //   navigate(`${DEFAULT_PATH}`);
+        // }
       };
 
       channel.on(ClientEvents.ChannelDeleted, handleChannelConfirmed);
@@ -98,7 +98,7 @@ const ChannelConfirmDialog = () => {
         return 'You have left the channel';
       case ConfirmType.REMOVE_MEMBER:
         return 'Remove member successfully!';
-      case ConfirmType.DELETE:
+      case ConfirmType.DELETE_CHANNEL:
         return 'Delete channel successfully!';
       case ConfirmType.REMOVE_MODER:
         return 'Remove moder successfully!';
@@ -110,6 +110,8 @@ const ChannelConfirmDialog = () => {
         return `Successfully unblocked ${directChannelName}`;
       case ConfirmType.UNBANNED:
         return `Successfully unbanned ${userName}`;
+      case ConfirmType.DELETE_TOPIC:
+        return 'Delete topic successfully!';
       default:
         return '';
     }
@@ -121,7 +123,7 @@ const ChannelConfirmDialog = () => {
         return 'Are you sure you want to leave this channel?';
       case ConfirmType.REMOVE_MEMBER:
         return 'Are you sure you want to remove this member?';
-      case ConfirmType.DELETE:
+      case ConfirmType.DELETE_CHANNEL:
         return (
           <>
             Once the channel <strong>{channelName}</strong> is deleted, all content and chat history will be permanently
@@ -162,6 +164,15 @@ const ChannelConfirmDialog = () => {
             He/she will be able to send you message again
           </>
         );
+      case ConfirmType.DELETE_TOPIC:
+        return (
+          <>
+            Once the topic <strong>{channelName}</strong> is deleted, all content and chat history will be permanently
+            lost. This action cannot be undone.
+            <br />
+            Are you sure you want to proceed
+          </>
+        );
       default:
         return '';
     }
@@ -173,18 +184,20 @@ const ChannelConfirmDialog = () => {
         return 'Leave this channel';
       case ConfirmType.REMOVE_MEMBER:
         return 'Remove this member';
-      case ConfirmType.DELETE:
+      case ConfirmType.DELETE_CHANNEL:
         return 'Are you sure you want to delete this channel?';
       case ConfirmType.REMOVE_MODER:
         return 'Remove this moderator';
       case ConfirmType.TRUNCATE:
-        return 'Delete chat';
+        return 'Clear chat history';
       case ConfirmType.BLOCK:
         return 'Block this user';
       case ConfirmType.UNBLOCK:
         return 'Unblock this user';
       case ConfirmType.UNBANNED:
         return 'Unban this user';
+      case ConfirmType.DELETE_TOPIC:
+        return 'Are you sure you want to delete this topic?';
       default:
         return '';
     }
@@ -196,18 +209,20 @@ const ChannelConfirmDialog = () => {
         return 'Leave';
       case ConfirmType.REMOVE_MEMBER:
         return 'Remove';
-      case ConfirmType.DELETE:
+      case ConfirmType.DELETE_CHANNEL:
         return 'Delete';
       case ConfirmType.REMOVE_MODER:
         return 'Remove';
       case ConfirmType.TRUNCATE:
-        return 'Delete';
+        return 'Clear';
       case ConfirmType.BLOCK:
         return 'Block';
       case ConfirmType.UNBLOCK:
         return 'Unblock';
       case ConfirmType.UNBANNED:
         return 'Unban';
+      case ConfirmType.DELETE_TOPIC:
+        return 'Delete';
       default:
         return 'Yes';
     }
@@ -218,7 +233,7 @@ const ChannelConfirmDialog = () => {
       setLoadingButton(true);
       const response = [ConfirmType.LEAVE, ConfirmType.REMOVE_MEMBER].includes(type)
         ? await channel.removeMembers([userId])
-        : type === ConfirmType.DELETE
+        : [ConfirmType.DELETE_CHANNEL, ConfirmType.DELETE_TOPIC].includes(type)
           ? await channel.delete()
           : type === ConfirmType.REMOVE_MODER
             ? await channel.demoteModerators([userId])
@@ -235,7 +250,7 @@ const ChannelConfirmDialog = () => {
       onCloseDialog();
       setLoadingButton(false);
 
-      if (type === ConfirmType.DELETE) {
+      if (type === ConfirmType.DELETE_CHANNEL) {
         dispatch(
           showSnackbar({
             severity: 'error',
@@ -268,6 +283,13 @@ const ChannelConfirmDialog = () => {
           showSnackbar({
             severity: 'error',
             message: 'Unable to unban the user. Please try again',
+          }),
+        );
+      } else if (type === ConfirmType.DELETE_TOPIC) {
+        dispatch(
+          showSnackbar({
+            severity: 'error',
+            message: 'Failed to delete the topic. Please try again',
           }),
         );
       } else {

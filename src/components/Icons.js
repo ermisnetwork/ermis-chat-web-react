@@ -2087,6 +2087,228 @@ export const IdentityIcon = ({ size = 24, color = 'currentColor', ...props }) =>
   </svg>
 );
 
+export const StickyNoteIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      d="M7 10.5H15"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeMiterlimit={10}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M7 14.5H12"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeMiterlimit={10}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M15 21.5H9C4 21.5 3 19.44 3 15.32V9.15C3 4.45 4.67 3.19 8 3H16C19.33 3.18 21 4.45 21 9.15V15.5"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeMiterlimit={10}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M21 15.5L15 21.5V18.5C15 16.5 16 15.5 18 15.5H21Z"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const DotsThreeIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      d="M11.5628 12.0017C11.5628 12.2432 11.7588 12.4392 12.0003 12.4368C12.2418 12.4368 12.4378 12.2408 12.4378 11.9993C12.4378 11.7578 12.2418 11.5618 12.0003 11.5618C11.7588 11.563 11.5628 11.759 11.5628 12.0017"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M11.5628 7.3337C11.5628 7.5752 11.7588 7.7712 12.0003 7.76887C12.2418 7.76887 12.4378 7.57287 12.4378 7.33137C12.4378 7.08987 12.2418 6.89387 12.0003 6.89387C11.7588 6.89504 11.5628 7.09104 11.5628 7.3337"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M11.5628 16.6677C11.5628 16.9092 11.7588 17.1052 12.0003 17.1029C12.2418 17.1029 12.4378 16.9069 12.4378 16.6654C12.4378 16.4239 12.2418 16.2279 12.0003 16.2279C11.7588 16.229 11.5628 16.425 11.5628 16.6677"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M22.5 6.16667V17.8333C22.5 20.4105 20.4105 22.5 17.8333 22.5H6.16667C3.5895 22.5 1.5 20.4105 1.5 17.8333V6.16667C1.5 3.5895 3.5895 1.5 6.16667 1.5H17.8333C20.4105 1.5 22.5 3.5895 22.5 6.16667Z"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const InfoIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M16.0015 21.0036H7.99818C5.23603 21.0036 2.99609 18.7637 2.99609 16.0015V7.99818C2.99609 5.23603 5.23603 2.99609 7.99818 2.99609H16.0015C18.7637 2.99609 21.0036 5.23603 21.0036 7.99818V16.0015C21.0036 18.7637 18.7637 21.0036 16.0015 21.0036Z"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M11.9992 7.99815C11.8612 7.99815 11.7491 8.1102 11.7501 8.24826C11.7501 8.38631 11.8622 8.49836 12.0002 8.49836C12.1383 8.49836 12.2503 8.38631 12.2503 8.24826C12.2503 8.1102 12.1383 7.99815 11.9992 7.99815"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M12.2504 16.1856V11.4336H11.25"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const SearchIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      d="M19 19.0009L15.71 15.7109"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M15.7138 6.8382C18.1647 9.28913 18.1647 13.2629 15.7138 15.7138C13.2629 18.1647 9.28913 18.1647 6.8382 15.7138C4.38727 13.2629 4.38727 9.28913 6.8382 6.8382C9.28913 4.38727 13.2629 4.38727 15.7138 6.8382"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const ChatPurpleIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      d="M11 0.286133H13C18.9173 0.286133 23.7139 5.08266 23.7139 11V13C23.7139 18.9173 18.9173 23.7139 13 23.7139H3C1.50094 23.7139 0.286133 22.4991 0.286133 21V11C0.286133 5.08266 5.08266 0.286133 11 0.286133Z"
+      fill="url(#paint0_linear_7253_69199)"
+      stroke="#5027B1"
+      strokeWidth="0.571429"
+    />
+    <defs>
+      <linearGradient id="paint0_linear_7253_69199" x1={12} y1={0} x2={12} y2={24} gradientUnits="userSpaceOnUse">
+        <stop stopColor="#9265FF" />
+        <stop offset={1} stopColor="#5027B1" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+export const PinIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      d="M8.47201 15.5273L3.99707 20.0023"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M15.6277 4.58215L19.4169 8.37138C19.8408 8.79524 20.0523 9.38682 19.9932 9.98334C19.9342 10.5799 19.6107 11.1185 19.112 11.451L16.3557 13.2885C15.9416 13.5646 15.6452 13.9851 15.5245 14.468L14.3305 19.2442C14.243 19.5938 13.9743 19.8694 13.627 19.9656C13.2796 20.0618 12.9074 19.9638 12.6526 19.7089L4.29007 11.3465C4.03524 11.0916 3.93719 10.7194 4.03339 10.3721C4.1296 10.0247 4.40519 9.75599 4.75483 9.66857L9.53109 8.47457C10.014 8.35384 10.4345 8.05748 10.7106 7.64334L12.5481 4.88709C12.8806 4.38832 13.4192 4.06491 14.0157 4.00584C14.6123 3.94677 15.2038 4.15827 15.6277 4.58215Z"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const UnPinIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      d="M8.49894 15.502L3.99707 20.0038"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M9.4604 8.45898L4.97853 9.57945C4.62885 9.66686 4.35322 9.93562 4.25702 10.283C4.16082 10.6303 4.25891 11.0026 4.5138 11.2575L12.7424 19.486C12.9972 19.7409 13.3695 19.839 13.7168 19.7428C14.0642 19.6466 14.3329 19.371 14.4203 19.0213L15.5408 14.5393"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M17.4633 12.4609L19.112 11.3617C19.6107 11.0292 19.9341 10.4906 19.9932 9.89411C20.0523 9.29759 19.8408 8.70602 19.4169 8.28215L15.7168 4.58213C15.2929 4.15827 14.7013 3.94678 14.1048 4.00584C13.5083 4.06491 12.9697 4.38831 12.6372 4.88707L11.5381 6.53571"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M20.0031 19.0021L5.49707 4.49609"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const PauseCircleRedIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path d="M10 15V9" stroke="#EB0000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M14 15V9" stroke="#EB0000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+export const PlayCircleIcon = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 28 28" fill="none" {...props}>
+    <path
+      d="M13.9997 25.6654C20.443 25.6654 25.6663 20.442 25.6663 13.9987C25.6663 7.55538 20.443 2.33203 13.9997 2.33203C7.55635 2.33203 2.33301 7.55538 2.33301 13.9987C2.33301 20.442 7.55635 25.6654 13.9997 25.6654Z"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M11.667 9.33203L18.667 13.9987L11.667 18.6654V9.33203Z"
+      stroke="#7949EC"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 export default {
   EditProfileIcon,
   ArchiveMinusIcon,
@@ -2134,5 +2356,14 @@ export default {
   MinusCircleIcon,
   SmallCapsIcon,
   IdentityIcon,
+  StickyNoteIcon,
+  DotsThreeIcon,
+  InfoIcon,
+  SearchIcon,
+  ChatPurpleIcon,
+  PinIcon,
+  UnPinIcon,
+  PauseCircleRedIcon,
+  PlayCircleIcon,
   // Add any other icons here as needed
 };

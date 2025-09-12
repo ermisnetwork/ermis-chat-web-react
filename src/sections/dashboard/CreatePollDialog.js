@@ -34,6 +34,8 @@ const CreatePollDialog = () => {
   const theme = useTheme();
   const { openCreatePollDialog } = useSelector(state => state.dialog);
   const { currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
   const [loadingButton, setLoadingButton] = useState(false);
 
@@ -83,7 +85,7 @@ const CreatePollDialog = () => {
         poll_type: data.multipleAnswers ? 'multiple' : 'single',
       };
       setLoadingButton(true);
-      await currentChannel.createPoll(payload);
+      await currentChat.createPoll(payload);
       setLoadingButton(false);
       onCloseDialog();
     } catch (error) {

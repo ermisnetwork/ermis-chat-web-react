@@ -13,6 +13,7 @@ import AvatarComponent from '../AvatarComponent';
 import { splitChannelId } from '../../utils/commons';
 import { AvatarShape, ChatType } from '../../constants/commons-const';
 import { setSearchChannels } from '../../redux/slices/channel';
+import { SetOpenHomeSearch } from '../../redux/slices/app';
 
 const StyledSearchItem = styled(Box)(({ theme }) => ({
   transition: 'all .1s',
@@ -25,13 +26,13 @@ const StyledSearchItem = styled(Box)(({ theme }) => ({
   },
 }));
 
-const HomeSearch = ({ channels }) => {
+const HomeSearch = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
   const { user_id } = useSelector(state => state.auth);
-  const { searchChannels } = useSelector(state => state.channel);
-  const [visible, setVisible] = useState(false);
+  const { openHomeSearch } = useSelector(state => state.app);
+  const { searchChannels, activeChannels } = useSelector(state => state.channel);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredLocalChannels, setFilteredLocalChannels] = useState([]);
   const [publicChannels, setPublicChannels] = useState([]);
@@ -39,8 +40,8 @@ const HomeSearch = ({ channels }) => {
   const users = client.state.users ? Object.values(client.state.users) : [];
 
   useEffect(() => {
-    if (channels.length) {
-      const dataChannels = channels.map(channel => {
+    if (activeChannels.length) {
+      const dataChannels = activeChannels.map(channel => {
         let name = '';
         const channelData = channel.data;
         if (channelData.type === ChatType.MESSAGING) {
@@ -66,7 +67,7 @@ const HomeSearch = ({ channels }) => {
 
       dispatch(setSearchChannels(dataChannels));
     }
-  }, [channels, user_id]);
+  }, [activeChannels, user_id]);
 
   const debouncedSearch = useCallback(
     debounce(async term => {
@@ -90,7 +91,7 @@ const HomeSearch = ({ channels }) => {
   );
 
   const onFocusSearch = () => {
-    setVisible(true);
+    dispatch(SetOpenHomeSearch(true));
   };
 
   const onChangeSearch = async event => {
@@ -102,11 +103,11 @@ const HomeSearch = ({ channels }) => {
   };
 
   const onCloseSearch = () => {
-    setVisible(false);
     setSearchQuery('');
     setFilteredLocalChannels([]);
     setPublicChannels([]);
     setLoading(false);
+    dispatch(SetOpenHomeSearch(false));
   };
 
   const onSelectItem = (channelId, channelType) => {
@@ -118,7 +119,7 @@ const HomeSearch = ({ channels }) => {
     <>
       <Stack sx={{ width: '100%', position: 'relative', zIndex: 4 }}>
         <Stack direction="row" alignItems="center" gap={1}>
-          {visible && (
+          {openHomeSearch && (
             <IconButton onClick={onCloseSearch}>
               <ArrowLeft />
             </IconButton>
@@ -126,7 +127,11 @@ const HomeSearch = ({ channels }) => {
 
           <Search>
             <SearchIconWrapper>
-              {loading ? <LoadingSpinner size={18} /> : <MagnifyingGlass size={18} />}
+              {loading ? (
+                <LoadingSpinner size={18} color={theme.palette.text.primary} />
+              ) : (
+                <MagnifyingGlass size={18} color={theme.palette.text.primary} />
+              )}
             </SearchIconWrapper>
             <StyledInputBase
               placeholder="Search channel"
@@ -151,7 +156,7 @@ const HomeSearch = ({ channels }) => {
           zIndex: 3,
           backgroundColor: theme.palette.mode === 'light' ? '#fff' : theme.palette.grey[900],
           borderRadius: '16px',
-          display: visible ? 'block' : 'none',
+          display: openHomeSearch ? 'block' : 'none',
         }}
       >
         <Stack
@@ -170,8 +175,7 @@ const HomeSearch = ({ channels }) => {
               {filteredLocalChannels.length ? (
                 <Stack spacing={1}>
                   {filteredLocalChannels.map(channel => {
-                    const dataChannel = channels.find(it => it.data.id === channel.id);
-                    const isPublic = channel.type === ChatType.TEAM && channel.public;
+                    const dataChannel = activeChannels.find(it => it.data.id === channel.id);
                     const channelId = channel.id;
                     const channelType = channel.type;
                     return (
@@ -188,18 +192,7 @@ const HomeSearch = ({ channels }) => {
                           justifyContent="space-between"
                           sx={{ padding: '12px' }}
                         >
-                          {isPublic ? (
-                            <AvatarComponent
-                              name={channel.name}
-                              url={channel.image}
-                              width={40}
-                              height={40}
-                              isPublic={isPublic}
-                              shape={AvatarShape.Round}
-                            />
-                          ) : (
-                            <ChannelAvatar channel={dataChannel} width={40} height={40} />
-                          )}
+                          <ChannelAvatar channel={dataChannel} width={40} height={40} shape={AvatarShape.Round} />
                           <Stack sx={{ width: 'calc(100% - 40px)', paddingLeft: '15px' }}>
                             <Typography
                               variant="subtitle2"

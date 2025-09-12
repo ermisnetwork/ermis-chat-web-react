@@ -23,7 +23,6 @@ import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { setChannelConfirm, SetOpenInviteFriendDialog } from '../../redux/slices/dialog';
 import { ClientEvents } from '../../constants/events-const';
-import AvatarComponent from '../../components/AvatarComponent';
 import { DOMAIN_APP } from '../../config';
 import AntSwitch from '../../components/AntSwitch';
 import ChannelNotificationDialog from './ChannelNotificationDialog';
@@ -42,6 +41,7 @@ import {
   LogoutIcon,
   PeopleIcon,
   ProfileAddIcon,
+  StickyNoteIcon,
   TrashIcon,
   UserOctagonIcon,
   UsersIcon,
@@ -92,7 +92,6 @@ const FormTeamChannelInfo = ({ isEditing, setIsEditing, formSubmitRef, setSaveDi
   const theme = useTheme();
   const dispatch = useDispatch();
   const { currentChannel } = useSelector(state => state.channel);
-  const isPublic = isPublicChannel(currentChannel);
 
   const channelInfo = {
     name: currentChannel.data.name || '',
@@ -212,27 +211,13 @@ const FormTeamChannelInfo = ({ isEditing, setIsEditing, formSubmitRef, setSaveDi
             {isEditing ? (
               <RHFUploadAvatar name="image" onDrop={handleDrop} />
             ) : (
-              <>
-                {isPublic ? (
-                  <AvatarComponent
-                    name={channelInfo?.name}
-                    url={channelInfo?.image || ''}
-                    width={130}
-                    height={130}
-                    isPublic={isPublic}
-                    openLightbox={true}
-                    shape={AvatarShape.Round}
-                  />
-                ) : (
-                  <ChannelAvatar
-                    channel={currentChannel}
-                    width={130}
-                    height={130}
-                    openLightbox={true}
-                    shape={AvatarShape.Round}
-                  />
-                )}
-              </>
+              <ChannelAvatar
+                channel={currentChannel}
+                width={130}
+                height={130}
+                openLightbox={true}
+                shape={AvatarShape.Round}
+              />
             )}
             {/* --------------------channel name-------------------- */}
             <Typography
@@ -405,10 +390,11 @@ const SidebarChannelInfo = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [saveDisabled, setSaveDisabled] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
+  const enableTopics = currentChannel?.data?.topics_enabled;
 
   useEffect(() => {
     if (currentChannel) {
-      setIsMuted(mutedChannels.some(item => item.id === currentChannel.id));
+      setIsMuted(!!(mutedChannels && mutedChannels.some(item => item.id === currentChannel.id)));
 
       setIsBlocked(checkDirectBlock(currentChannel));
 
@@ -471,12 +457,12 @@ const SidebarChannelInfo = () => {
     dispatch(setChannelConfirm(payload));
   };
 
-  const onDeleteChat = () => {
+  const onClearChatHistory = () => {
     const payload = {
       openDialog: true,
       channel: currentChannel,
       userId: user_id,
-      type: ConfirmType.DELETE,
+      type: ConfirmType.TRUNCATE,
     };
     dispatch(setChannelConfirm(payload));
   };
@@ -496,7 +482,7 @@ const SidebarChannelInfo = () => {
       openDialog: true,
       channel: currentChannel,
       userId: user_id,
-      type: ConfirmType.DELETE,
+      type: ConfirmType.DELETE_CHANNEL,
     };
     dispatch(setChannelConfirm(payload));
   };
@@ -526,6 +512,7 @@ const SidebarChannelInfo = () => {
   const showItemBlockUser = isDirect;
   const showItemInviteFriend = !isDirect && !isEditing;
   const showItemChannelType = !isDirect && isEditing;
+  const showItemChannelTopics = !isDirect && isEditing;
 
   if (!currentChannel) return null;
 
@@ -683,6 +670,35 @@ const SidebarChannelInfo = () => {
               </StyledStackItem>
             )}
 
+            {/* ------------Channel Topics--------------- */}
+            {showItemChannelTopics && (
+              <StyledStackItem
+                direction="row"
+                alignItems="center"
+                justifyContent={'space-between'}
+                className="hoverItem"
+                onClick={() => {
+                  dispatch(UpdateSidebarType(SidebarType.ChannelTopics));
+                }}
+              >
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <StickyNoteIcon color={theme.palette.text.primary} />
+                  <Typography variant="subtitle2">Channel Topics</Typography>
+                </Stack>
+
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Typography
+                    variant="subtitle2"
+                    color={theme.palette.text.secondary}
+                    sx={{ fontWeight: `400 !important` }}
+                  >
+                    {enableTopics ? 'Enabled' : 'Disabled'}
+                  </Typography>
+                  <CaretRight size={20} />
+                </Stack>
+              </StyledStackItem>
+            )}
+
             {/* ------------Members--------------- */}
             {showItemMembers && (
               <StyledStackItem
@@ -783,12 +799,12 @@ const SidebarChannelInfo = () => {
               </StyledStackItem>
             )}
 
-            {/* ------------Delete chat--------------- */}
+            {/* ------------Clear chat history--------------- */}
             {showItemDeleteChat && (
-              <StyledActionItem onClick={onDeleteChat}>
+              <StyledActionItem onClick={onClearChatHistory}>
                 <TrashIcon color={theme.palette.text.primary} />
                 <Typography variant="subtitle2" color={theme.palette.error.main}>
-                  Delete chat
+                  Clear chat history
                 </Typography>
               </StyledActionItem>
             )}
@@ -817,7 +833,7 @@ const SidebarChannelInfo = () => {
           {/* ------------Channel info tab--------------- */}
           {!isEditing && (
             <Stack>
-              <ChannelInfoTab />
+              <ChannelInfoTab currentChat={currentChannel} />
             </Stack>
           )}
         </Stack>

@@ -5,6 +5,7 @@ export const ChatType = {
   TEAM: 'team',
   MESSAGING: 'messaging',
   GENERAL: 'general',
+  TOPIC: 'topic',
 };
 
 // This function converts the string to lowercase, then perform the conversion
@@ -90,13 +91,14 @@ export const RoleMember = {
 
 export const ConfirmType = {
   LEAVE: 'leave',
-  DELETE: 'delete',
+  DELETE_CHANNEL: 'delete_channel',
   REMOVE_MEMBER: 'remove_member',
   REMOVE_MODER: 'remove_moder',
   TRUNCATE: 'truncate', // tất cả tin nhắn trong cuộc trò chuyện sẽ bị xoá, chỉ sử dụng cho channel direct
   BLOCK: 'block',
   UNBLOCK: 'unblock',
   UNBANNED: 'unbanned',
+  DELETE_TOPIC: 'delete_topic',
 };
 
 export const TabType = {
@@ -108,7 +110,7 @@ export const TabType = {
 
 export const MessageType = {
   Regular: 'regular',
-  Reply: 'reply',
+  // Reply: 'reply', BE bỏ type Reply
   System: 'system',
   Signal: 'signal',
   Poll: 'poll',
@@ -126,6 +128,12 @@ export const SidebarType = {
   SearchMessage: 'SEARCH_MESSAGE',
   KeywordFiltering: 'KEYWORD_FILTERING',
   UserInfo: 'USER_INFO',
+  ChannelTopics: 'CHANNEL_TOPICS',
+  TopicInfo: 'TOPIC_INFO',
+};
+
+export const SidebarMode = {
+  Edit: 'edit',
 };
 
 export const TabMembers = {

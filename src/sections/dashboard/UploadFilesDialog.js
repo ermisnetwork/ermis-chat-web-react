@@ -96,12 +96,14 @@ const UploadFilesDialog = ({ setMessages }) => {
 
   const { openDialog, files, uploadType } = useSelector(state => state.messages.filesMessage);
   const { currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
   const [attachments, setAttachments] = useState([]);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
   useEffect(() => {
-    if (currentChannel && files.length) {
+    if (currentChat && files.length) {
       const getThumbUrlVideo = async thumbBlob => {
-        const response = await currentChannel.sendFile(thumbBlob);
+        const response = await currentChat.sendFile(thumbBlob);
         if (response) {
           return response.file;
         } else {
@@ -156,7 +158,7 @@ const UploadFilesDialog = ({ setMessages }) => {
               if (!isFileTooLarge) {
                 let thumb_url = '';
                 if (['video/mp4', 'video/webm', 'video/quicktime'].includes(file.type)) {
-                  const thumbBlob = await currentChannel.getThumbBlobVideo(file);
+                  const thumbBlob = await currentChat.getThumbBlobVideo(file);
                   if (thumbBlob) {
                     thumb_url = await getThumbUrlVideo(thumbBlob);
                   } else {
@@ -166,7 +168,7 @@ const UploadFilesDialog = ({ setMessages }) => {
                   thumb_url = '';
                 }
 
-                const response = await currentChannel.sendFile(file);
+                const response = await currentChat.sendFile(file);
 
                 if (response) {
                   setAttachments(prev => {
@@ -205,7 +207,7 @@ const UploadFilesDialog = ({ setMessages }) => {
 
       onProcessFiles();
     }
-  }, [files, currentChannel]);
+  }, [files, currentChat]);
 
   useEffect(() => {
     dispatch(onSetAttachmentsMessage(attachments.filter(item => !item.error)));
@@ -433,7 +435,7 @@ const UploadFilesDialog = ({ setMessages }) => {
           </Grid>
         </Box>
         <Box sx={{ marginTop: '24px' }}>
-          <ChatFooter currentChannel={currentChannel} setMessages={setMessages} isDialog={true} />
+          <ChatFooter setMessages={setMessages} isDialog={true} />
         </Box>
       </DialogContent>
     </Dialog>

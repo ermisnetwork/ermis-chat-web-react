@@ -11,15 +11,17 @@ export default function QuickReactions({ message }) {
   const theme = useTheme();
   const { user_id } = useSelector(state => state.auth);
   const { currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
   const { canReactMessage } = useSelector(state => state.channel.channelPermissions);
 
   const [anchorEl, setAnchorEl] = useState(null);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
   const onReactMessage = async type => {
     try {
       const messageID = message.id;
 
-      const response = await currentChannel.sendReaction(messageID, type);
+      const response = await currentChat.sendReaction(messageID, type);
       if (response) {
         setAnchorEl(null);
       }

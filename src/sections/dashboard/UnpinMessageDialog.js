@@ -13,6 +13,8 @@ const UnpinMessageDialog = () => {
   const dispatch = useDispatch();
   const { openDialog, messageId } = useSelector(state => state.messages.unPinMessage);
   const { currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
   const [loadingButton, setLoadingButton] = useState(false);
 
@@ -23,7 +25,7 @@ const UnpinMessageDialog = () => {
   const onSubmit = async () => {
     try {
       setLoadingButton(true);
-      const response = await currentChannel.unpinMessage(messageId);
+      const response = await currentChat.unpinMessage(messageId);
       if (response) {
         dispatch(showSnackbar({ severity: 'success', message: 'Message unpinned' }));
         onCloseDialog();

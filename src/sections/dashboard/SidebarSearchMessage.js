@@ -11,6 +11,7 @@ import { getDisplayDate } from '../../utils/formatTime';
 import { setSearchMessageId } from '../../redux/slices/messages';
 import { AvatarShape, SidebarType } from '../../constants/commons-const';
 import NoResult from '../../assets/Illustration/NoResult';
+import SkeletonChannels from '../../components/SkeletonChannels';
 
 const StyledMessageItem = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -32,43 +33,63 @@ const SidebarSearchMessage = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const { currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [messages, setMessages] = useState([]);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
+
+  useEffect(() => {
+    if (!currentTopic) {
+      setSearchTerm('');
+      setMessages([]);
+      setOffset(0);
+      setHasMore(true);
+    }
+  }, [currentTopic]);
+
+  useEffect(() => {
+    if (searchTerm) {
+      setLoading(true);
+      debouncedLoad(searchTerm, 0);
+    }
+  }, [searchTerm]);
 
   const loadSearch = async (value, offset) => {
     try {
-      const response = await currentChannel.searchMessage(value, offset);
-
+      const response = await currentChat.searchMessage(value, offset);
       if (response) {
         const messages = response.messages;
         setMessages(prev => (offset === 0 ? messages : [...prev, ...messages]));
         setHasMore(offset + LIMIT <= response.total);
+      } else {
+        setMessages([]);
+        setHasMore(false);
       }
     } catch (error) {
       handleError(dispatch, error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const debouncedLoad = useCallback(
     debounce((value, offset) => {
       loadSearch(value, offset);
-    }, 300),
-    [],
+    }, 200),
+    [currentChat],
   );
 
   const onSearchMessage = event => {
     const searchValue = event.target.value;
-    if (searchValue) {
-      setSearchTerm(searchValue);
-      setOffset(0);
-      debouncedLoad(searchValue, 0);
-    } else {
-      setSearchTerm('');
+    setSearchTerm(searchValue);
+    setOffset(0);
+    if (!searchValue) {
       setMessages([]);
-      setOffset(0);
+      setHasMore(true);
     }
   };
 
@@ -121,7 +142,7 @@ const SidebarSearchMessage = () => {
       <Stack sx={{ padding: '24px', flex: 1, minHeight: 'auto', overflow: 'hidden' }} gap={2}>
         <Search sx={{ margin: '0 0 15px' }}>
           <SearchIconWrapper>
-            <MagnifyingGlass color="#709CE6" />
+            <MagnifyingGlass size={18} />
           </SearchIconWrapper>
           <StyledInputBase
             autoFocus
@@ -145,7 +166,9 @@ const SidebarSearchMessage = () => {
           }}
           onScroll={handleScroll}
         >
-          {messages.length > 0 ? (
+          {loading ? (
+            <SkeletonChannels />
+          ) : messages.length > 0 ? (
             <>
               {messages.map(item => {
                 const name = formatString(item.user?.name || item.user_id);

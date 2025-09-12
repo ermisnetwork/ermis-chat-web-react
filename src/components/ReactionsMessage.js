@@ -11,8 +11,10 @@ export default function ReactionsMessage({ isMyMessage, message }) {
   const dispatch = useDispatch();
   const { user_id } = useSelector(state => state.auth);
   const { currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
 
   const [reactions, setReactions] = useState([]);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
   useEffect(() => {
     if (message.reaction_counts) {
@@ -31,13 +33,13 @@ export default function ReactionsMessage({ isMyMessage, message }) {
 
   const onDeleteReaction = async type => {
     const messageID = message.id;
-    await currentChannel.deleteReaction(messageID, type);
+    await currentChat.deleteReaction(messageID, type);
   };
 
   const onSendReaction = async type => {
     const messageID = message.id;
 
-    await currentChannel.sendReaction(messageID, type);
+    await currentChat.sendReaction(messageID, type);
   };
 
   const onToggleReaction = async data => {

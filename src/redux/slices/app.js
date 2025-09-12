@@ -7,6 +7,7 @@ const initialState = {
   sideBar: {
     open: false,
     type: SidebarType.Channel,
+    mode: '',
   },
   tab: TabType.Chat,
   snackbar: {
@@ -20,6 +21,7 @@ const initialState = {
   isUserConnected: false,
   searchQuery: '',
   userInfo: null,
+  openHomeSearch: false,
 };
 
 const slice = createSlice({
@@ -39,6 +41,7 @@ const slice = createSlice({
     setSidebar(state, action) {
       state.sideBar.type = action.payload.type;
       state.sideBar.open = action.payload.open;
+      state.sideBar.mode = action.payload.mode || '';
     },
     updateTab(state, action) {
       state.tab = action.payload.tab;
@@ -71,6 +74,9 @@ const slice = createSlice({
     },
     setUserInfo(state, action) {
       state.userInfo = action.payload;
+    },
+    setOpenHomeSearch(state, action) {
+      state.openHomeSearch = action.payload;
     },
   },
 });
@@ -150,5 +156,11 @@ export function SetSearchQuery(payload) {
 export function SetUserInfo(payload) {
   return async (dispatch, getState) => {
     dispatch(slice.actions.setUserInfo(payload));
+  };
+}
+
+export function SetOpenHomeSearch(payload) {
+  return async (dispatch, getState) => {
+    dispatch(slice.actions.setOpenHomeSearch(payload));
   };
 }

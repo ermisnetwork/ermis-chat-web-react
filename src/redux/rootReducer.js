@@ -9,6 +9,7 @@ import dialogReducer from './slices/dialog';
 import messagesReducer from './slices/messages';
 import callDirectReducer from './slices/callDirect';
 import walletReducer from './slices/wallet';
+import topicReducer from './slices/topic';
 
 import { createTransform } from 'redux-persist';
 import { parse, stringify } from 'flatted';
@@ -26,7 +27,7 @@ const rootPersistConfig = {
   keyPrefix: 'redux-',
   transforms: [transformCircular],
   whitelist: ['auth'],
-  blacklist: ['app', 'channel', 'message', 'member', 'dialog', 'mesages', 'callDirect', 'wallet'],
+  blacklist: ['app', 'channel', 'message', 'member', 'dialog', 'mesages', 'callDirect', 'wallet', 'topic'],
 };
 
 const rootReducer = combineReducers({
@@ -38,6 +39,7 @@ const rootReducer = combineReducers({
   messages: messagesReducer,
   callDirect: callDirectReducer,
   wallet: walletReducer,
+  topic: topicReducer,
 });
 
 export { rootPersistConfig, rootReducer };

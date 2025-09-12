@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Stack, Tabs, Tab, alpha } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { MediaType, SidebarType, TabValueChannelInfo } from '../../constants/commons-const';
-import { isChannelDirect } from '../../utils/commons';
+import { ChatType, MediaType, SidebarType, TabValueChannelInfo } from '../../constants/commons-const';
 import { useDispatch, useSelector } from 'react-redux';
 import MemberElement from '../../components/MemberElement';
 import { PlayCircle } from 'phosphor-react';
@@ -174,8 +173,7 @@ const TabFiles = ({ files }) => {
   );
 };
 
-const ChannelInfoTab = ({}) => {
-  const { currentChannel } = useSelector(state => state.channel);
+const ChannelInfoTab = ({ currentChat }) => {
   const [listTab, setListTab] = useState([
     { label: 'Media', value: TabValueChannelInfo.Media },
     { label: 'Links', value: TabValueChannelInfo.Links },
@@ -185,19 +183,18 @@ const ChannelInfoTab = ({}) => {
   const [medias, setMedias] = useState([]);
   const [files, setFiles] = useState([]);
   const [links, setLinks] = useState([]);
-  const isDirect = isChannelDirect(currentChannel);
 
   useEffect(() => {
-    if (!isDirect) {
+    if (currentChat.type === ChatType.TEAM) {
       setListTab(prev => [{ label: 'Members', value: TabValueChannelInfo.Members }, ...prev]);
       setTabSelected(TabValueChannelInfo.Members);
     }
-  }, [isDirect]);
+  }, [currentChat]);
 
   useEffect(() => {
-    if (currentChannel) {
+    if (currentChat) {
       const fetchAttachmentMessages = async () => {
-        const response = await currentChannel.queryAttachmentMessages();
+        const response = await currentChat.queryAttachmentMessages();
 
         if (response) {
           const { attachments } = response;
@@ -252,7 +249,7 @@ const ChannelInfoTab = ({}) => {
             attachments
               .filter(attachment => attachment.attachment_type === 'linkPreview')
               .map(item => {
-                const user = currentChannel.state?.members[item.user_id]?.user || {};
+                const user = currentChat.state?.members[item.user_id]?.user || {};
                 return {
                   thumb_url: item.thumb_url,
                   url: item.url,
@@ -268,7 +265,7 @@ const ChannelInfoTab = ({}) => {
 
       fetchAttachmentMessages();
     }
-  }, [currentChannel]);
+  }, [currentChat]);
 
   const renderTabContent = () => {
     switch (tabSeledected) {

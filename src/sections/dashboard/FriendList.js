@@ -53,10 +53,8 @@ const FriendList = ({
 
     if (enableUserSearch && searchQuery && filteredChannels.length === 0) {
       dispatch(UpdateIsLoading({ isLoading: true }));
-    }
 
-    const fetchUsers = async () => {
-      if (enableUserSearch && searchQuery && filteredChannels.length === 0) {
+      const fetchUsers = async () => {
         try {
           const name = searchQuery;
           const page = 1;
@@ -66,20 +64,22 @@ const FriendList = ({
           if (!ignore) setSearchedUser(result.data[0]);
         } catch (e) {
           if (!ignore) setSearchedUser(null);
+        } finally {
+          dispatch(UpdateIsLoading({ isLoading: false }));
         }
-        dispatch(UpdateIsLoading({ isLoading: false }));
-      } else {
-        setSearchedUser(null);
-        dispatch(UpdateIsLoading({ isLoading: false }));
-      }
-    };
+      };
 
-    debounceTimer = setTimeout(fetchUsers, 400);
+      debounceTimer = setTimeout(fetchUsers, 400);
+    } else {
+      setSearchedUser(null);
+      dispatch(UpdateIsLoading({ isLoading: false }));
+    }
+
     return () => {
       ignore = true;
       clearTimeout(debounceTimer);
     };
-  }, [searchQuery, directChannels, enableUserSearch]);
+  }, [searchQuery, enableUserSearch]);
 
   const renderedFriends = useMemo(() => {
     const filteredChannels = directChannels.filter(channel => {

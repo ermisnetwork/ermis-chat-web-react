@@ -39,14 +39,15 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-const ChatFooter = ({ currentChannel, setMessages, isDialog }) => {
+const ChatFooter = ({ setMessages, isDialog }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const inputRef = useRef(null);
   const recordingBoxRef = useRef(null);
   const { quotesMessage, editMessage, attachmentsMessage } = useSelector(state => state.messages);
   const { canSendMessage, canSendLinks } = useSelector(state => state.channel.channelPermissions);
-  const { cooldownTime, filterWords, mentions } = useSelector(state => state.channel);
+  const { cooldownTime, filterWords, mentions, currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
   const { user_id } = useSelector(state => state.auth);
   const { myUserInfo } = useSelector(state => state.member);
   const [value, setValue] = useState('');
@@ -58,6 +59,7 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog }) => {
 
   const myRole = myRoleInChannel(currentChannel);
   const isDirect = isChannelDirect(currentChannel);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
   const {
     filteredMentions,
@@ -71,7 +73,7 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog }) => {
 
   const onTyping = async () => {
     try {
-      await currentChannel.keystroke();
+      await currentChat.keystroke();
     } catch (error) {
       // handleError(dispatch, error);
     }
@@ -88,7 +90,7 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog }) => {
 
         // Đổi value từ mentionId sang mentionName để hiển thị đúng
         setValue(replaceMentionsWithNames(editMessage.text, mentions));
-      } else if (currentChannel || quotesMessage) {
+      } else if (currentChat || quotesMessage) {
         setValue('');
       }
     }, 100);
@@ -96,7 +98,7 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog }) => {
     return () => {
       clearTimeout(timeout);
     };
-  }, [inputRef, currentChannel, quotesMessage, editMessage, mentions]);
+  }, [inputRef, currentChat, quotesMessage, editMessage, mentions]);
 
   useEffect(() => {
     if (currentChannel) {
@@ -128,7 +130,7 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog }) => {
           let index = 0;
           async function sendNext() {
             if (index < messagesQueue.length) {
-              await currentChannel?.sendMessage(messagesQueue[index]);
+              await currentChat?.sendMessage(messagesQueue[index]);
               index++;
               setTimeout(sendNext, 100);
             } else {
@@ -145,7 +147,7 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog }) => {
             if (index < editMessagesQueue.length) {
               const id = editMessagesQueue[index].id;
               const message = editMessagesQueue[index].message;
-              await currentChannel?.editMessage(id, message);
+              await currentChat?.editMessage(id, message);
               index++;
               setTimeout(editSendNext, 100);
             } else {
@@ -167,7 +169,7 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog }) => {
     return () => {
       client.off(ClientEvents.ConnectionChanged, handleConnectionChanged);
     };
-  }, [client, currentChannel, messagesQueue, editMessagesQueue]);
+  }, [client, currentChat, messagesQueue, editMessagesQueue]);
 
   useEffect(() => {
     if (stickerUrl) {
@@ -358,7 +360,7 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog }) => {
             });
           });
           onResetData();
-          await currentChannel?.editMessage(editMessage.id, payloadEdit);
+          await currentChat?.editMessage(editMessage.id, payloadEdit);
         } else {
           dispatch(onEditMessage(null));
         }
@@ -399,7 +401,7 @@ const ChatFooter = ({ currentChannel, setMessages, isDialog }) => {
         setMessages(prevMessages => [...prevMessages, msgData]);
         onResetData();
 
-        await currentChannel?.sendMessage(payload);
+        await currentChat?.sendMessage(payload);
       }
     } catch (error) {
       if (error.response.status === 400) {

@@ -1,16 +1,11 @@
 import React from 'react';
-import { Box, useTheme, Typography } from '@mui/material';
-import { formatString, isPublicChannel } from '../utils/commons';
-import AvatarComponent from './AvatarComponent';
+import { Box, Typography } from '@mui/material';
+import { formatString } from '../utils/commons';
 import ChannelAvatar from './ChannelAvatar';
 import { AvatarShape } from '../constants/commons-const';
 
 const NoMessageBox = ({ channel }) => {
-  const theme = useTheme();
-
   if (!channel) return null;
-
-  const isPublic = isPublicChannel(channel);
 
   return (
     <Box
@@ -28,19 +23,7 @@ const NoMessageBox = ({ channel }) => {
         maxWidth: 320,
       }}
     >
-      {isPublic ? (
-        <AvatarComponent
-          name={channel.data.name}
-          url={channel.data?.image || ''}
-          width={90}
-          height={90}
-          isPublic={isPublic}
-          openLightbox={false}
-          shape={AvatarShape.Round}
-        />
-      ) : (
-        <ChannelAvatar channel={channel} width={90} height={90} openLightbox={false} />
-      )}
+      <ChannelAvatar channel={channel} width={90} height={90} openLightbox={false} shape={AvatarShape.Round} />
       <Typography variant="h6" sx={{ fontWeight: 600 }}>
         {formatString(channel.data.name)}
       </Typography>

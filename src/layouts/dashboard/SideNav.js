@@ -12,6 +12,7 @@ import { DEFAULT_PATH, WIDTH_SIDE_NAV } from '../../config';
 import useResponsive from '../../hooks/useResponsive';
 import { setCurrentChannel, setCurrentChannelStatus } from '../../redux/slices/channel';
 import { ContactType, CurrentChannelStatus, TabType } from '../../constants/commons-const';
+import { SetOpenTopicPanel } from '../../redux/slices/topic';
 
 const StyledIconButton = styled(IconButton)(({ theme }) => ({
   color: 'inherit',
@@ -116,6 +117,7 @@ const SideBar = () => {
         navigate(DEFAULT_PATH);
         break;
       case TabType.Contact:
+        dispatch(SetOpenTopicPanel(false));
         if (isMobileToMd) {
           navigate('/contacts');
         } else {
@@ -164,6 +166,7 @@ const SideBar = () => {
     navigate(DEFAULT_PATH);
     dispatch(setCurrentChannel(null));
     dispatch(setCurrentChannelStatus(CurrentChannelStatus.IDLE));
+    dispatch(SetOpenTopicPanel(false));
   };
 
   return (

@@ -286,16 +286,18 @@ const LeftPanel = () => {
       };
 
       const handleChannelDeleted = event => {
-        navigate(`${DEFAULT_PATH}`);
-        if (activeChannels.some(item => item.id === event.channel_id)) {
-          dispatch(RemoveActiveChannel(event.channel_id));
-        }
-        if (pendingChannels.some(item => item.id === event.channel_id)) {
-          dispatch(RemovePendingChannel(event.channel_id));
-        }
+        if (event.channel_type !== ChatType.TOPIC) {
+          navigate(`${DEFAULT_PATH}`);
+          if (activeChannels.some(item => item.id === event.channel_id)) {
+            dispatch(RemoveActiveChannel(event.channel_id));
+          }
+          if (pendingChannels.some(item => item.id === event.channel_id)) {
+            dispatch(RemovePendingChannel(event.channel_id));
+          }
 
-        if (mutedChannels.some(item => item.id === event.channel_id)) {
-          dispatch(RemoveMutedChannel(event.channel_id));
+          if (mutedChannels.some(item => item.id === event.channel_id)) {
+            dispatch(RemoveMutedChannel(event.channel_id));
+          }
         }
       };
 
@@ -411,10 +413,14 @@ const LeftPanel = () => {
       };
 
       const handleChannelPinned = event => {
-        dispatch(AddPinnedChannel(event.cid));
+        if (event.channel_type !== ChatType.TOPIC) {
+          dispatch(AddPinnedChannel(event.cid));
+        }
       };
       const handleChannelUnPinned = event => {
-        dispatch(RemovePinnedChannel(event.cid));
+        if (event.channel_type !== ChatType.TOPIC) {
+          dispatch(RemovePinnedChannel(event.cid));
+        }
       };
 
       const handleInviteReject = event => {

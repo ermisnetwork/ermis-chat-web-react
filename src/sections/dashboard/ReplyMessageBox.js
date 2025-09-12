@@ -99,9 +99,11 @@ const ReplyMessageBox = ({ quotesMessage }) => {
           </Box>
         </Stack>
       </Box>
-      <IconButton onClick={() => dispatch(onReplyMessage(null))}>
-        <X size={20} />
-      </IconButton>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <IconButton onClick={() => dispatch(onReplyMessage(null))}>
+          <X size={20} />
+        </IconButton>
+      </Box>
     </Stack>
   );
 };

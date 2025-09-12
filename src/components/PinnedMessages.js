@@ -158,25 +158,29 @@ const MessageBox = ({ message, setIsOpen, showActions, messageCount }) => {
 export default function PinnedMessages() {
   const dispatch = useDispatch();
   const { pinnedMessages, currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
   const [isOpen, setIsOpen] = useState(false);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
   useEffect(() => {
-    if (currentChannel) {
+    if (currentChat) {
+      dispatch(SetPinnedMessages([...currentChat.state.pinnedMessages].reverse()));
+
       const handlePinnedMessages = event => {
-        dispatch(SetPinnedMessages([...currentChannel.state.pinnedMessages].reverse()));
+        dispatch(SetPinnedMessages([...currentChat.state.pinnedMessages].reverse()));
       };
 
-      currentChannel.on(ClientEvents.MessagePinned, handlePinnedMessages);
-      currentChannel.on(ClientEvents.MessageUnpinned, handlePinnedMessages);
-      currentChannel.on(ClientEvents.MessageDeleted, handlePinnedMessages);
+      currentChat.on(ClientEvents.MessagePinned, handlePinnedMessages);
+      currentChat.on(ClientEvents.MessageUnpinned, handlePinnedMessages);
+      currentChat.on(ClientEvents.MessageDeleted, handlePinnedMessages);
 
       return () => {
-        currentChannel.off(ClientEvents.MessagePinned, handlePinnedMessages);
-        currentChannel.off(ClientEvents.MessageUnpinned, handlePinnedMessages);
-        currentChannel.off(ClientEvents.MessageDeleted, handlePinnedMessages);
+        currentChat.off(ClientEvents.MessagePinned, handlePinnedMessages);
+        currentChat.off(ClientEvents.MessageUnpinned, handlePinnedMessages);
+        currentChat.off(ClientEvents.MessageDeleted, handlePinnedMessages);
       };
     }
-  }, [currentChannel]);
+  }, [currentChat]);
 
   if (pinnedMessages.length === 0) return null;
 

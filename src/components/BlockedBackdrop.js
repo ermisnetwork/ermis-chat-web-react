@@ -41,8 +41,6 @@ export default function BlockedBackdrop() {
     }
   }, [currentChannel, user_id]);
 
-  if (!isBlocked) return null;
-
   return (
     <Box
       sx={{
@@ -59,7 +57,7 @@ export default function BlockedBackdrop() {
         sx={{
           position: 'absolute',
           width: '100%',
-          height: '80px',
+          height: '77px',
           bottom: 0,
           left: 0,
           backgroundColor: theme.palette.mode === 'light' ? '#F8FAFF' : theme.palette.background.paper,
@@ -70,7 +68,7 @@ export default function BlockedBackdrop() {
         }}
       >
         <Typography>
-          You have blocked <strong>{formatString(currentChannel.data.name)}</strong>
+          You have blocked <strong>{formatString(currentChannel?.data?.name)}</strong>
         </Typography>
         <Button
           variant="contained"

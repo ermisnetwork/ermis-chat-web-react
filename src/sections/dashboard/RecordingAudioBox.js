@@ -25,6 +25,7 @@ const RecordingAudioBox = React.forwardRef((props, ref) => {
   const dispatch = useDispatch();
   const streamRef = useRef(null);
   const { currentChannel } = useSelector(state => state.channel);
+  const { currentTopic } = useSelector(state => state.topic);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [audioFile, setAudioFile] = useState(null);
@@ -32,10 +33,11 @@ const RecordingAudioBox = React.forwardRef((props, ref) => {
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioUploading, setAudioUploading] = useState(false);
   const [audioMeta, setAudioMeta] = useState(null);
+  const currentChat = currentTopic ? currentTopic : currentChannel;
 
   useEffect(() => {
     cancelRecording();
-  }, [currentChannel]);
+  }, [currentChat]);
 
   useEffect(() => {
     let interval;
@@ -82,7 +84,7 @@ const RecordingAudioBox = React.forwardRef((props, ref) => {
   const uploadAudioFile = async () => {
     try {
       setAudioUploading(true);
-      const response = await currentChannel.sendFile(audioFile);
+      const response = await currentChat.sendFile(audioFile);
       setAudioUrl(response.file);
     } catch (err) {
       dispatch(showSnackbar({ severity: 'error', message: 'Upload audio failed' }));
