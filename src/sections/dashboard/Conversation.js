@@ -386,7 +386,7 @@ const ForwardTo = ({ message, forwardChannelName }) => {
       }}
     >
       <ArrowBendUpRight size={14} weight="fill" color={color} />
-      &nbsp;Forwarded from <strong>{forwardChannelName}</strong>
+      &nbsp;Forwarded from <strong>{forwardChannelName ? forwardChannelName : 'unknown channel'}</strong>
     </Typography>
   );
 };

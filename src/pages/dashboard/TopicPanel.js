@@ -375,7 +375,7 @@ const TopicPanel = () => {
             </FlipMove>
           )}
 
-          {topics.length > 0 ? (
+          {topics.length > 0 || pinnedTopics.length > 0 ? (
             <FlipMove duration={200}>
               {topics.map(item => {
                 return (

@@ -151,6 +151,8 @@ const CallDirectDialog2 = () => {
     }
   };
 
+  // console.log(localAudioRef);
+  
   const startTimer = () => {
     timerIntervalRef.current = setInterval(() => {
       setTime(prevTime => prevTime + 1);
@@ -223,6 +225,8 @@ const CallDirectDialog2 = () => {
       }
     };
 
+    // console.log(receiverInfo);
+    
     callClient.onConnectionMessageChange = msg => {
       setConnectionStatus(msg);
     };

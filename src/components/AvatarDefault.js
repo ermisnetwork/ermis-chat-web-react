@@ -24,7 +24,7 @@ const AvatarDefault = ({ name, width, height, shape = 'circle' }) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: shape === AvatarShape.Circle ? '50%' : '30%',
+        borderRadius: shape === AvatarShape.Circle ? '50%' : '25%',
         fontWeight: 700,
       }}
     >

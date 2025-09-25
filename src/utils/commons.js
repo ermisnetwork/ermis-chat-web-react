@@ -93,6 +93,8 @@ export function handleError(dispatch, error) {
   if (error.response) {
     if (error.response.status === 401) {
       onRefreshToken();
+    } else if (error.response.status === 500) {
+      dispatch(showSnackbar({ severity: 'error', message: 'Internal server error' }));
     } else {
       const message = error.response.data?.message ? error.response.data.message : error.response.data;
       dispatch(showSnackbar({ severity: 'error', message: message }));

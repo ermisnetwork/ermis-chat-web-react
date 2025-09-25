@@ -13,6 +13,7 @@ import {
   RemoveActiveChannel,
   RemoveMutedChannel,
   RemovePendingChannel,
+  removePinnedChannel,
   RemovePinnedChannel,
   RemoveSkippedChannel,
 } from '../../redux/slices/channel';
@@ -35,7 +36,7 @@ const LeftPanel = () => {
 
   const navigate = useNavigate();
   const { tab } = useSelector(state => state.app);
-  const { activeChannels, pendingChannels, mutedChannels } = useSelector(state => state.channel);
+  const { activeChannels, pendingChannels, mutedChannels, pinnedChannels } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
   const users = client.state.users ? Object.values(client.state.users) : [];
 
@@ -294,7 +295,9 @@ const LeftPanel = () => {
           if (pendingChannels.some(item => item.id === event.channel_id)) {
             dispatch(RemovePendingChannel(event.channel_id));
           }
-
+          if (pinnedChannels.some(item => item.id === event.channel_id)) {
+            dispatch(removePinnedChannel(event.channel_id));
+          }
           if (mutedChannels.some(item => item.id === event.channel_id)) {
             dispatch(RemoveMutedChannel(event.channel_id));
           }
@@ -478,7 +481,7 @@ const LeftPanel = () => {
         client.off(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
       };
     }
-  }, [dispatch, user_id, client, mutedChannels, activeChannels, pendingChannels, users.length]);
+  }, [dispatch, user_id, client, mutedChannels, activeChannels, pendingChannels, pinnedChannels, users.length]);
 
   useEffect(() => {
     if (mutedChannels) {

@@ -331,7 +331,7 @@ const ChatFooter = ({ setMessages, isDialog }) => {
 
         if (isNewText) {
           const payloadEdit = {
-            text: replaceMentionsWithIds(value.trim(), mentions),
+            text: replaceMentionsWithIds(value.trim(), selectedMentions),
           };
 
           if (selectedMentions.length > 0) {
@@ -368,7 +368,7 @@ const ChatFooter = ({ setMessages, isDialog }) => {
         const attachments = getAttachments();
         const messageId = uuidv4();
         const payload = {
-          text: replaceMentionsWithIds(value.trim(), mentions),
+          text: replaceMentionsWithIds(value.trim(), selectedMentions),
           attachments: attachments,
           id: messageId,
         };
@@ -478,7 +478,7 @@ const ChatFooter = ({ setMessages, isDialog }) => {
           sendMessage();
         }
       } else {
-        onTyping();
+        // onTyping();
       }
     }
   };
@@ -582,6 +582,7 @@ const ChatFooter = ({ setMessages, isDialog }) => {
             event.preventDefault();
             const value = event.target.value;
             setValue(value);
+            onTyping();
 
             if (checkSendLinks(value)) {
               dispatch(
@@ -605,14 +606,14 @@ const ChatFooter = ({ setMessages, isDialog }) => {
             startAdornment: (
               <>
                 {!isDialog && (
-                  <InputAdornment position="start" sx={{ position: 'absolute', bottom: '23px', left: '10px' }}>
+                  <InputAdornment position="start" sx={{ position: 'absolute', bottom: '23px', left: '5px' }}>
                     <ActionsChatPopover />
                   </InputAdornment>
                 )}
               </>
             ),
             endAdornment: (
-              <InputAdornment position="end" sx={{ position: 'absolute', bottom: '23px', right: '15px' }}>
+              <InputAdornment position="end" sx={{ position: 'absolute', bottom: '23px', right: '5px' }}>
                 {checkDisabledButton() && !isDialog && (
                   <>
                     <IconButton onClick={() => recordingBoxRef.current?.startRecording()}>

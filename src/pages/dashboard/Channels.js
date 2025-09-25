@@ -121,7 +121,7 @@ const Channels = () => {
       return (
         <>
           {displayPinnedChannels.length > 0 && (
-            <FlipMove duration={200}>
+            <FlipMove style={{ marginBottom: '6px' }} duration={200}>
               {displayPinnedChannels.map(item => (
                 <div className="channelItem" key={`pinned-${item.id}`}>
                   <ChatElement channel={item} />

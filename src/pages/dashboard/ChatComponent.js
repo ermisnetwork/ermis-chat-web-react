@@ -125,7 +125,7 @@ const MessageList = ({
   const isLgToXl = useResponsive('between', null, 'lg', 'xl');
   const isMobileToLg = useResponsive('down', 'lg');
   const { user_id } = useSelector(state => state.auth);
-  const { activeChannels, isGuest, isBlocked, isBanned } = useSelector(state => state.channel);
+  const { activeChannels, pinnedChannels, isGuest, isBlocked, isBanned } = useSelector(state => state.channel);
 
   const lastReadIndex = messages.findIndex(msg => msg.id === lastReadMessageId);
 
@@ -172,11 +172,11 @@ const MessageList = ({
   const getForwardChannelName = forwardCid => {
     if (!forwardCid) return '';
 
-    if (activeChannels.length) {
+    if (activeChannels.length || pinnedChannels.length) {
       const parts = forwardCid.split(':');
       const channelId = parts.slice(1).join(':');
 
-      const channel = activeChannels.find(ch => ch.id === channelId);
+      const channel = [...activeChannels, ...pinnedChannels].find(ch => ch.id === channelId);
 
       if (channel) {
         return formatString(channel.data.name);
@@ -234,6 +234,12 @@ const MessageList = ({
               return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
             }
           }
+        } else {
+          return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
+        }
+      } else if (messageType === MessageType.Reply) {
+        if (el.quoted_message) {
+          return <ReplyMsg el={{ ...el, isMyMessage }} all_members={users} onScrollToReplyMsg={onScrollToReplyMsg} />;
         } else {
           return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
         }
@@ -387,7 +393,7 @@ const MessageList = ({
                       <Stack
                         sx={{
                           minWidth: 'auto',
-                          maxWidth: '100%',
+                          maxWidth: '80%',
                           flex: 1,
                           // overflow: 'hidden',
                         }}
@@ -567,17 +573,21 @@ const ChatComponent = () => {
             });
             break;
           case ClientEvents.MessageDeleted:
-            setMessages(prev => {
-              return prev.filter(item => {
-                if (item.quoted_message_id && item.quoted_message_id === event.message.id) {
-                  return { ...item, quoted_message: { ...item.quoted_message, deleted_at: event.message.deleted_at } };
-                } else if (item.id === event.message.id) {
-                  return false;
-                } else {
-                  return true;
-                }
-              });
-            });
+            setMessages(prev =>
+              prev
+                .filter(item => item.id !== event.message.id) // Loại bỏ message bị xoá
+                .map(item => {
+                  // Nếu là reply tới message bị xoá thì xoá dữ liệu reply
+                  if (item.quoted_message_id === event.message.id) {
+                    return {
+                      ...item,
+                      quoted_message: undefined,
+                      quoted_message_id: undefined,
+                    };
+                  }
+                  return item;
+                }),
+            );
             break;
           case ClientEvents.MessageUpdated:
             setMessages(prev => {

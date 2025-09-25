@@ -31,6 +31,11 @@ const LightboxMedia = ({ openLightbox, setOpenlightbox, medias, indexMedia }) =>
     if (slide.type === MediaType.PDF) {
       return <PDFBox key={slide.description} slide={slide} />;
     }
+
+    if (slide.type === MediaType.VIDEO) {
+      const url = slide.sources?.length ? slide.sources[0].src : '';
+      return <video src={url} controls style={{ maxWidth: '100%', maxHeight: 'calc(100% - 80px)' }} />;
+    }
     // fallback: để lightbox render mặc định
     return undefined;
   };
@@ -42,7 +47,7 @@ const LightboxMedia = ({ openLightbox, setOpenlightbox, medias, indexMedia }) =>
     }
   };
 
-  const plugins = [Video, Fullscreen, Zoom, Captions];
+  const plugins = [Fullscreen, Zoom, Captions];
   if (medias.length > 1) plugins.splice(1, 0, Thumbnails);
 
   return (

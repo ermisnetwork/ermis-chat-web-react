@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Badge, Box, Stack, Tooltip, Typography } from '@mui/material';
+import { Badge, Box, Stack, Tooltip, Typography, Menu, MenuItem } from '@mui/material';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { ClientEvents } from '../constants/events-const';
 import { onEditMessage, onReplyMessage } from '../redux/slices/messages';
-import { Play, PushPin } from 'phosphor-react';
-import { AvatarShape, MessageType } from '../constants/commons-const';
+import { Play, PushPin, PushPinSlash, Trash } from 'phosphor-react';
+import { AvatarShape, MessageType, ConfirmType, RoleMember, ChatType } from '../constants/commons-const';
 import { convertMessageSystem } from '../utils/messageSystem';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PATH } from '../config';
@@ -14,6 +14,8 @@ import { getDisplayDate } from '../utils/formatTime';
 import { client } from '../client';
 import TopicAvatar from './TopicAvatar';
 import useResponsive from '../hooks/useResponsive';
+import { handleError, isChannelDirect, myRoleInChannel } from '../utils/commons';
+import { setChannelConfirm } from '../redux/slices/dialog';
 
 const StyledTopicItem = styled(Box)(({ theme }) => ({
   // width: '100%',
@@ -29,6 +31,27 @@ const StyledTopicItem = styled(Box)(({ theme }) => ({
     backgroundColor: theme.palette.divider,
   },
 }));
+const StyledMenu = styled(Menu)(({ theme }) => ({
+  '& .MuiPaper-root': {
+    borderRadius: 6,
+    marginTop: theme.spacing(1),
+    minWidth: 180,
+    color: theme.palette.mode === 'light' ? 'rgb(55, 65, 81)' : theme.palette.grey[300],
+    boxShadow:
+      'rgb(255, 255, 255) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px',
+    '& .MuiMenu-list': {
+      padding: '4px 0',
+    },
+    '& .MuiMenuItem-root': {
+      '& svg': {
+        marginRight: '10px',
+        width: '18px',
+        height: '18px',
+        fill: theme.palette.text.secondary,
+      },
+    },
+  },
+}));
 
 const TopicElement = ({ topic, idSelected }) => {
   const dispatch = useDispatch();
@@ -37,12 +60,18 @@ const TopicElement = ({ topic, idSelected }) => {
   const isMobileToMd = useResponsive('down', 'md');
   const { currentChannel, unreadChannels } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
+  const [isRightClick, setIsRightClick] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [lastMessage, setLastMessage] = useState('');
+  const [lastMessageAt, setLastMessageAt] = useState('');
+
   const users = client.state.users ? Object.values(client.state.users) : [];
   const topicId = topic?.id || '';
   const isPinned = topic.data?.is_pinned;
-
-  const [lastMessage, setLastMessage] = useState('');
-  const [lastMessageAt, setLastMessageAt] = useState('');
+  const openMenu = Boolean(anchorEl);
+  const myRole = myRoleInChannel(currentChannel);
+  const showItemDeleteTopic = [RoleMember.OWNER].includes(myRole);
 
   const replaceMentionsWithNames = inputValue => {
     users.forEach(user => {
@@ -172,9 +201,50 @@ const TopicElement = ({ topic, idSelected }) => {
   }, [topic, user_id, users.length]);
 
   const onLeftClick = () => {
-    navigate(`${DEFAULT_PATH}/${currentChannel?.cid}?topicId=${topicId}`);
-    dispatch(onReplyMessage(null));
-    dispatch(onEditMessage(null));
+    if (!isRightClick) {
+      navigate(`${DEFAULT_PATH}/${currentChannel?.cid}?topicId=${topicId}`);
+      dispatch(onReplyMessage(null));
+      dispatch(onEditMessage(null));
+    }
+    setAnchorEl(null);
+  };
+
+  const onRightClick = event => {
+    event.preventDefault();
+    setIsRightClick(true);
+    setAnchorEl(event.currentTarget);
+    setSelectedTopic(topic);
+  };
+
+  const onCloseMenu = () => {
+    setAnchorEl(null);
+    setIsRightClick(false);
+    setSelectedTopic(null);
+  };
+
+  const onPinTopic = async () => {
+    try {
+      if (selectedTopic?.data?.is_pinned) {
+        await client.unpinChannel(ChatType.TOPIC, selectedTopic?.id);
+      } else {
+        await client.pinChannel(ChatType.TOPIC, selectedTopic?.id);
+      }
+    } catch (error) {
+      handleError(dispatch, error);
+    } finally {
+      setAnchorEl(null);
+    }
+  };
+  const onDeleteTopic = () => {
+    const payload = {
+      openDialog: true,
+      channel: selectedTopic,
+      userId: user_id,
+      type: ConfirmType.DELETE_TOPIC,
+    };
+
+    dispatch(setChannelConfirm(payload));
+    setAnchorEl(null);
   };
 
   const hasUnread = (() => {
@@ -191,6 +261,7 @@ const TopicElement = ({ topic, idSelected }) => {
     <>
       <StyledTopicItem
         onClick={onLeftClick}
+        onContextMenu={onRightClick}
         sx={{
           backgroundColor:
             idSelected === topicId ? `${alpha(theme.palette.primary.main, 0.1)} !important` : 'transparent',
@@ -291,6 +362,35 @@ const TopicElement = ({ topic, idSelected }) => {
           </>
         )}
       </StyledTopicItem>
+      <StyledMenu
+        anchorEl={anchorEl}
+        open={openMenu}
+        elevation={0}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        onClose={onCloseMenu}
+        onClick={onCloseMenu}
+      >
+        {/* --------------------Pin/Unpin Topic---------------- */}
+        <MenuItem onClick={onPinTopic}>
+          {isPinned ? <PushPinSlash /> : <PushPin />}
+          {isPinned ? 'Unpin from top' : 'Pin to top'}
+        </MenuItem>
+
+        {/* --------------------Delete Topic---------------- */}
+        {showItemDeleteTopic && (
+          <MenuItem sx={{ color: theme.palette.error.main }} onClick={onDeleteTopic}>
+            <Trash color={theme.palette.error.main} />
+            Delete Topic
+          </MenuItem>
+        )}
+      </StyledMenu>
     </>
   );
 };

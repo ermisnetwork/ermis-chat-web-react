@@ -241,7 +241,7 @@ const slice = createSlice({
 });
 
 // Reducer
-export const { setCurrentChannel, setSearchChannels, setCurrentChannelStatus } = slice.actions;
+export const { setCurrentChannel, setSearchChannels, setCurrentChannelStatus, removePinnedChannel } = slice.actions;
 
 export default slice.reducer;
 

@@ -69,6 +69,14 @@ const HomeSearch = () => {
     }
   }, [activeChannels, user_id]);
 
+  function removeVietnameseTones(str) {
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D');
+  }
+
   const debouncedSearch = useCallback(
     debounce(async term => {
       if (term) {
@@ -76,8 +84,10 @@ const HomeSearch = () => {
         if (response) {
           setPublicChannels(response.search_result.channels);
 
+          const searchTerm = removeVietnameseTones(term.toLowerCase());
           const results =
-            searchChannels.filter(channel => channel.name.toLowerCase().includes(term.toLowerCase())) || [];
+            searchChannels.filter(channel => removeVietnameseTones(channel.name.toLowerCase()).includes(searchTerm)) ||
+            [];
           setFilteredLocalChannels(results);
           setLoading(false);
         }

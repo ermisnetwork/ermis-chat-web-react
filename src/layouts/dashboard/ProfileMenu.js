@@ -52,10 +52,10 @@ const ProfileMenu = () => {
 
   return (
     <>
-      <Button ref={stackRef} variant="text" color="inherit" onClick={handleClick}>
+      <Button ref={stackRef} variant="text" color="inherit" onClick={handleClick} sx={{ textTransform: 'none' }}>
         <MemberAvatar member={myUserInfo} width={isMobileToMd ? 30 : 40} height={isMobileToMd ? 30 : 40} />
         {!isMobileToMd && (
-          <Typography variant="subtitle1" sx={{ fontSize: '16px', padding: '0px 8px', textTransform: 'lowercase' }}>
+          <Typography variant="subtitle1" sx={{ fontSize: '16px', padding: '0px 8px' }}>
             {formatString(myUserInfo.name)}
           </Typography>
         )}

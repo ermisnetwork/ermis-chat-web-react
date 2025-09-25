@@ -15,6 +15,7 @@ import { client } from '../../client';
 import { checkDirectBlock } from '../../utils/commons';
 import { setChannelConfirm } from '../../redux/slices/dialog';
 import { ClientEvents } from '../../constants/events-const';
+import { SetOpenTopicPanel } from '../../redux/slices/topic';
 
 const StyledActionItem = styled(Stack)(({ theme }) => ({
   width: '100%',
@@ -91,6 +92,7 @@ const SidebarUserInfo = () => {
     navigate(`${DEFAULT_PATH}/${channelType}:${channelId}`);
     dispatch(onReplyMessage(null));
     dispatch(onEditMessage(null));
+    dispatch(SetOpenTopicPanel(false));
   };
 
   const onStartChat = () => {

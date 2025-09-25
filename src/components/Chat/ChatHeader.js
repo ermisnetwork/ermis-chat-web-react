@@ -397,13 +397,16 @@ const ChatHeader = () => {
               </>
             )}
 
-            <IconButton
-              onClick={() => {
-                dispatch(setSidebar({ type: SidebarType.SearchMessage, open: true }));
-              }}
-            >
-              <MagnifyingGlass color={theme.palette.text.primary} />
-            </IconButton>
+            {!isGuest && (
+              <IconButton
+                onClick={() => {
+                  dispatch(setSidebar({ type: SidebarType.SearchMessage, open: true }));
+                }}
+              >
+                <MagnifyingGlass color={theme.palette.text.primary} />
+              </IconButton>
+            )}
+
             {renderIconAction()}
 
             {isGuest && (
