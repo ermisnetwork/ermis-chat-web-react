@@ -13,6 +13,7 @@ import AvatarGeneralDefault from './AvatarGeneralDefault';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PATH } from '../config';
 import { onEditMessage, onReplyMessage } from '../redux/slices/messages';
+import { SetIsClosedTopic } from '../redux/slices/topic';
 
 const StyledGeneralItem = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -32,7 +33,7 @@ const GeneralElement = ({ idSelected }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { currentChannel, unreadChannels } = useSelector(state => state.channel);
+  const { currentChannel, unreadChannels = [] } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
   const users = client.state.users ? Object.values(client.state.users) : [];
 
@@ -179,6 +180,7 @@ const GeneralElement = ({ idSelected }) => {
     navigate(`${DEFAULT_PATH}/${currentChannel?.cid}`);
     dispatch(onReplyMessage(null));
     dispatch(onEditMessage(null));
+    dispatch(SetIsClosedTopic(false));
   };
 
   const hasUnread =

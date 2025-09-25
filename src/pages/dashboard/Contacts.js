@@ -13,12 +13,13 @@ import { useNavigate } from 'react-router-dom';
 import FriendList from '../../sections/dashboard/FriendList';
 import { SetSearchQuery } from '../../redux/slices/app';
 import { DEFAULT_PATH } from '../../config';
+import { removeVietnameseTones } from '../../utils/commons';
 
 const Contacts = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const dispatch = useDispatch();
-  const { activeChannels, pendingChannels } = useSelector(state => state.channel);
+  const { activeChannels = [], pendingChannels = [], pinnedChannels = [] } = useSelector(state => state.channel);
   const { searchQuery } = useSelector(state => state.app);
   const { user_id } = useSelector(state => state.auth);
   const isMobileToLg = useResponsive('down', 'lg');
@@ -37,14 +38,15 @@ const Contacts = () => {
     const replaceHash = hash.replace('#', '');
 
     if (replaceHash === ContactType.Channels) {
-      channels = activeChannels.filter(channel => channel.type === ChatType.TEAM);
+      channels = [...activeChannels, ...pinnedChannels].filter(channel => channel.type === ChatType.TEAM);
     } else if (replaceHash === ContactType.Request) {
       channels = pendingChannels;
     }
 
     const filteredChannels = channels.filter(channel => {
-      const name = channel.data?.name || '';
-      return name.toLowerCase().includes(searchQuery.toLowerCase());
+      const name = removeVietnameseTones(channel.data?.name.toLowerCase()) || '';
+      const searchTerm = removeVietnameseTones(searchQuery.toLowerCase());
+      return name.includes(searchTerm);
     });
 
     // Nếu là Request thì render danh sách pendingChannels
@@ -142,7 +144,7 @@ const Contacts = () => {
         </Stack>
       );
     }
-  }, [activeChannels, pendingChannels, user_id, searchQuery, hash, theme]);
+  }, [activeChannels, pinnedChannels, pendingChannels, user_id, searchQuery, hash, theme]);
 
   if (!hash) return null;
 

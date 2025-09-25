@@ -13,7 +13,7 @@ const SidebarContacts = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const isMobileToMd = useResponsive('down', 'md');
-  const { activeChannels, pendingChannels } = useSelector(state => state.channel);
+  const { activeChannels = [], pendingChannels = [], pinnedChannels = [] } = useSelector(state => state.channel);
   const { searchQuery } = useSelector(state => state.app);
   const { user_id } = useSelector(state => state.auth);
   const [currentHash, setCurrentHash] = useState(window.location.hash);
@@ -26,17 +26,17 @@ const SidebarContacts = () => {
 
   // Friend list: direct channels có owner khác mình
   const directChannels = useMemo(() => {
-    return activeChannels.filter(channel => {
+    return [...activeChannels, ...pinnedChannels].filter(channel => {
       const isDirect = channel.type === ChatType.MESSAGING;
       const otherMember = Object.values(channel.state.members).find(member => member.user_id !== user_id);
       return isDirect && otherMember && otherMember.channel_role === RoleMember.OWNER;
     });
-  }, [activeChannels, user_id]);
+  }, [activeChannels, pinnedChannels, user_id]);
 
   // Channels list: type là team
   const teamChannels = useMemo(() => {
-    return activeChannels.filter(channel => channel.type === ChatType.TEAM);
-  }, [activeChannels]);
+    return [...activeChannels, ...pinnedChannels].filter(channel => channel.type === ChatType.TEAM);
+  }, [activeChannels, pinnedChannels]);
 
   // Friend/Channel Request: số lượng pendingChannels
   const requestCount = pendingChannels.length;
