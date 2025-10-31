@@ -11,6 +11,7 @@ import { LoadingButton } from '@mui/lab';
 import { setChannelConfirm } from '../../redux/slices/dialog';
 import { BannedIcon } from '../../components/Icons';
 import NoResult from '../../assets/Illustration/NoResult';
+import { useTranslation } from 'react-i18next';
 
 const ListMembers = ({ selectedMembers, setSelectedMembers }) => {
   const { currentChannel } = useSelector(state => state.channel);
@@ -43,6 +44,7 @@ const ListMembers = ({ selectedMembers, setSelectedMembers }) => {
 const ListBanned = ({}) => {
   const dispatch = useDispatch();
   const theme = useTheme();
+  const { t } = useTranslation();
   const { currentChannel } = useSelector(state => state.channel);
   const members = Object.values(currentChannel?.state?.members || {}) || [];
 
@@ -83,7 +85,7 @@ const ListBanned = ({}) => {
               marginTop: 2,
             }}
           >
-            No banned member!
+            {t('sidebarBannedMembers.no_banned_member')}
           </Typography>
           <Typography
             variant="subtitle2"
@@ -94,7 +96,7 @@ const ListBanned = ({}) => {
               fontWeight: 400,
             }}
           >
-            Good vibes only - No ban here.
+            {t('sidebarBannedMembers.message')}
           </Typography>
         </Stack>
       )}
@@ -104,6 +106,7 @@ const ListBanned = ({}) => {
 
 const SidebarBanned = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { currentChannel } = useSelector(state => state.channel);
   const [isBanned, setIsBanned] = useState(false);
@@ -114,11 +117,11 @@ const SidebarBanned = () => {
     try {
       setLoadingButton(true);
       await currentChannel.banMembers(selectedMembers.map(m => m.user_id));
-      dispatch(showSnackbar({ severity: 'success', message: 'Banned members successfully' }));
+      dispatch(showSnackbar({ severity: 'success', message: t('sidebarBannedMembers.saveClick') }));
       setIsBanned(false);
       setSelectedMembers([]);
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     } finally {
       setLoadingButton(false);
     }
@@ -140,7 +143,7 @@ const SidebarBanned = () => {
         </IconButton>
 
         <Typography variant="subtitle2" sx={{ flex: 1, textAlign: 'center', fontSize: '18px' }}>
-          Banned Members
+          {t('sidebarBannedMembers.title')}
         </Typography>
 
         <LoadingButton
@@ -152,14 +155,14 @@ const SidebarBanned = () => {
           loading={loadingButton}
           sx={{ visibility: isBanned ? 'visible' : 'hidden' }}
         >
-          BANNED
+          {t('sidebarBannedMembers.Banned')}
         </LoadingButton>
       </Stack>
 
       <Stack sx={{ padding: '24px', flex: 1, minHeight: 'auto', overflow: 'hidden' }} gap={2}>
         {isBanned ? (
           <Typography variant="body1" sx={{ fontSize: '18px', fontWeight: 600, color: theme.palette.text.primary }}>
-            Channel Members
+            {t('sidebarBannedMembers.channel_members')}
           </Typography>
         ) : (
           <Button
@@ -176,7 +179,7 @@ const SidebarBanned = () => {
               backgroundColor: theme.palette.background.paper,
             }}
           >
-            Banned
+            {t('sidebarBannedMembers.banned_button')}
           </Button>
         )}
 

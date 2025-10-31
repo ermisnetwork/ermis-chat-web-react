@@ -10,6 +10,7 @@ import MemberElement from '../../components/MemberElement';
 import { LoadingButton } from '@mui/lab';
 import { setChannelConfirm } from '../../redux/slices/dialog';
 import { ProfileAddIcon } from '../../components/Icons';
+import { useTranslation } from 'react-i18next';
 
 const ListMembers = ({ selectedMembers, setSelectedMembers }) => {
   const { currentChannel } = useSelector(state => state.channel);
@@ -81,6 +82,7 @@ const ListAdministrators = ({}) => {
 
 const SidebarAdministrators = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { currentChannel } = useSelector(state => state.channel);
   const [isAdd, setIsAdd] = useState(false);
@@ -91,11 +93,11 @@ const SidebarAdministrators = () => {
     try {
       setLoadingButton(true);
       await currentChannel.addModerators(selectedMembers.map(m => m.user_id));
-      dispatch(showSnackbar({ severity: 'success', message: 'Added moderators successfully' }));
+      dispatch(showSnackbar({ severity: 'success', message: t('sidebarAdministrators.snackbar_added_success') }));
       setIsAdd(false);
       setSelectedMembers([]);
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     } finally {
       setLoadingButton(false);
     }
@@ -117,7 +119,7 @@ const SidebarAdministrators = () => {
         </IconButton>
 
         <Typography variant="subtitle2" sx={{ flex: 1, textAlign: 'center', fontSize: '18px' }}>
-          Administrators
+          {t('sidebarAdministrators.title')}
         </Typography>
 
         <LoadingButton
@@ -128,14 +130,14 @@ const SidebarAdministrators = () => {
           loading={loadingButton}
           sx={{ visibility: isAdd ? 'visible' : 'hidden' }}
         >
-          ADD
+          {t('sidebarAdministrators.add')}
         </LoadingButton>
       </Stack>
 
       <Stack sx={{ padding: '24px', flex: 1, minHeight: 'auto', overflow: 'hidden' }} gap={2}>
         {isAdd ? (
           <Typography variant="body1" sx={{ fontSize: '18px', fontWeight: 600, color: theme.palette.text.primary }}>
-            Channel Members
+            {t('sidebarAdministrators.channel_members')}
           </Typography>
         ) : (
           <Button
@@ -152,7 +154,7 @@ const SidebarAdministrators = () => {
               backgroundColor: theme.palette.background.paper,
             }}
           >
-            Add Moderator
+            {t('sidebarAdministrators.add_moderator')}
           </Button>
         )}
 

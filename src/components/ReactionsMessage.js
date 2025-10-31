@@ -50,7 +50,7 @@ export default function ReactionsMessage({ isMyMessage, message }) {
         await onSendReaction(data.type);
       }
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
   };
 

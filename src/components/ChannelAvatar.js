@@ -1,58 +1,80 @@
-import { styled, useTheme } from '@mui/material/styles';
-import Badge from '@mui/material/Badge';
-import Stack from '@mui/material/Stack';
-import { useState, useEffect, useMemo } from 'react';
-import { AvatarShape, ChatType, OnlineStatusUser } from '../constants/commons-const';
+import { useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+import { styled, useTheme } from '@mui/material/styles';
+import { Badge, Stack, Box } from '@mui/material';
+import PropTypes from 'prop-types';
+
+import { AvatarShape, ChatType, OnlineStatusUser } from '../constants/commons-const';
 import useOnlineStatus from '../hooks/useOnlineStatus';
-import ImageCanvas from './ImageCanvas';
-import AvatarDefault from './AvatarDefault';
-import { Box } from '@mui/material';
-import { isPublicChannel } from '../utils/commons';
 import AvatarComponent from './AvatarComponent';
-import TopicAvatar from './TopicAvatar';
+import AvatarDefault from './AvatarDefault';
 import AvatarGeneralDefault from './AvatarGeneralDefault';
+import ImageCanvas from './ImageCanvas';
+import TopicAvatar from './TopicAvatar';
+import { TRANSITION } from '../config';
 
-const StyledBadgeOnline = styled(Badge)(({ theme, status }) => ({
-  '& .MuiBadge-badge': {
-    backgroundColor:
-      status === OnlineStatusUser.ONLINE ? '#44b700' : status === OnlineStatusUser.OFFLINE ? '#ddd' : 'transparent',
-    color:
-      status === OnlineStatusUser.ONLINE ? '#44b700' : status === OnlineStatusUser.OFFLINE ? '#ddd' : 'transparent',
-    boxShadow: status !== OnlineStatusUser.UNKNOWN ? `0 0 0 2px ${theme.palette.background.paper}` : 'none',
-    '&::after': {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      borderRadius: '50%',
-      border: '1px solid currentColor',
-      content: '""',
+const StyledBadgeOnline = styled(Badge, {
+  shouldForwardProp: prop => prop !== 'status',
+})(({ theme, status }) => {
+  const colors = {
+    [OnlineStatusUser.ONLINE]: '#44b700',
+    [OnlineStatusUser.OFFLINE]: '#ddd',
+    [OnlineStatusUser.UNKNOWN]: 'transparent',
+  };
+
+  const backgroundColor = colors[status] || 'transparent';
+  const hasBoxShadow = status !== OnlineStatusUser.UNKNOWN;
+
+  return {
+    '& .MuiBadge-badge': {
+      backgroundColor,
+      color: backgroundColor,
+      boxShadow: hasBoxShadow ? `0 0 0 2px ${theme.palette.background.paper}` : 'none',
+      '&::after': {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        borderRadius: '50%',
+        border: '1px solid currentColor',
+        content: '""',
+      },
     },
-  },
-}));
+  };
+});
 
-function TeamAvatarBox({ member1, member2, width = 48, height = 48, shape = 'circle', styleCustom = {} }) {
-  const sizeMember1 = Math.round(width * 0.625);
-  const sizeMember2 = Math.round(width * 0.71875);
+const TeamAvatarBox = ({ member1, member2, width = 48, height = 48, shape = 'circle', styleCustom = {} }) => {
+  const sizes = useMemo(
+    () => ({
+      member1: Math.round(width * 0.625),
+      member2: Math.round(width * 0.71875),
+    }),
+    [width],
+  );
 
   return (
-    <Box sx={{ position: 'relative', width: width, height: height }}>
+    <Box sx={{ position: 'relative', width, height, transition: TRANSITION }}>
       <Box
         sx={{
           position: 'absolute',
           top: 0,
           right: 0,
           zIndex: 1,
-          width: sizeMember1,
-          height: sizeMember1,
+          width: sizes.member1,
+          height: sizes.member1,
+          transition: TRANSITION,
         }}
       >
         {member1.avatar ? (
-          <ImageCanvas dataUrl={member1.avatar} width={sizeMember1} height={sizeMember1} styleCustom={styleCustom} />
+          <ImageCanvas
+            dataUrl={member1.avatar}
+            width={sizes.member1}
+            height={sizes.member1}
+            styleCustom={styleCustom}
+          />
         ) : (
-          <AvatarDefault name={member1.name} width={sizeMember1} height={sizeMember1} shape={shape} />
+          <AvatarDefault name={member1.name} width={sizes.member1} height={sizes.member1} shape={shape} />
         )}
       </Box>
       <Box
@@ -61,41 +83,52 @@ function TeamAvatarBox({ member1, member2, width = 48, height = 48, shape = 'cir
           bottom: 0,
           left: 0,
           zIndex: 2,
-          width: sizeMember2,
-          height: sizeMember2,
+          width: sizes.member2,
+          height: sizes.member2,
+          transition: TRANSITION,
         }}
       >
         {member2.avatar ? (
-          <ImageCanvas dataUrl={member2.avatar} width={sizeMember2} height={sizeMember2} styleCustom={styleCustom} />
+          <ImageCanvas
+            dataUrl={member2.avatar}
+            width={sizes.member2}
+            height={sizes.member2}
+            styleCustom={styleCustom}
+          />
         ) : (
-          <AvatarDefault name={member2.name} width={sizeMember2} height={sizeMember2} shape={shape} />
+          <AvatarDefault name={member2.name} width={sizes.member2} height={sizes.member2} shape={shape} />
         )}
       </Box>
     </Box>
   );
-}
+};
 
 export default function ChannelAvatar({
   channel,
   width,
   height,
   openLightbox,
-  shape = 'circle',
+  shape = AvatarShape.Circle,
   showGeneralDefault = false,
 }) {
   const theme = useTheme();
   const { user_id } = useSelector(state => state.auth);
-  const [groupMemberFirst, setGroupMemberFirst] = useState({ name: '', avatar: null });
-  const [groupMemberSecond, setGroupMemberSecond] = useState({ name: '', avatar: null });
 
-  const isDirect = channel?.type === ChatType.MESSAGING;
-  const channelAvatar = channel.data?.image || '';
-  const isPublic = isPublicChannel(channel);
-  const isChannelTopic = channel?.type === ChatType.TOPIC;
-  const isEnabledTopics = channel.data?.topics_enabled;
+  const channelData = useMemo(
+    () => ({
+      isDirect: channel?.type === ChatType.MESSAGING,
+      channelAvatar: channel?.data?.image || '',
+      isPublic: channel?.data?.public,
+      isChannelTopic: channel?.type === ChatType.TOPIC,
+      isEnabledTopics: channel?.data?.topics_enabled,
+    }),
+    [channel?.type, channel?.data?.image, channel?.data?.topics_enabled, channel?.data?.public],
+  );
+
+  const { isDirect, channelAvatar, isPublic, isChannelTopic, isEnabledTopics } = channelData;
 
   const directMembers = useMemo(
-    () => (isDirect ? Object.values(channel.state.members) : []),
+    () => (isDirect ? Object.values(channel?.state?.members || {}) : []),
     [channel?.state?.members, isDirect],
   );
 
@@ -107,45 +140,44 @@ export default function ChannelAvatar({
   const otherMemberId = otherMemberInDirect?.user_id;
   const onlineStatus = useOnlineStatus(isDirect ? otherMemberId : '');
 
-  useEffect(() => {
-    if (!isDirect) {
-      const members = Object.values(channel?.state?.members) || [];
-      const firstMember = members ? members[0] : null;
-      if (firstMember) {
-        setGroupMemberFirst({
-          name: firstMember ? firstMember.user.name : firstMember.user.id,
-          avatar: firstMember ? firstMember.user.avatar : null,
-        });
-      } else {
-        setGroupMemberFirst({ name: '', avatar: null });
-      }
-      const secondMember = members ? members[1] : null;
-      if (secondMember) {
-        setGroupMemberSecond({
-          name: secondMember ? secondMember.user.name : secondMember.user.id,
-          avatar: secondMember ? secondMember.user.avatar : null,
-        });
-      } else {
-        setGroupMemberSecond({ name: '', avatar: null });
-      }
-    }
-  }, [channel?.state?.members, isDirect, user_id]);
+  // Process group members for non-direct channels
+  const groupMembers = useMemo(() => {
+    if (isDirect) return { first: { name: '', avatar: null }, second: { name: '', avatar: null } };
 
-  const getSizeSmallAvatar = size => {
-    return (62.5 * size) / 100;
-  };
+    const members = Object.values(channel?.state?.members || {});
+    const [firstMember, secondMember] = members;
 
-  const getSizeBadgeOnline = size => {
-    return `${size / 5}px`;
-  };
+    return {
+      first: firstMember
+        ? {
+            name: firstMember.user?.name || firstMember.user?.id || '',
+            avatar: firstMember.user?.avatar || null,
+          }
+        : { name: '', avatar: null },
+      second: secondMember
+        ? {
+            name: secondMember.user?.name || secondMember.user?.id || '',
+            avatar: secondMember.user?.avatar || null,
+          }
+        : { name: '', avatar: null },
+    };
+  }, [channel?.state?.members, isDirect]);
 
-  const styleCustom = {
-    borderRadius: shape === AvatarShape.Circle ? '50%' : '30%',
-    border: `1px solid ${theme.palette.background.paper}`,
-  };
+  const getSizeSmallAvatar = useCallback(size => (62.5 * size) / 100, []);
+  const getSizeBadgeOnline = useCallback(size => `${size / 5}px`, []);
+
+  const styleCustom = useMemo(
+    () => ({
+      borderRadius: shape === AvatarShape.Circle ? '50%' : '30%',
+      border: `1px solid ${theme.palette.background.paper}`,
+    }),
+    [shape, theme.palette.background.paper],
+  );
 
   const renderedAvatar = useMemo(() => {
     if (isDirect) {
+      if (!otherMemberInDirect) return null;
+
       return (
         <StyledBadgeOnline
           overlap="circular"
@@ -162,7 +194,7 @@ export default function ChannelAvatar({
         >
           {otherMemberInDirect.user?.avatar ? (
             <ImageCanvas
-              dataUrl={otherMemberInDirect.user?.avatar}
+              dataUrl={otherMemberInDirect.user.avatar}
               width={width}
               height={height}
               styleCustom={styleCustom}
@@ -173,58 +205,60 @@ export default function ChannelAvatar({
           )}
         </StyledBadgeOnline>
       );
-    } else {
-      if (isChannelTopic) {
-        return (
-          <TopicAvatar
-            url={channel.data?.image}
-            name={channel.data?.name}
-            size={width}
-            shape={shape}
-            openLightbox={openLightbox}
-          />
-        );
-      } else if (showGeneralDefault && isEnabledTopics) {
-        return <AvatarGeneralDefault size={width} />;
-      } else {
-        if (isPublic) {
-          return (
-            <AvatarComponent
-              name={channel.data?.name}
-              url={channel.data?.image || ''}
-              width={width}
-              height={height}
-              isPublic={isPublic}
-              openLightbox={openLightbox}
-              shape={shape}
-            />
-          );
-        } else {
-          if (channelAvatar) {
-            return (
-              <ImageCanvas
-                dataUrl={channelAvatar}
-                width={width}
-                height={height}
-                styleCustom={styleCustom}
-                openLightbox={openLightbox}
-              />
-            );
-          } else {
-            return (
-              <TeamAvatarBox
-                member1={groupMemberFirst}
-                member2={groupMemberSecond}
-                width={width}
-                height={height}
-                shape={shape}
-                styleCustom={styleCustom}
-              />
-            );
-          }
-        }
-      }
     }
+
+    if (isChannelTopic) {
+      return (
+        <TopicAvatar
+          url={channel?.data?.image}
+          name={channel?.data?.name}
+          size={width}
+          shape={shape}
+          openLightbox={openLightbox}
+        />
+      );
+    }
+
+    if (showGeneralDefault && isEnabledTopics) {
+      return <AvatarGeneralDefault size={width} />;
+    }
+
+    if (isPublic) {
+      return (
+        <AvatarComponent
+          name={channel?.data?.name}
+          url={channel?.data?.image || ''}
+          width={width}
+          height={height}
+          isPublic={isPublic}
+          openLightbox={openLightbox}
+          shape={shape}
+        />
+      );
+    }
+
+    if (channelAvatar) {
+      return (
+        <ImageCanvas
+          dataUrl={channelAvatar}
+          width={width}
+          height={height}
+          styleCustom={styleCustom}
+          openLightbox={openLightbox}
+        />
+      );
+    }
+
+    return (
+      <TeamAvatarBox
+        member1={groupMembers.first}
+        member2={groupMembers.second}
+        width={width}
+        height={height}
+        shape={shape}
+        styleCustom={styleCustom}
+      />
+    );
   }, [
     isDirect,
     otherMemberInDirect,
@@ -234,13 +268,14 @@ export default function ChannelAvatar({
     styleCustom,
     openLightbox,
     isChannelTopic,
-    channel.data,
+    channel?.data,
     showGeneralDefault,
+    isEnabledTopics,
     isPublic,
     channelAvatar,
-    groupMemberFirst,
-    groupMemberSecond,
+    groupMembers,
     shape,
+    getSizeBadgeOnline,
   ]);
 
   if (!channel) return null;
@@ -251,3 +286,28 @@ export default function ChannelAvatar({
     </Stack>
   );
 }
+
+// PropTypes validation
+ChannelAvatar.propTypes = {
+  channel: PropTypes.object.isRequired,
+  width: PropTypes.number.isRequired,
+  height: PropTypes.number.isRequired,
+  openLightbox: PropTypes.bool,
+  shape: PropTypes.oneOf([AvatarShape.Circle, AvatarShape.Round]),
+  showGeneralDefault: PropTypes.bool,
+};
+
+TeamAvatarBox.propTypes = {
+  member1: PropTypes.shape({
+    name: PropTypes.string,
+    avatar: PropTypes.string,
+  }).isRequired,
+  member2: PropTypes.shape({
+    name: PropTypes.string,
+    avatar: PropTypes.string,
+  }).isRequired,
+  width: PropTypes.number,
+  height: PropTypes.number,
+  shape: PropTypes.string,
+  styleCustom: PropTypes.object,
+};

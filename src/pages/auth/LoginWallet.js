@@ -13,6 +13,7 @@ import { BASE_URL_PROFILE } from '../../config';
 import { LoginType } from '../../constants/commons-const';
 import { isStagingDomain } from '../../utils/commons';
 import uuidv4 from '../../utils/uuidv4';
+import { useTranslation } from 'react-i18next';
 
 // ----------------------------------------------------------------------
 
@@ -20,7 +21,7 @@ export default function LoginWallet({ setIsWalletConnected }) {
   const dispatch = useDispatch();
   const { severity } = useSelector(state => state.app.snackbar);
   const { authProvider } = useSelector(state => state.app);
-
+  const { t } = useTranslation();
   const { connector, address, chain, isConnected } = useAccount();
   const { walletInfo } = useWalletInfo();
 
@@ -150,7 +151,7 @@ export default function LoginWallet({ setIsWalletConnected }) {
           <CardContent>
             <Box sx={{ marginBottom: '30px' }}>
               <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-                Address
+                {t('login_wallet.address')}
               </Typography>
               <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#000' }} gutterBottom>
                 {address}
@@ -159,7 +160,7 @@ export default function LoginWallet({ setIsWalletConnected }) {
 
             <Box sx={{ marginBottom: '30px' }}>
               <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-                Wallet
+                {t('login_wallet.wallet')}
               </Typography>
               <Button
                 fullWidth
@@ -180,7 +181,7 @@ export default function LoginWallet({ setIsWalletConnected }) {
 
             <Box sx={{ marginBottom: '30px' }}>
               <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-                Network
+                {t('login_wallet.network')}
               </Typography>
               <Button
                 fullWidth
@@ -204,7 +205,7 @@ export default function LoginWallet({ setIsWalletConnected }) {
                 sx={{ textTransform: 'none' }}
                 onClick={onDisconnect}
               >
-                Disconnect
+                {t('login_wallet.disconnect')}
               </Button>
 
               <LoadingButton
@@ -216,7 +217,7 @@ export default function LoginWallet({ setIsWalletConnected }) {
                 loading={isLoading}
                 onClick={onSign}
               >
-                Sign
+                {t('login_wallet.sign')}
               </LoadingButton>
             </Stack>
           </CardContent>
@@ -230,7 +231,7 @@ export default function LoginWallet({ setIsWalletConnected }) {
           sx={{ textTransform: 'none' }}
           onClick={onOpenModalWallet}
         >
-          Login via Wallet
+          {t('login_wallet.login_wallet')}
         </LoadingButton>
       )}
     </>

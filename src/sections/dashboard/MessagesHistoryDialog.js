@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogTitle, Slide, List, ListItem, ListItemText
 import { useDispatch, useSelector } from 'react-redux';
 import { SetMessagesHistoryDialog } from '../../redux/slices/dialog';
 import { fDateTime } from '../../utils/formatTime';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -10,6 +11,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const MessagesHistoryDialog = () => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { messagesHistoryDialog } = useSelector(state => state.dialog);
   const { openDialog, messages } = messagesHistoryDialog;
 
@@ -32,7 +34,7 @@ const MessagesHistoryDialog = () => {
         },
       }}
     >
-      <DialogTitle>Messages history</DialogTitle>
+      <DialogTitle>{t('messagesHistoryDialog.title')}</DialogTitle>
       <DialogContent sx={{ maxHeight: '250px' }} className="customScrollbar">
         <List>
           {messages.map((msg, index) => {

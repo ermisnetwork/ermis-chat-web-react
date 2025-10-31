@@ -4,7 +4,7 @@ import { ArrowLeft, MagnifyingGlass } from 'phosphor-react';
 import { useDispatch, useSelector } from 'react-redux';
 import ChannelAvatar from '../ChannelAvatar';
 import { Search, SearchIconWrapper, StyledInputBase } from '../../components/Search';
-import { DEFAULT_PATH } from '../../config';
+import { DEFAULT_PATH, TRANSITION } from '../../config';
 import { useNavigate } from 'react-router-dom';
 import { client } from '../../client';
 import { debounce } from '@mui/material/utils';
@@ -14,6 +14,7 @@ import { removeVietnameseTones, splitChannelId } from '../../utils/commons';
 import { AvatarShape, ChatType } from '../../constants/commons-const';
 import { setSearchChannels } from '../../redux/slices/channel';
 import { SetOpenHomeSearch } from '../../redux/slices/app';
+import { useTranslation } from 'react-i18next';
 
 const StyledSearchItem = styled(Box)(({ theme }) => ({
   transition: 'all .1s',
@@ -27,12 +28,14 @@ const StyledSearchItem = styled(Box)(({ theme }) => ({
 }));
 
 const HomeSearch = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
   const { user_id } = useSelector(state => state.auth);
   const { openHomeSearch } = useSelector(state => state.app);
   const { searchChannels, activeChannels = [] } = useSelector(state => state.channel);
+  const { openTopicPanel } = useSelector(state => state.topic);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredLocalChannels, setFilteredLocalChannels] = useState([]);
   const [publicChannels, setPublicChannels] = useState([]);
@@ -68,6 +71,14 @@ const HomeSearch = () => {
       dispatch(setSearchChannels(dataChannels));
     }
   }, [activeChannels, user_id]);
+
+  function removeVietnameseTones(str) {
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D');
+  }
 
   const debouncedSearch = useCallback(
     debounce(async term => {
@@ -119,7 +130,16 @@ const HomeSearch = () => {
 
   return (
     <>
-      <Stack sx={{ width: '100%', position: 'relative', zIndex: 4 }}>
+      <Stack
+        sx={{
+          width: '100%',
+          position: 'relative',
+          zIndex: 4,
+          transition: TRANSITION,
+          opacity: openTopicPanel ? 0.5 : 1,
+          pointerEvents: openTopicPanel ? 'none' : 'auto',
+        }}
+      >
         <Stack direction="row" alignItems="center" gap={1}>
           {openHomeSearch && (
             <IconButton onClick={onCloseSearch}>
@@ -136,7 +156,7 @@ const HomeSearch = () => {
               )}
             </SearchIconWrapper>
             <StyledInputBase
-              placeholder="Search channel"
+              placeholder={t('Homesearch.search')}
               inputProps={{ 'aria-label': 'search' }}
               onFocus={onFocusSearch}
               onChange={onChangeSearch}
@@ -172,7 +192,7 @@ const HomeSearch = () => {
                 variant="subtitle2"
                 sx={{ color: theme.palette.text.secondary, marginBottom: '10px', fontWeight: 600 }}
               >
-                Your channels
+                {t('Homesearch.your_channel')}
               </Typography>
               {filteredLocalChannels.length ? (
                 <Stack spacing={1}>
@@ -224,7 +244,7 @@ const HomeSearch = () => {
                     fontWeight: 400,
                   }}
                 >
-                  No result
+                  {t('noResult')}
                 </Typography>
               )}
             </Box>
@@ -237,7 +257,7 @@ const HomeSearch = () => {
                 variant="subtitle2"
                 sx={{ color: theme.palette.text.secondary, marginBottom: '10px', fontWeight: 600 }}
               >
-                Public channels
+                {t('Homesearch.public_channel')}
               </Typography>
               {publicChannels.length ? (
                 <Stack spacing={1}>
@@ -296,7 +316,7 @@ const HomeSearch = () => {
                     fontWeight: 400,
                   }}
                 >
-                  No result
+                  {t('noResult')}
                 </Typography>
               )}
             </Box>

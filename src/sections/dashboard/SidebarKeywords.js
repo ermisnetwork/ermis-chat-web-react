@@ -9,9 +9,11 @@ import { handleError } from '../../utils/commons';
 import { LoadingButton } from '@mui/lab';
 import { SmallCapsIcon } from '../../components/Icons';
 import { SetFilterWords } from '../../redux/slices/channel';
+import { useTranslation } from 'react-i18next';
 
 const SidebarKeywords = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { currentChannel, filterWords } = useSelector(state => state.channel);
   const [loadingButton, setLoadingButton] = useState(false);
@@ -27,12 +29,12 @@ const SidebarKeywords = () => {
     const trimmedValue = inputValue.trim().toLowerCase();
 
     if (trimmedValue.length <= 3) {
-      setMessageError('Keyword must be more than 3 characters');
+      setMessageError(t('sidebarKeywordFiltering.max_characters'));
       return;
     }
 
     if (keywords.includes(trimmedValue)) {
-      setMessageError('Keyword already exists in the list');
+      setMessageError(t('sidebarKeywordFiltering.keyword_exists'));
       return;
     }
 
@@ -65,14 +67,14 @@ const SidebarKeywords = () => {
         dispatch(
           showSnackbar({
             severity: 'success',
-            message: 'Keywords added successfully!',
+            message: t('sidebarKeywordFiltering.add_success'),
           }),
         );
         setLoadingButton(false);
       }
     } catch (error) {
       setLoadingButton(false);
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
   };
 
@@ -88,7 +90,7 @@ const SidebarKeywords = () => {
         </IconButton>
 
         <Typography variant="subtitle2" sx={{ flex: 1, textAlign: 'center', fontSize: '18px' }}>
-          Keywords Filtering
+          {t('sidebarKeywordFiltering.title')}
         </Typography>
 
         <LoadingButton
@@ -98,7 +100,7 @@ const SidebarKeywords = () => {
           disabled={JSON.stringify(keywords) === JSON.stringify(filterWords)}
           loading={loadingButton}
         >
-          SAVE
+          {t('sidebarKeywordFiltering.save')}
         </LoadingButton>
       </Stack>
 
@@ -125,7 +127,7 @@ const SidebarKeywords = () => {
                   marginBottom: '5px',
                 }}
               >
-                ADD KEYWORD
+                {t('sidebarKeywordFiltering.add_keyword')}
               </Typography>
 
               <TextField
@@ -156,7 +158,7 @@ const SidebarKeywords = () => {
               <Typography
                 sx={{ fontSize: '12px', fontWeight: 400, marginTop: '5px', color: theme.palette.text.secondary }}
               >
-                Add keywords to automatically delete messages with unwanted content in this channel
+                {t('sidebarKeywordFiltering.add_message')}
               </Typography>
             </Box>
 
@@ -169,7 +171,7 @@ const SidebarKeywords = () => {
                   marginBottom: '5px',
                 }}
               >
-                ON THIS CHANNEL
+                {t('sidebarKeywordFiltering.on_this_channel')}
               </Typography>
 
               <Stack
@@ -218,7 +220,7 @@ const SidebarKeywords = () => {
                       backgroundColor: theme.palette.background.neutral,
                     }}
                   >
-                    No keyword yet.
+                    {t('sidebarKeywordFiltering.no_keyword')}
                   </Typography>
                 )}
               </Stack>

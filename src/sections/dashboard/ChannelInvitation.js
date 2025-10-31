@@ -2,8 +2,9 @@ import React from 'react';
 import { Stack, styled, useTheme, Typography, Button } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import ChannelAvatar from '../../components/ChannelAvatar';
-import { formatString, handleError } from '../../utils/commons';
+import { handleError } from '../../utils/commons';
 import { AvatarShape, ChatType, RoleMember } from '../../constants/commons-const';
+import { useTranslation } from 'react-i18next';
 
 const StyledInvitation = styled(Stack)(({ theme }) => ({
   position: 'absolute',
@@ -22,7 +23,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
 const ChannelInvitation = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-
+  const { t } = useTranslation();
   const { currentChannel } = useSelector(state => state.channel);
 
   const channelType = currentChannel?.type;
@@ -33,7 +34,7 @@ const ChannelInvitation = () => {
     try {
       await currentChannel.acceptInvite('accept');
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
   };
 
@@ -41,7 +42,7 @@ const ChannelInvitation = () => {
     try {
       await currentChannel.rejectInvite();
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
   };
 
@@ -49,7 +50,7 @@ const ChannelInvitation = () => {
     try {
       await currentChannel.skipInvite();
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
   };
 
@@ -82,27 +83,28 @@ const ChannelInvitation = () => {
           shape={AvatarShape.Round}
         />
         <Typography variant="h6" sx={{ color: theme.palette.text.primary, margin: '15px 0' }}>
-          {formatString(currentChannel.data.name)}
+          {currentChannel.data.name}
         </Typography>
         <Typography
           variant="body1"
           sx={{ color: theme.palette.grey[600], margin: '0 0 15px', textAlign: 'center', fontSize: '14px' }}
         >
-          Accept the invite to see all messages of this {channelType === ChatType.TEAM ? 'channel' : 'conversation'}
+          {t('channelInvitation.message')}{' '}
+          {channelType === ChatType.TEAM ? t('channelInvitation.channel') : t('channelInvitation.conversation')}
         </Typography>
         <Stack direction="row" justifyContent="space-between">
           <StyledButton variant="contained" color="primary" onClick={onAcceptInvite}>
-            Accept
+            {t('channelInvitation.accept')}
           </StyledButton>
           {channelType === ChatType.TEAM && (
             <StyledButton variant="contained" color="error" onClick={onRejectInvite}>
-              Decline
+              {t('channelInvitation.decline')}
             </StyledButton>
           )}
 
           {channelType === ChatType.MESSAGING && channelRole === RoleMember.PENDING && (
             <StyledButton variant="contained" color="error" onClick={onSkipInvite}>
-              Skip
+              {t('channelInvitation.skip')}
             </StyledButton>
           )}
         </Stack>

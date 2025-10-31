@@ -8,6 +8,7 @@ import { X } from 'phosphor-react';
 import CustomCheckbox from './CustomCheckbox';
 import { useSelector } from 'react-redux';
 import { myRoleInChannel } from '../utils/commons';
+import { useTranslation } from 'react-i18next';
 
 const StyledMemberItem = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -35,6 +36,7 @@ const MemberElement = ({
   selectedMembers = [],
 }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { currentChannel } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
 
@@ -85,13 +87,13 @@ const MemberElement = ({
   const textRoleMember = channel_role => {
     switch (channel_role) {
       case RoleMember.OWNER:
-        return 'Owner';
+        return t('memberElement.owner');
       case RoleMember.MOD:
-        return 'Moderator';
+        return t('memberElement.moderator');
       case RoleMember.MEMBER:
-        return 'Member';
+        return t('memberElement.member');
       case RoleMember.PENDING:
-        return 'Pending';
+        return t('memberElement.pending');
       default:
         return '';
     }

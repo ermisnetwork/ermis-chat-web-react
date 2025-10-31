@@ -8,6 +8,7 @@ import { DEFAULT_PATH } from '../../config';
 import useResponsive from '../../hooks/useResponsive';
 import { SlideLogin1, SlideLogin2, SlideLogin3 } from '../../components/Icons';
 import Slider from 'react-slick';
+import { useTranslation } from 'react-i18next';
 
 const StyledSlider = styled(Slider)(({ theme }) => ({
   width: '100%',
@@ -43,6 +44,7 @@ const StyledSlider = styled(Slider)(({ theme }) => ({
 
 const AuthLayout = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { isLoggedIn } = useSelector(state => state.auth);
   const isScreenMdToXl = useResponsive('between', null, 'md', 'xl');
   const isMobileToMd = useResponsive('down', 'md');
@@ -54,21 +56,21 @@ const AuthLayout = () => {
 
   const SLIDE = [
     {
-      title: 'Welcome to Uhmm...!',
+      title: 'index_login.title_one',
       description:
-        'Uhmm... isn’t just a chat app — it’s a decentralized hub for secure, real-time team collaboration. \nBuilt for Web3, made for you.',
+        'index_login.description_one',
       image: <SlideLogin1 style={{ margin: 'auto' }} size={imageSize} />,
     },
     {
-      title: 'Smart. Secure. On-Chain.',
+      title: 'index_login.title_two',
       description:
-        'Powered by blockchain, your messages stay encrypted, verified,\nand tamper-proof - with data ownership in your hands.',
+        'index_login.description_two',
       image: <SlideLogin2 style={{ margin: 'auto' }} size={imageSize} />,
     },
     {
-      title: 'Ready for the Workforce',
+      title: 'index_login.title_three',
       description:
-        'Designed for DAOs, startups, and global teams embracing decentralization.\nUhmm... is your all-in-one, future-proof communication layer.',
+        'index_login.description_three',
       image: <SlideLogin3 style={{ margin: 'auto' }} size={imageSize} />,
     },
   ];
@@ -93,14 +95,14 @@ const AuthLayout = () => {
             {SLIDE.map((slide, idx) => (
               <Box key={idx} sx={{ textAlign: 'center', cursor: 'pointer' }}>
                 <Typography variant="h2" sx={{ marginBottom: '5px' }}>
-                  {slide.title}
+                  {t(slide.title)}
                 </Typography>
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{ fontSize: '18px', fontWeight: 400, margin: '0 auto 30px' }}
                 >
-                  {slide.description.split('\n').map((line, idx) => (
+                  {t(slide.description).split('\n').map((line, idx) => (
                     <React.Fragment key={idx}>
                       {line}
                       <br />

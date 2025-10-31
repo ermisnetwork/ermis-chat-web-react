@@ -17,6 +17,8 @@ import { setPollResult } from '../../redux/slices/dialog';
 import MemberAvatar from '../../components/MemberAvatar';
 import { AvatarShape } from '../../constants/commons-const';
 import useOnlineStatus from '../../hooks/useOnlineStatus';
+import { use } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -59,6 +61,7 @@ const UserItem = ({ user }) => {
 
 export default function PollResultDialog() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { currentChannel } = useSelector(state => state.channel);
   const { pollResult } = useSelector(state => state.dialog);
@@ -71,7 +74,7 @@ export default function PollResultDialog() {
   return (
     <Dialog fullWidth maxWidth="xs" open={openDialog} TransitionComponent={Transition} onClose={onCloseDialog}>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        Poll Result
+        {t('pollResultDialog.title')}
         <IconButton onClick={onCloseDialog}>
           <X />
         </IconButton>
@@ -145,7 +148,7 @@ export default function PollResultDialog() {
                           fontWeight: 400,
                         }}
                       >
-                        No one voted
+                        {t('pollResultDialog.no_voted')}
                       </Typography>
                     )}
                   </Stack>

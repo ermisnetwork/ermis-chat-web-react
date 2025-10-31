@@ -22,6 +22,7 @@ const initialState = {
   searchQuery: '',
   userInfo: null,
   openHomeSearch: false,
+  isEditing: false,
 };
 
 const slice = createSlice({
@@ -77,6 +78,9 @@ const slice = createSlice({
     },
     setOpenHomeSearch(state, action) {
       state.openHomeSearch = action.payload;
+    },
+    setIsEditing(state, action) {
+      state.isEditing = action.payload;
     },
   },
 });
@@ -162,5 +166,11 @@ export function SetUserInfo(payload) {
 export function SetOpenHomeSearch(payload) {
   return async (dispatch, getState) => {
     dispatch(slice.actions.setOpenHomeSearch(payload));
+  };
+}
+
+export function SetIsEditing(payload) {
+  return async (dispatch, getState) => {
+    dispatch(slice.actions.setIsEditing(payload));
   };
 }

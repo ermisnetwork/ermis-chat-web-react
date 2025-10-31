@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PATH } from '../../config';
 import { ClientEvents } from '../../constants/events-const';
 import { client } from '../../client';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -35,6 +36,7 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
 }));
 
 const ChannelConfirmDialog = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -95,23 +97,23 @@ const ChannelConfirmDialog = () => {
   const messageSnackbar = () => {
     switch (type) {
       case ConfirmType.LEAVE:
-        return 'You have left the channel';
+        return t('channelConfirmDialog.snackbar_leave');
       case ConfirmType.REMOVE_MEMBER:
-        return 'Remove member successfully!';
+        return t('channelConfirmDialog.snackbar_remove_member');
       case ConfirmType.DELETE_CHANNEL:
-        return 'Delete channel successfully!';
+        return t('channelConfirmDialog.snackbar_delete_channel');
       case ConfirmType.REMOVE_MODER:
-        return 'Remove moder successfully!';
+        return t('channelConfirmDialog.snackbar_delete_moder');
       case ConfirmType.TRUNCATE:
-        return 'Conversation history delete successfully!';
+        return t('channelConfirmDialog.snackbar_delete_history');
       case ConfirmType.BLOCK:
-        return `Successfully blocked ${directChannelName}`;
+        return `${t('channelConfirmDialog.snackbar_blocked')} ${directChannelName}`;
       case ConfirmType.UNBLOCK:
-        return `Successfully unblocked ${directChannelName}`;
+        return `${t('channelConfirmDialog.snackbar_unblocked')} ${directChannelName}`;
       case ConfirmType.UNBANNED:
-        return `Successfully unbanned ${userName}`;
+        return `${t('channelConfirmDialog.snackbar_unbanned')} ${userName}`;
       case ConfirmType.DELETE_TOPIC:
-        return 'Delete topic successfully!';
+        return t('channelConfirmDialog.snackbar_delete_topic');
       default:
         return '';
     }
@@ -120,57 +122,55 @@ const ChannelConfirmDialog = () => {
   const messageContent = () => {
     switch (type) {
       case ConfirmType.LEAVE:
-        return 'Are you sure you want to leave this channel?';
+        return t('channelConfirmDialog.snackbar_confirm_leave_channel');
       case ConfirmType.REMOVE_MEMBER:
-        return 'Are you sure you want to remove this member?';
+        return t('channelConfirmDialog.snackbar_confirm_remove_member');
       case ConfirmType.DELETE_CHANNEL:
         return (
           <>
-            Once the channel <strong>{channelName}</strong> is deleted, all content and chat history will be permanently
-            lost. This action cannot be undone.
+            {t('channelConfirmDialog.snackbar_confirm_delete_one')} <strong>{channelName}</strong> {t('channelConfirmDialog.snackbar_confirm_delete_two')}
             <br />
-            Are you sure you want to proceed
+            {t('channelConfirmDialog.snackbar_confirm_delete_three')}
           </>
         );
       case ConfirmType.REMOVE_MODER:
-        return 'Are you sure you want to remove this user as a moderator?';
+        return t('channelConfirmDialog.snackbar_confirm_remove_moder');
       case ConfirmType.TRUNCATE:
         return (
           <>
-            Whole conversation history will permanently delete. <br /> Are you sure you want to delete?
+            {t('channelConfirmDialog.snackbar_confirm_delete_conversation')} <br /> {t('channelConfirmDialog.snackbar_confirm_delete')}
           </>
         );
       case ConfirmType.BLOCK:
         return (
           <>
-            Are you sure you want to block <strong>{directChannelName}</strong>.
+            {t('channelConfirmDialog.snackbar_confirm_block')} <strong>{directChannelName}</strong>.
             <br />
-            He/she will no longer be able to send you message
+            {t('channelConfirmDialog.snackbar_confirm_block_message')}
           </>
         );
       case ConfirmType.UNBLOCK:
         return (
           <>
-            Are you sure you want to unblock <strong>{directChannelName}</strong>.
+            {t('channelConfirmDialog.snackbar_confirm_unblock')} <strong>{directChannelName}</strong>.
             <br />
-            He/she will be able to send you message again
+            {t('channelConfirmDialog.snackbar_confirm_unblock_message')}
           </>
         );
       case ConfirmType.UNBANNED:
         return (
           <>
-            Are you sure you want to unban <strong>{userName}</strong>.
+            {t('channelConfirmDialog.snackbar_confirm_unban')} <strong>{userName}</strong>.
             <br />
-            He/she will be able to send you message again
+            {t('channelConfirmDialog.snackbar_confirm_unban_message')}
           </>
         );
       case ConfirmType.DELETE_TOPIC:
         return (
           <>
-            Once the topic <strong>{channelName}</strong> is deleted, all content and chat history will be permanently
-            lost. This action cannot be undone.
+            {t('channelConfirmDialog.snackbar_confirm_delete_topic_one')} <strong>{channelName}</strong> {t('channelConfirmDialog.snackbar_confirm_delete_topic_two')}
             <br />
-            Are you sure you want to proceed
+            {t('channelConfirmDialog.snackbar_confirm_proceed')}
           </>
         );
       default:
@@ -181,23 +181,23 @@ const ChannelConfirmDialog = () => {
   const titleDialog = () => {
     switch (type) {
       case ConfirmType.LEAVE:
-        return 'Leave this channel';
+        return t('channelConfirmDialog.dialog_title_leave_channel');
       case ConfirmType.REMOVE_MEMBER:
-        return 'Remove this member';
+        return t('channelConfirmDialog.dialog_title_remove_member_action');
       case ConfirmType.DELETE_CHANNEL:
-        return 'Are you sure you want to delete this channel?';
+        return t('channelConfirmDialog.dialog_title_delete_channel');
       case ConfirmType.REMOVE_MODER:
-        return 'Remove this moderator';
+        return t('channelConfirmDialog.dialog_title_remove_moderator');
       case ConfirmType.TRUNCATE:
-        return 'Clear chat history';
+        return t('channelConfirmDialog.dialog_title_clear_history');
       case ConfirmType.BLOCK:
-        return 'Block this user';
+        return t('channelConfirmDialog.dialog_title_block_user');
       case ConfirmType.UNBLOCK:
-        return 'Unblock this user';
+        return t('channelConfirmDialog.dialog_title_unblock_user');
       case ConfirmType.UNBANNED:
-        return 'Unban this user';
+        return t('channelConfirmDialog.dialog_title_unban_user');
       case ConfirmType.DELETE_TOPIC:
-        return 'Are you sure you want to delete this topic?';
+        return t('channelConfirmDialog.dialog_title_delete_topic');
       default:
         return '';
     }
@@ -206,25 +206,25 @@ const ChannelConfirmDialog = () => {
   const textButtonConfirm = () => {
     switch (type) {
       case ConfirmType.LEAVE:
-        return 'Leave';
+        return t('channelConfirmDialog.leave');
       case ConfirmType.REMOVE_MEMBER:
-        return 'Remove';
+        return t('channelConfirmDialog.remove');
       case ConfirmType.DELETE_CHANNEL:
-        return 'Delete';
+        return t('channelConfirmDialog.delete');
       case ConfirmType.REMOVE_MODER:
-        return 'Remove';
+        return t('channelConfirmDialog.remove');
       case ConfirmType.TRUNCATE:
-        return 'Clear';
+        return t('channelConfirmDialog.clear');
       case ConfirmType.BLOCK:
-        return 'Block';
+        return t('channelConfirmDialog.block');
       case ConfirmType.UNBLOCK:
-        return 'Unblock';
+        return t('channelConfirmDialog.unblock');
       case ConfirmType.UNBANNED:
-        return 'Unban';
+        return t('channelConfirmDialog.unban');
       case ConfirmType.DELETE_TOPIC:
-        return 'Delete';
+        return t('channelConfirmDialog.delete');
       default:
-        return 'Yes';
+        return t('channelConfirmDialog.yes');
     }
   };
 
@@ -254,46 +254,46 @@ const ChannelConfirmDialog = () => {
         dispatch(
           showSnackbar({
             severity: 'error',
-            message: 'Failed to delete the channel. Please try again',
+            message: t('channelConfirmDialog.snackbar_error_delete_channel'),
           }),
         );
       } else if (type === ConfirmType.TRUNCATE) {
         dispatch(
           showSnackbar({
             severity: 'error',
-            message: 'Failed to delete the chat. Please try again',
+            message: t('channelConfirmDialog.snackbar_error_delete_chat'),
           }),
         );
       } else if (type === ConfirmType.BLOCK) {
         dispatch(
           showSnackbar({
             severity: 'error',
-            message: 'Unable to block the user. Please try again',
+            message: t('channelConfirmDialog.snackbar_error_block_user'),
           }),
         );
       } else if (type === ConfirmType.UNBLOCK) {
         dispatch(
           showSnackbar({
             severity: 'error',
-            message: 'Unable to unblock the user. Please try again',
+            message: t('channelConfirmDialog.snackbar_error_unblock_user'),
           }),
         );
       } else if (type === ConfirmType.UNBANNED) {
         dispatch(
           showSnackbar({
             severity: 'error',
-            message: 'Unable to unban the user. Please try again',
+            message: t('channelConfirmDialog.snackbar_error_unban_user'),
           }),
         );
       } else if (type === ConfirmType.DELETE_TOPIC) {
         dispatch(
           showSnackbar({
             severity: 'error',
-            message: 'Failed to delete the topic. Please try again',
+            message: t('channelConfirmDialog.snackbar_error_delete_topic'),
           }),
         );
       } else {
-        handleError(dispatch, error);
+        handleError(dispatch, error, t);
       }
     }
   };
@@ -313,7 +313,7 @@ const ChannelConfirmDialog = () => {
         <DialogContentText id="alert-dialog-slide-description">{messageContent()}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCloseDialog}>Cancel</Button>
+        <Button onClick={onCloseDialog}>{t('channelConfirmDialog.cancel')}</Button>
         <LoadingButton loading={loadingButton} onClick={onSubmit}>
           {textButtonConfirm()}
         </LoadingButton>

@@ -11,9 +11,11 @@ import FormProvider from '../../components/hook-form';
 import { useForm } from 'react-hook-form';
 import { SidebarType } from '../../constants/commons-const';
 import { DOMAIN_APP } from '../../config';
+import { useTranslation } from 'react-i18next';
 
 const SidebarChannelType = () => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const theme = useTheme();
   const formSubmitRef = useRef(null);
   const { currentChannel } = useSelector(state => state.channel);
@@ -45,10 +47,10 @@ const SidebarChannelType = () => {
 
       setSaveLoading(true);
       await currentChannel.update(params);
-      dispatch(showSnackbar({ severity: 'success', message: 'Channel updated successfully' }));
+      dispatch(showSnackbar({ severity: 'success', message: t('sidebarChannelType.snackbar_update_success') }));
       dispatch(UpdateSidebarType(SidebarType.Channel));
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     } finally {
       setSaveLoading(false);
     }
@@ -75,9 +77,9 @@ const SidebarChannelType = () => {
   const onCopy = async () => {
     try {
       await navigator.clipboard.writeText(fullUrl);
-      dispatch(showSnackbar({ severity: 'success', message: 'Copied to clipboard' }));
+      dispatch(showSnackbar({ severity: 'success', message: t('sidebarChannelType.snackbar_copy_success') }));
     } catch (err) {
-      dispatch(showSnackbar({ severity: 'error', message: 'Unable to copy the link. Please try again' }));
+      dispatch(showSnackbar({ severity: 'error', message: t('sidebarChannelType.snackbar_copy_failed') }));
     }
   };
 
@@ -96,7 +98,7 @@ const SidebarChannelType = () => {
           </IconButton>
 
           <Typography variant="subtitle2" sx={{ flex: 1, textAlign: 'center', fontSize: '18px' }}>
-            Channel Type
+            {t('sidebarChannelType.title')}
           </Typography>
 
           <LoadingButton
@@ -106,7 +108,7 @@ const SidebarChannelType = () => {
             disabled={saveDisabled}
             loading={saveLoading}
           >
-            SAVE
+            {t('sidebarChannelType.save')}
           </LoadingButton>
         </Stack>
 
@@ -132,13 +134,13 @@ const SidebarChannelType = () => {
                     marginBottom: '5px',
                   }}
                 >
-                  TYPE
+                  {t('sidebarChannelType.type')}
                 </Typography>
                 <RHFRadio
                   name="public"
                   options={[
-                    { value: 'true', label: 'Public' },
-                    { value: 'false', label: 'Private' },
+                    { value: 'true', label: t('sidebarChannelType.public') },
+                    { value: 'false', label: t('sidebarChannelType.private') },
                   ]}
                   labelPlacement="start"
                   optionSx={{
@@ -171,8 +173,8 @@ const SidebarChannelType = () => {
                   }}
                 >
                   {methods.watch('public') === 'true'
-                    ? 'Public channel is open for anyone to search, view its content, and join.'
-                    : 'Only invited members can find and join a private channel.'}
+                    ? t('sidebarChannelType.public_message')
+                    : t('sidebarChannelType.private_message')}
                 </Typography>
               </Box>
             </FormProvider>
@@ -188,7 +190,7 @@ const SidebarChannelType = () => {
                   marginBottom: '5px',
                 }}
               >
-                INVITE LINK
+                {t('sidebarChannelType.invite_link')}
               </Typography>
 
               <Stack
@@ -226,7 +228,7 @@ const SidebarChannelType = () => {
                   }}
                   fullWidth
                 >
-                  COPY
+                  {t('sidebarChannelType.copy')}
                 </Button>
               </Stack>
 
@@ -237,7 +239,7 @@ const SidebarChannelType = () => {
                   marginTop: '5px',
                 }}
               >
-                Enable others to find the channel by sharing its link.
+                {t('sidebarChannelType.message')}
               </Typography>
             </Box>
           )}

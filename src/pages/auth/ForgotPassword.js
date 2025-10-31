@@ -12,15 +12,18 @@ import { LoadingButton } from '@mui/lab';
 import { ForgotPasswordByEmail, ResetPasswordByEmail } from '../../redux/slices/auth';
 import { Eye, EyeSlash } from 'phosphor-react';
 import { setIsResetEmailSent } from '../../redux/slices/app';
+import { useTranslation } from 'react-i18next';
+import { t } from 'i18next';
 
 const ResetPassword = () => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { isLoading } = useSelector(state => state.app);
   const [showPassword, setShowPassword] = useState(false);
 
   const ResetPasswordSchema = Yup.object().shape({
-    token: Yup.string().required('Code is required'),
-    password: Yup.string().required('Password is required'),
+    token: Yup.string().required(t('forgot_password.code_required')),
+    password: Yup.string().required(t('forgot_password.password_required')),
   });
 
   const methods = useForm({
@@ -46,7 +49,7 @@ const ResetPassword = () => {
         <RHFTextField
           name="password"
           label="New password"
-          type={showPassword ? 'text' : 'password'}
+          type={showPassword ? t('forgot_password.text') : t('forgot_password.password')}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -75,7 +78,7 @@ const ResetPassword = () => {
           },
         }}
       >
-        Reset password
+        {t('forgot_password.reset_password')}
       </LoadingButton>
     </FormProvider>
   );
@@ -86,7 +89,7 @@ const ForgotPassword = () => {
   const dispatch = useDispatch();
 
   const ForgotPasswordSchema = Yup.object().shape({
-    email: Yup.string().required('Email is required').email('Email must be a valid email address'),
+    email: Yup.string().required(t('forgot_password.email_required')).email(t('forgot_password.email_invalid')),
   });
 
   const methods = useForm({
@@ -108,12 +111,11 @@ const ForgotPassword = () => {
     <>
       <Stack spacing={2} sx={{ mb: 5, position: 'relative' }}>
         <Typography variant="h3" paragraph>
-          Forgot your password?
+          {t('forgot_password.title')}
         </Typography>
 
         <Typography sx={{ color: 'text.secondary', mb: 5 }}>
-          Please enter the email address associated with your account and we will email you a verification code to reset
-          your password.
+          {t('forgot_password.message')}
         </Typography>
       </Stack>
 
@@ -121,7 +123,7 @@ const ForgotPassword = () => {
         <ResetPassword />
       ) : (
         <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-          <RHFTextField name="email" label="Email address" />
+          <RHFTextField name="email" label={t('forgot_password.email_label')} />
 
           <LoadingButton
             loading={isLoading}
@@ -139,7 +141,7 @@ const ForgotPassword = () => {
               },
             }}
           >
-            Send Request
+            {t('forgot_password.send_request')}
           </LoadingButton>
         </FormProvider>
       )}
@@ -158,7 +160,7 @@ const ForgotPassword = () => {
         onClick={() => dispatch(setIsResetEmailSent(false))}
       >
         <CaretLeft size={24} />
-        Return to sign in
+        {t('forgot_password.return_sign_in')}
       </Link>
     </>
   );

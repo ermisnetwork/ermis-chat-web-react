@@ -9,6 +9,7 @@ import { Search, SearchIconWrapper, StyledInputBase } from '../../components/Sea
 import { AvatarShape } from '../../constants/commons-const';
 import { showSnackbar } from '../../redux/slices/app';
 import { formatString } from '../../utils/commons';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -17,9 +18,9 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 const ForwardMessageDialog = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-
+  const { t } = useTranslation();
   const { openDialog, message } = useSelector(state => state.messages.forwardMessage);
-  const { activeChannels, currentChannel, pinnedChannels } = useSelector(state => state.channel);
+  const { activeChannels = [], currentChannel, pinnedChannels = [] } = useSelector(state => state.channel);
   const { canSendMessage } = useSelector(state => state.channel.channelPermissions);
 
   const [filteredChannels, setFilteredChannels] = useState([]);
@@ -58,9 +59,7 @@ const ForwardMessageDialog = () => {
 
   const sendForwardMessage = async channel => {
     if (!canSendMessage) {
-      dispatch(
-        showSnackbar({ severity: 'error', message: 'You do not have permission to send message in this channel' }),
-      );
+      dispatch(showSnackbar({ severity: 'error', message: t('forwardMessageDialog.snackbar_sendForward_error') }));
       return;
     }
 
@@ -96,12 +95,14 @@ const ForwardMessageDialog = () => {
       if (result) {
         // Gửi thành công
         setForwardStatus(prev => ({ ...prev, [channel.id]: 'sent' }));
-        dispatch(showSnackbar({ severity: 'success', message: 'Message forwarded successfully' }));
+        dispatch(
+          showSnackbar({ severity: 'success', message: t('forwardMessageDialog.snackbar_sendForward_success') }),
+        );
       }
     } catch (error) {
       // Gửi thất bại
       setForwardStatus(prev => ({ ...prev, [channel.id]: 'error' }));
-      dispatch(showSnackbar({ severity: 'error', message: 'Unable to forward the message. Please try again' }));
+      dispatch(showSnackbar({ severity: 'error', message: t('forwardMessageDialog.snackbar_sendForward_error') }));
     }
   };
 
@@ -138,9 +139,9 @@ const ForwardMessageDialog = () => {
           disabled={disabled}
           color={status === 'error' ? 'error' : 'primary'}
         >
-          {status === 'sent' && 'Sent'}
-          {status === 'error' && 'Resend'}
-          {['idle', 'loading'].includes(status) && 'Send'}
+          {status === 'sent' && t('forwardMessageDialog.sent')}
+          {status === 'error' && t('forwardMessageDialog.resend')}
+          {['idle', 'loading'].includes(status) && t('forwardMessageDialog.send')}
         </LoadingButton>
       </Stack>
     );
@@ -156,7 +157,7 @@ const ForwardMessageDialog = () => {
       onClose={onCloseDialog}
     >
       <DialogTitle sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        Forward message{' '}
+        {t('forwardMessageDialog.title')}
         <IconButton onClick={onCloseDialog}>
           <X />
         </IconButton>
@@ -170,7 +171,7 @@ const ForwardMessageDialog = () => {
             </SearchIconWrapper>
             <StyledInputBase
               autoFocus
-              placeholder="Forward to..."
+              placeholder={t('forwardMessageDialog.search')}
               inputProps={{ 'aria-label': 'search' }}
               onChange={onSearch}
               value={searchQuery}
@@ -220,9 +221,9 @@ const ForwardMessageDialog = () => {
                         disabled={isDisabled}
                         color={status === 'error' ? 'error' : 'primary'}
                       >
-                        {status === 'sent' && 'Sent'}
-                        {status === 'error' && 'Resend'}
-                        {['idle', 'loading'].includes(status) && 'Send'}
+                        {status === 'sent' && t('forwardMessageDialog.sent')}
+                        {status === 'error' && t('forwardMessageDialog.resend')}
+                        {['idle', 'loading'].includes(status) && t('forwardMessageDialog.send')}
                       </LoadingButton>
                     </Stack>
                     {topics.length > 0 && (
@@ -256,7 +257,7 @@ const ForwardMessageDialog = () => {
                   fontWeight: 400,
                 }}
               >
-                No result
+                {t('forwardMessageDialog.noResult')}
               </Typography>
             )}
           </Stack>

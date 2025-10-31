@@ -7,12 +7,13 @@ import { useDispatch } from 'react-redux';
 import { SetAuthProvider } from '../../redux/slices/app';
 import { ErmisAuthProvider } from 'ermis-chat-js-sdk';
 import { API_KEY, BASE_URL } from '../../config';
+import { useTranslation } from 'react-i18next';
 
 // ----------------------------------------------------------------------
 
 export default function LoginWalletPage() {
   const dispatch = useDispatch();
-
+  const { t } = useTranslation();
   const [isWalletConnected, setIsWalletConnected] = useState(false);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export default function LoginWalletPage() {
   return (
     <>
       <Stack spacing={2} sx={{ mb: 5, position: 'relative' }}>
-        <Typography variant="h4">Login to Ermis</Typography>
+        <Typography variant="h4">{t('login_ermis.login')}</Typography>
       </Stack>
 
       <WalletWrapper>

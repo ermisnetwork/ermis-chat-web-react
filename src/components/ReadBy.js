@@ -16,7 +16,6 @@ import {
 import { CheckCircle, X } from 'phosphor-react';
 import { useDispatch, useSelector } from 'react-redux';
 import MemberAvatar from './MemberAvatar';
-import { formatString } from '../utils/commons';
 import { fDateTime } from '../utils/formatTime';
 import { ClientEvents } from '../constants/events-const';
 import { AvatarShape, MessageReadType, MessageType } from '../constants/commons-const';
@@ -25,6 +24,7 @@ import { FixedSizeList } from 'react-window';
 import { client } from '../client';
 import useResponsive from '../hooks/useResponsive';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const StyledAvatarGroup = styled(AvatarGroup)(({ theme }) => ({
   cursor: 'pointer',
@@ -47,7 +47,7 @@ const StyledAvatarGroup = styled(AvatarGroup)(({ theme }) => ({
   },
 }));
 
-const Row = memo(({ index, style, data }) => {
+const Row = memo(({ index, style, data, t }) => {
   const item = data[index];
 
   return (
@@ -61,8 +61,8 @@ const Row = memo(({ index, style, data }) => {
         />
       </ListItemAvatar>
       <ListItemText
-        primary={formatString(item.user.name)}
-        secondary={!isNaN(new Date(item.last_read)) ? fDateTime(item.last_read) : 'Invalid date'}
+        primary={item.user.name}
+        secondary={!isNaN(new Date(item.last_read)) ? fDateTime(item.last_read) : t('readBy.invalid')}
         sx={{ width: 'calc(100% - 40px)', paddingLeft: '15px' }}
       />
     </ListItem>
@@ -71,6 +71,7 @@ const Row = memo(({ index, style, data }) => {
 
 export default function ReadBy() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const isLgToXl = useResponsive('between', null, 'lg', 'xl');
   const isMobileToLg = useResponsive('down', 'lg');
@@ -180,13 +181,13 @@ export default function ReadBy() {
         return null;
       case MessageReadType.Unread:
         return (
-          <Tooltip title="Sent" placement="left">
+          <Tooltip title={t('readBy.sent')} placement="left">
             <CheckCircle size={22} color={theme.palette.grey[500]} />
           </Tooltip>
         );
       case MessageReadType.Read:
         return (
-          <Tooltip title={`${readBy.length} members have seen`} placement="left">
+          <Tooltip title={`${readBy.length} ${t('readBy.tooltip')}`} placement="left">
             <div>
               <AnimatePresence initial={false}>
                 <StyledAvatarGroup max={5} spacing={1} onClick={() => setIsOpen(true)}>
@@ -242,7 +243,7 @@ export default function ReadBy() {
           }}
         >
           <DialogTitle sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            {readBy.length} {readBy.length === 1 ? 'member' : 'members'} have seen the message
+            {readBy.length} {readBy.length === 1 ? t('readBy.member') : t('readBy.members')} {t('readBy.message')}
             <IconButton
               onClick={() => {
                 setIsOpen(false);

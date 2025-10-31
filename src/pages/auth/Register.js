@@ -10,18 +10,20 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { LoadingButton } from '@mui/lab';
 import { RHFTextField } from '../../components/hook-form';
 import { RegisterUserByEmail } from '../../redux/slices/auth';
+import { useTranslation } from 'react-i18next';
 
 // ----------------------------------------------------------------------
 
 export default function Register() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isLoading } = useSelector(state => state.app);
   const [showPassword, setShowPassword] = useState(false);
 
   const LoginSchema = Yup.object().shape({
-    email: Yup.string().required('Email is required').email('Email must be a valid email address'),
-    password: Yup.string().required('Password is required'),
+    email: Yup.string().required(t('register.email_required')).email(t('register.email.valid')),
+    password: Yup.string().required(t('register.password_required')),
   });
 
   const defaultValues = {
@@ -51,13 +53,13 @@ export default function Register() {
   return (
     <>
       <Stack spacing={2} sx={{ mb: 5, position: 'relative' }}>
-        <Typography variant="h4">Get started with Ermis.</Typography>
+        <Typography variant="h4">{t('register.title')}</Typography>
 
         <Stack direction="row" spacing={0.5}>
-          <Typography variant="body2"> Already have an account? </Typography>
+          <Typography variant="body2"> {t('register.message')} </Typography>
 
           <Link component={RouterLink} to={'/login'} variant="subtitle2">
-            Sign in
+            {t('register.sign_in')}
           </Link>
         </Stack>
       </Stack>
@@ -65,12 +67,12 @@ export default function Register() {
       <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={3} mb={4}>
           {!!errors.afterSubmit && <Alert severity="error">{errors.afterSubmit.message}</Alert>}
-          <RHFTextField name="email" label="Email address" />
+          <RHFTextField name="email" label={t('register.email_label')} />
 
           <RHFTextField
             name="password"
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
+            label={t('register.password_label')}
+            type={showPassword ? t('register.text') : t('register.password_label')}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -99,7 +101,7 @@ export default function Register() {
             },
           }}
         >
-          Create Account
+          {t('register.create_account')}
         </LoadingButton>
       </FormProvider>
     </>

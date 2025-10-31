@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -46,8 +46,10 @@ import {
 } from '../Icons';
 import { setChannelConfirm } from '../../redux/slices/dialog';
 import { SetOpenTopicPanel } from '../../redux/slices/topic';
+import { useTranslation } from 'react-i18next';
 
 const ActionsTopic = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -59,29 +61,29 @@ const ActionsTopic = () => {
   const isTopicClosed = currentTopic?.data?.is_closed_topic;
   const isPinned = currentTopic?.data?.is_pinned;
 
-  const onCloseTopic = async () => {
+  const onCloseTopic = useCallback(async () => {
     try {
       const topicCID = currentTopic?.cid;
       await currentChannel.closeTopic(topicCID);
       setAnchorEl(null);
-      dispatch(showSnackbar({ message: 'Topic closed successfully', severity: 'success' }));
+      dispatch(showSnackbar({ message: t('chatHeader.snackbar_closed_success'), severity: 'success' }));
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
-  };
+  }, [currentChannel, currentTopic?.cid, dispatch, t]);
 
-  const onReopenTopic = async () => {
+  const onReopenTopic = useCallback(async () => {
     try {
       const topicCID = currentTopic?.cid;
       await currentChannel.reopenTopic(topicCID);
       setAnchorEl(null);
-      dispatch(showSnackbar({ message: 'Topic reopened successfully', severity: 'success' }));
+      dispatch(showSnackbar({ message: t('chatHeader.snackbar_reopened_success'), severity: 'success' }));
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
-  };
+  }, [currentChannel, currentTopic?.cid, dispatch, t]);
 
-  const onPinTopic = async () => {
+  const onPinTopic = useCallback(async () => {
     try {
       if (isPinned) {
         await client.unpinChannel(ChatType.TOPIC, currentTopic?.id);
@@ -89,13 +91,13 @@ const ActionsTopic = () => {
         await client.pinChannel(ChatType.TOPIC, currentTopic?.id);
       }
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     } finally {
       setAnchorEl(null);
     }
-  };
+  }, [isPinned, currentTopic?.id, dispatch, t]);
 
-  const onDeleteTopic = () => {
+  const onDeleteTopic = useCallback(() => {
     const payload = {
       openDialog: true,
       channel: currentTopic,
@@ -105,60 +107,76 @@ const ActionsTopic = () => {
 
     dispatch(setChannelConfirm(payload));
     setAnchorEl(null);
-  };
-  const onOpenTopicInfo = () => {
+  }, [currentTopic, user_id, dispatch]);
+
+  const onOpenTopicInfo = useCallback(() => {
     dispatch(setSidebar({ type: SidebarType.TopicInfo, open: true }));
     setAnchorEl(null);
-  };
+  }, [dispatch]);
 
-  const onEditTopicInfo = () => {
+  const onEditTopicInfo = useCallback(() => {
     dispatch(setSidebar({ type: SidebarType.TopicInfo, open: true, mode: SidebarMode.Edit }));
     setAnchorEl(null);
-  };
+  }, [dispatch]);
 
-  const ACTIONS = [
-    {
-      value: isPinned ? 'unpin' : 'pin',
-      label: isPinned ? 'Unpin' : 'Pin To Top',
-      icon: isPinned ? (
-        <UnPinIcon color={theme.palette.text.primary} />
-      ) : (
-        <PinIcon color={theme.palette.text.primary} />
-      ),
-      onClick: onPinTopic,
-    },
-    {
-      value: 'info',
-      label: 'Topic Info',
-      icon: <InfoIcon color={theme.palette.text.primary} />,
-      onClick: onOpenTopicInfo,
-    },
-    !isTopicClosed && {
-      value: 'edit',
-      label: 'Edit Topic',
-      icon: <EditIcon color={theme.palette.text.primary} />,
-      onClick: onEditTopicInfo,
-      allowRoles: [RoleMember.OWNER, RoleMember.MOD],
-    },
-    {
-      value: isTopicClosed ? 'reopen' : 'close',
-      label: isTopicClosed ? 'Reopen Topic' : 'Close Topic',
-      icon: isTopicClosed ? (
-        <PlayCircleIcon color={theme.palette.text.primary} />
-      ) : (
-        <PauseCircleRedIcon color={theme.palette.text.primary} />
-      ),
-      onClick: isTopicClosed ? onReopenTopic : onCloseTopic,
-      allowRoles: [RoleMember.OWNER, RoleMember.MOD],
-    },
-    {
-      value: 'delete',
-      label: 'Delete Topic',
-      icon: <TrashIcon color={theme.palette.error.main} />,
-      onClick: onDeleteTopic,
-      allowRoles: [RoleMember.OWNER],
-    },
-  ];
+  const ACTIONS = useMemo(
+    () => [
+      {
+        value: isPinned ? 'unpin' : 'pin',
+        label: isPinned ? t('chatHeader.unpin') : t('chatHeader.pin_to_top'),
+        icon: isPinned ? (
+          <UnPinIcon color={theme.palette.text.primary} />
+        ) : (
+          <PinIcon color={theme.palette.text.primary} />
+        ),
+        onClick: onPinTopic,
+      },
+      {
+        value: 'info',
+        label: t('chatHeader.topic_info'),
+        icon: <InfoIcon color={theme.palette.text.primary} />,
+        onClick: onOpenTopicInfo,
+      },
+      !isTopicClosed && {
+        value: 'edit',
+        label: t('chatHeader.edit_topic'),
+        icon: <EditIcon color={theme.palette.text.primary} />,
+        onClick: onEditTopicInfo,
+        allowRoles: [RoleMember.OWNER, RoleMember.MOD],
+      },
+      {
+        value: isTopicClosed ? 'reopen' : 'close',
+        label: isTopicClosed ? t('chatHeader.reopen_topic') : t('chatHeader.close_topic'),
+        icon: isTopicClosed ? (
+          <PlayCircleIcon color={theme.palette.text.primary} />
+        ) : (
+          <PauseCircleRedIcon color={theme.palette.text.primary} />
+        ),
+        onClick: isTopicClosed ? onReopenTopic : onCloseTopic,
+        allowRoles: [RoleMember.OWNER, RoleMember.MOD],
+      },
+      {
+        value: 'delete',
+        label: t('chatHeader.delete_topic'),
+        icon: <TrashIcon color={theme.palette.error.main} />,
+        onClick: onDeleteTopic,
+        allowRoles: [RoleMember.OWNER],
+      },
+    ],
+    [
+      isPinned,
+      isTopicClosed,
+      theme.palette.text.primary,
+      theme.palette.error.main,
+      t,
+      onPinTopic,
+      onOpenTopicInfo,
+      onEditTopicInfo,
+      onReopenTopic,
+      onCloseTopic,
+      onDeleteTopic,
+    ],
+  );
 
   return (
     <>
@@ -218,15 +236,17 @@ const ActionsTopic = () => {
 
 const ChatHeader = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const isMobileToMd = useResponsive('down', 'md');
   const theme = useTheme();
   const { user_id } = useSelector(state => state.auth);
   const { isGuest, isBlocked, currentChannel } = useSelector(state => state.channel);
   const { currentTopic } = useSelector(state => state.topic);
+  const { sideBar } = useSelector(state => state.app);
 
-  const isDirect = isChannelDirect(currentChannel);
-  const isEnabledTopics = currentChannel?.data?.topics_enabled;
+  const isDirect = useMemo(() => isChannelDirect(currentChannel), [currentChannel]);
+  const isEnabledTopics = useMemo(() => currentChannel?.data?.topics_enabled, [currentChannel?.data?.topics_enabled]);
 
   const [loadingJoin, setLoadingJoin] = useState(false);
 
@@ -241,11 +261,21 @@ const ChatHeader = () => {
 
   const onlineStatus = useOnlineStatus(isDirect ? otherMemberId : '');
 
-  const onStartCall = async callType => {
-    await callClient.createCall(callType, currentChannel.cid);
-  };
+  const onStartCall = useCallback(
+    async callType => {
+      await callClient.createCall(callType, currentChannel.cid);
+    },
+    [currentChannel?.cid],
+  );
 
-  const onJoinChannel = async () => {
+  const onStartVideoCall = useCallback(() => onStartCall(CallType.VIDEO), [onStartCall]);
+  const onStartAudioCall = useCallback(() => onStartCall(CallType.AUDIO), [onStartCall]);
+
+  const onOpenSearchMessage = useCallback(() => {
+    dispatch(setSidebar({ type: SidebarType.SearchMessage, open: true }));
+  }, [dispatch]);
+
+  const onJoinChannel = useCallback(async () => {
     try {
       setLoadingJoin(true);
       const response = await currentChannel.acceptInvite('join');
@@ -261,50 +291,69 @@ const ChatHeader = () => {
       }
     } catch (error) {
       setLoadingJoin(false);
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
-  };
+  }, [currentChannel, dispatch, t]);
 
-  const renderName = () => {
+  const renderName = useCallback(() => {
     if (isEnabledTopics) {
       if (currentTopic) {
         return currentTopic.data?.name;
       } else {
-        return 'General';
+        return t('chatHeader.general');
       }
     } else {
       return currentChannel.data?.name;
     }
-  };
+  }, [isEnabledTopics, currentTopic, currentChannel?.data?.name, t]);
 
-  const renderCaption = () => {
+  const renderCaption = useCallback(() => {
     if (isEnabledTopics || currentTopic) {
       return currentChannel.data?.name;
     } else {
-      return isDirect ? onlineStatus : `${currentChannel.data?.member_count} members`;
+      return isDirect ? onlineStatus : `${currentChannel.data?.member_count} ${t('chatHeader.member')}`;
     }
-  };
+  }, [
+    isEnabledTopics,
+    currentTopic,
+    currentChannel?.data?.name,
+    currentChannel?.data?.member_count,
+    isDirect,
+    onlineStatus,
+    t,
+  ]);
 
-  const renderIconAction = () => {
+  const renderIconAction = useCallback(() => {
     if (isGuest || isBlocked) return null;
 
     if (currentTopic?.type === ChatType.TOPIC) {
       return <ActionsTopic />;
     }
-  };
+  }, [isGuest, isBlocked, currentTopic?.type]);
 
-  const onOpenChannelInfo = () => {
+  const onNavigateBack = useCallback(() => {
+    navigate(`${DEFAULT_PATH}`);
+    dispatch(setCurrentChannel(null));
+    dispatch(setCurrentChannelStatus(CurrentChannelStatus.IDLE));
+    dispatch(SetOpenTopicPanel(false));
+  }, [navigate, dispatch]);
+
+  const onOpenChannelInfo = useCallback(() => {
     if (!isGuest) {
-      dispatch(setSidebar({ type: currentTopic ? SidebarType.TopicInfo : SidebarType.Channel, open: true }));
+      if (sideBar && sideBar.open) {
+        dispatch(setSidebar({ type: SidebarType.Channel, open: false, mode: '' }));
+      } else {
+        dispatch(setSidebar({ type: currentTopic ? SidebarType.TopicInfo : SidebarType.Channel, open: true }));
+      }
     }
-  };
+  }, [isGuest, sideBar, currentTopic, dispatch]);
 
   return (
     <>
       <Box
         sx={{
           width: '100%',
-          height: '74px',
+          height: '65px',
           padding: '8px 16px',
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
@@ -318,14 +367,7 @@ const ChatHeader = () => {
           {currentChannel ? (
             <Stack spacing={1} direction="row" alignItems="center" sx={{ flex: 1, overflow: 'hidden' }}>
               {isMobileToMd && (
-                <IconButton
-                  onClick={() => {
-                    navigate(`${DEFAULT_PATH}`);
-                    dispatch(setCurrentChannel(null));
-                    dispatch(setCurrentChannelStatus(CurrentChannelStatus.IDLE));
-                    dispatch(SetOpenTopicPanel(false));
-                  }}
-                >
+                <IconButton onClick={onNavigateBack}>
                   <CaretLeft />
                 </IconButton>
               )}
@@ -388,21 +430,17 @@ const ChatHeader = () => {
           <Stack direction={'row'} alignItems="center" spacing={isMobileToMd ? 1 : 2}>
             {isDirect && (
               <>
-                <IconButton onClick={() => onStartCall(CallType.VIDEO)} disabled={isBlocked}>
+                <IconButton onClick={onStartVideoCall} disabled={isBlocked}>
                   <VideoCamera color={theme.palette.text.primary} />
                 </IconButton>
-                <IconButton onClick={() => onStartCall(CallType.AUDIO)} disabled={isBlocked}>
+                <IconButton onClick={onStartAudioCall} disabled={isBlocked}>
                   <Phone color={theme.palette.text.primary} />
                 </IconButton>
               </>
             )}
 
             {!isGuest && (
-              <IconButton
-                onClick={() => {
-                  dispatch(setSidebar({ type: SidebarType.SearchMessage, open: true }));
-                }}
-              >
+              <IconButton onClick={onOpenSearchMessage} disabled={isBlocked}>
                 <MagnifyingGlass color={theme.palette.text.primary} />
               </IconButton>
             )}
@@ -411,7 +449,7 @@ const ChatHeader = () => {
 
             {isGuest && (
               <LoadingButton variant="contained" onClick={onJoinChannel} loading={loadingJoin}>
-                Join
+                {t('chatHeader.join')}
               </LoadingButton>
             )}
           </Stack>

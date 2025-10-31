@@ -4,8 +4,10 @@ import { handleError, myRoleInChannel } from '../utils/commons';
 import { RoleMember } from '../constants/commons-const';
 import { PlayCircleIcon } from './Icons';
 import { showSnackbar } from '../redux/slices/app';
+import { useTranslation } from 'react-i18next';
 
 export default function ClosedTopicBackdrop() {
+  const { t } = useTranslation();
   const theme = useTheme();
   const dispatch = useDispatch();
   const { currentChannel } = useSelector(state => state.channel);
@@ -16,9 +18,9 @@ export default function ClosedTopicBackdrop() {
     try {
       const topicCID = currentTopic?.cid;
       await currentChannel.reopenTopic(topicCID);
-      dispatch(showSnackbar({ message: 'Topic reopened successfully', severity: 'success' }));
+      dispatch(showSnackbar({ message: t('closedTopicBackdrop.snackbar_success'), severity: 'success' }));
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
   };
 
@@ -47,14 +49,14 @@ export default function ClosedTopicBackdrop() {
           }}
           onClick={onReopenTopic}
         >
-          Reopen Topic
+          {t('closedTopicBackdrop.message')}
         </Button>
       ) : (
         <Typography
           variant="body1"
           sx={{ color: theme.palette.error.main, fontWeight: 600, textAlign: 'center', fontSize: '14px' }}
         >
-          THIS TOPIC IS CLOSED
+          {t('closedTopicBackdrop.title')}
         </Typography>
       )}
     </Box>

@@ -11,6 +11,7 @@ import { SetMemberCapabilities } from '../../redux/slices/channel';
 import { handleError } from '../../utils/commons';
 import Slider from '@mui/material/Slider';
 import CustomCheckbox from '../../components/CustomCheckbox';
+import { useTranslation } from 'react-i18next';
 
 const StyledActionItem = styled(Stack)(({ theme }) => ({
   width: '100%',
@@ -74,35 +75,35 @@ const marks = [
 
 const ACTIONS = [
   {
-    label: 'Send Messages',
+    label: 'sidebarPermissions.send_messages',
     capability: CapabilitiesName.SendMessage,
   },
   {
-    label: 'Send Links',
+    label: 'sidebarPermissions.send_links',
     capability: CapabilitiesName.SendLinks,
   },
   {
-    label: 'Edit Messages',
+    label: 'sidebarPermissions.edit_messages',
     capability: CapabilitiesName.UpdateOwnMessage,
   },
   {
-    label: 'Delete Messages',
+    label: 'sidebarPermissions.delete_messages',
     capability: CapabilitiesName.DeleteOwnMessage,
   },
   {
-    label: 'React Messages',
+    label: 'sidebarPermissions.react_messages',
     capability: CapabilitiesName.SendReaction,
   },
   {
-    label: 'Pin Message',
+    label: 'sidebarPermissions.pin_messages',
     capability: CapabilitiesName.PinMessage,
   },
   {
-    label: 'Create Poll',
+    label: 'sidebarPermissions.create_poll',
     capability: CapabilitiesName.CreatePoll,
   },
   {
-    label: 'Vote Poll',
+    label: 'sidebarPermissions.vote_poll',
     capability: CapabilitiesName.VotePoll,
   },
 ];
@@ -110,6 +111,7 @@ const ACTIONS = [
 const SidebarPermissions = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
+  const { t } = useTranslation();
   const { currentChannel, capabilities } = useSelector(state => state.channel);
   const [loadingButton, setLoadingButton] = useState(false);
   const [newCapabilities, setNewCapabilities] = useState([]);
@@ -159,7 +161,7 @@ const SidebarPermissions = () => {
       dispatch(
         showSnackbar({
           severity: 'success',
-          message: 'Update cooldown messages successfully!',
+          message: t('sidebarPermissions.update_cooldown_success'),
         }),
       );
       setLoadingButton(false);
@@ -173,7 +175,7 @@ const SidebarPermissions = () => {
       dispatch(
         showSnackbar({
           severity: 'success',
-          message: 'Update capabilities successfully!',
+          message: t('sidebarPermissions.update_capabilities_success'),
         }),
       );
       setLoadingButton(false);
@@ -193,7 +195,7 @@ const SidebarPermissions = () => {
       }
     } catch (error) {
       setLoadingButton(false);
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
   };
 
@@ -212,7 +214,7 @@ const SidebarPermissions = () => {
         </IconButton>
 
         <Typography variant="subtitle2" sx={{ flex: 1, textAlign: 'center', fontSize: '18px' }}>
-          Permissions
+          {t('sidebarPermissions.permissions')}
         </Typography>
 
         <LoadingButton
@@ -222,7 +224,7 @@ const SidebarPermissions = () => {
           disabled={isDisabledBtn}
           loading={loadingButton}
         >
-          SAVE
+          {t('sidebarPermissions.save')}
         </LoadingButton>
       </Stack>
 
@@ -249,7 +251,7 @@ const SidebarPermissions = () => {
                   marginBottom: '5px',
                 }}
               >
-                MEMBER ACTIONS
+                {t('sidebarPermissions.member_actions')}
               </Typography>
 
               <Stack
@@ -269,7 +271,7 @@ const SidebarPermissions = () => {
                       )
                     }
                   >
-                    <Typography sx={{ fontSize: '14px' }}>{action.label}</Typography>
+                    <Typography sx={{ fontSize: '14px' }}>{t(action.label)}</Typography>
                     <CustomCheckbox
                       checked={newCapabilities.includes(action.capability)}
                       onClick={e => e.stopPropagation()}
@@ -290,7 +292,7 @@ const SidebarPermissions = () => {
                   marginBottom: '5px',
                 }}
               >
-                SLOW MODE
+                {t('sidebarPermissions.slow_mode')}
               </Typography>
               <Stack
                 gap={2}
@@ -311,7 +313,7 @@ const SidebarPermissions = () => {
                 />
 
                 <Typography sx={{ color: theme.palette.grey[500], fontSize: '14px', marginTop: '10px' }}>
-                  Set how long each member has to wait before sending their next mesage.
+                  {t('sidebarPermissions.message')}
                 </Typography>
               </Stack>
             </Box>

@@ -10,15 +10,17 @@ import uuidv4 from '../../utils/uuidv4';
 import { CHAT_PROJECT_ID } from '../../config';
 import { LoginType } from '../../constants/commons-const';
 import { LocalStorageKey } from '../../constants/localStorage-const';
+import { useTranslation } from 'react-i18next';
 
 // ----------------------------------------------------------------------
 
 export default function LoginTokenPage() {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const LoginSchema = Yup.object().shape({
-    user_id: Yup.string().required('User ID is required'),
-    token: Yup.string().required('Token is required'),
+    user_id: Yup.string().required(t('login_token.user_required')),
+    token: Yup.string().required(t('login_token.token_required')),
   });
 
   const defaultValues = {
@@ -58,8 +60,8 @@ export default function LoginTokenPage() {
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={3}>
-        <RHFTextField name="user_id" label="User ID" />
-        <RHFTextField name="token" label="Token" />
+        <RHFTextField name="user_id" label={t('login_token.user_id')} />
+        <RHFTextField name="token" label={t('login_token.token')} />
         <LoadingButton
           fullWidth
           color="inherit"
@@ -75,7 +77,7 @@ export default function LoginTokenPage() {
             },
           }}
         >
-          Login
+          {t('login_token.login')}
         </LoadingButton>
       </Stack>
     </FormProvider>

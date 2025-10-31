@@ -16,6 +16,7 @@ import {
   removePinnedChannel,
   RemovePinnedChannel,
   RemoveSkippedChannel,
+  WatchCurrentChannel,
 } from '../../redux/slices/channel';
 import { ClientEvents } from '../../constants/events-const';
 import { getChannelName, getMemberInfo, splitChannelId } from '../../utils/commons';
@@ -24,21 +25,30 @@ import { DEFAULT_PATH, DOMAIN_APP } from '../../config';
 import { ChatType, EMOJI_QUICK, MessageType, TabType } from '../../constants/commons-const';
 import { convertMessageSystem } from '../../utils/messageSystem';
 import dayjs from 'dayjs';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { convertMessageSignal } from '../../utils/messageSignal';
 import { UpdateMember } from '../../redux/slices/member';
 import Channels from './Channels';
 import SidebarContacts from './SidebarContacts';
+import { useTranslation } from 'react-i18next';
+import { AddTopic, RemovePinnedTopic, RemoveTopic, SetCurrentTopic, UpdateTopic } from '../../redux/slices/topic';
 
 const LeftPanel = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { tab } = useSelector(state => state.app);
-  const { activeChannels, pendingChannels, mutedChannels, pinnedChannels } = useSelector(state => state.channel);
+  const {
+    activeChannels = [],
+    pendingChannels = [],
+    mutedChannels = [],
+    pinnedChannels = [],
+  } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
+  const { currentTopic } = useSelector(state => state.topic);
   const users = client.state.users ? Object.values(client.state.users) : [];
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     dispatch(FetchChannels());
@@ -134,7 +144,7 @@ const LeftPanel = () => {
         };
 
         if (message.type === MessageType.System) {
-          notiText = convertMessageSystem(message.text, users, isDirect, isNotify);
+          notiText = convertMessageSystem(message.text, users, isDirect, isNotify, t);
         } else {
           if (message.attachments) {
             const getAttachmentMessage = attachments => {
@@ -145,29 +155,29 @@ const LeftPanel = () => {
 
               if (attachments.length === 1) {
                 const typeMap = {
-                  file: 'a file',
-                  image: 'a photo',
-                  video: 'a video',
-                  voiceRecording: 'a voice recording',
-                  linkPreview: 'a link preview',
+                  file: t('leftPanel.file'),
+                  image: t('leftPanel.photo'),
+                  video: t('leftPanel.video'),
+                  voiceRecording: t('leftPanel.voiceRecording'),
+                  linkPreview: t('leftPanel.linkPreview'),
                 };
-                return `${senderName} sent ${typeMap[attachments[0].type] || 'an attachment'}`;
+                return `${senderName} ${t('leftPanel.sent')} ${typeMap[attachments[0].type] || 'an attachment'}`;
               }
 
               if (image && video && !file && !voiceRecording && !linkPreview) {
-                return `${senderName} sent ${image + video} photos and videos`;
+                return `${senderName} ${t('leftPanel.sent')} ${image + video} ${t('leftPanel.photo_videos')}`;
               }
 
-              return `${senderName} sent ${attachments.length} files`;
+              return `${senderName} ${t('leftPanel.sent')} ${attachments.length} ${t('leftPanel.files')}`;
             };
             notiText = getAttachmentMessage(message.attachments);
             // notiText = `${senderName} has sent you an attachment`;
           } else {
             if (message.mentioned_all) {
-              notiText = `${senderName} mentioned everyone in ${channelName}: ${message.text}`;
+              notiText = `${senderName} ${t('leftPanel.mention_all')} ${channelName}: ${message.text}`;
             } else if (message.mentioned_users && message.mentioned_users.includes(user_id)) {
               const messagePreview = replaceMentionsWithNames(message.text);
-              notiText = `You were mentioned by ${senderName} in ${channelName}: ${messagePreview}`;
+              notiText = `${t('leftPanel.mentioned_by')} ${senderName} in ${channelName}: ${messagePreview}`;
             } else {
               notiText = replaceMentionsWithNames(message.text);
             }
@@ -178,7 +188,7 @@ const LeftPanel = () => {
         notiText = message.text;
         break;
       case ClientEvents.ReactionNew:
-        notiText = `${senderName} reacted with ${message.emoji.value} to your message`;
+        notiText = `${senderName} ${t('leftPanel.reacted')} ${message.emoji.value} ${t('leftPanel.your_message')}`;
         break;
       case ClientEvents.MemberBanned:
         notiText = message.text;
@@ -189,9 +199,9 @@ const LeftPanel = () => {
       case ClientEvents.MessageUpdated:
         notiText =
           message.type === MessageType.System
-            ? convertMessageSystem(message.text, users, isDirect, isNotify)
+            ? convertMessageSystem(message.text, users, isDirect, isNotify, t)
             : message.type === MessageType.Signal
-              ? convertMessageSignal(message.text).text || ''
+              ? convertMessageSignal(message.text, t).text || ''
               : message.text;
         break;
       case ClientEvents.MemberAdded:
@@ -211,7 +221,7 @@ const LeftPanel = () => {
     };
 
     if (!('Notification' in window)) {
-      alert('This browser does not support system notifications!');
+      alert(t('leftPanel.alert'));
     } else if (Notification.permission === 'granted') {
       sendNotification(data);
     } else if (Notification.permission !== 'denied') {
@@ -268,10 +278,7 @@ const LeftPanel = () => {
           const notiData = {
             type: ClientEvents.ChannelCreated,
             message: {
-              text:
-                event.channel_type === ChatType.TEAM
-                  ? 'You have a new channel invitation'
-                  : 'You have a new DM invitation',
+              text: event.channel_type === ChatType.TEAM ? t('leftPanel.chat_type_team') : t('leftPanel.chat_type_dm'),
             },
             senderId: event.user.id,
             channel: {
@@ -300,6 +307,16 @@ const LeftPanel = () => {
           }
           if (mutedChannels.some(item => item.id === event.channel_id)) {
             dispatch(RemoveMutedChannel(event.channel_id));
+          }
+        } else {
+          dispatch(RemovePinnedTopic(event.channel_id));
+          dispatch(RemoveTopic(event.channel_id));
+
+          const topicIdFromQuery = searchParams.get('topicId');
+          if (currentTopic && topicIdFromQuery && currentTopic?.id === topicIdFromQuery) {
+            dispatch(SetCurrentTopic(null));
+            searchParams.delete('topicId');
+            setSearchParams(searchParams, { replace: true });
           }
         }
       };
@@ -334,7 +351,7 @@ const LeftPanel = () => {
           const channelType = event.channel_type;
           const notiData = {
             type: ClientEvents.MemberBanned,
-            message: { text: `You have been banned from interacting in a channel` },
+            message: { text: `${t('leftPanel.member_banned')}}` },
             senderId: '',
             channel: {
               id: channelId,
@@ -355,7 +372,7 @@ const LeftPanel = () => {
 
           const notiData = {
             type: ClientEvents.MemberBanned,
-            message: { text: `You have been unbanned in a channel` },
+            message: { text: `${t('leftPanel.member_unbanned')}` },
             senderId: '',
             channel: {
               id: channelId,
@@ -397,8 +414,7 @@ const LeftPanel = () => {
           const notiData = {
             type: ClientEvents.MemberAdded,
             message: {
-              text:
-                channelType === ChatType.TEAM ? 'You have a new channel invitation' : 'You have a new DM invitation',
+              text: channelType === ChatType.TEAM ? t('leftPanel.chat_type_team') : t('leftPanel.chat_type_dm'),
             },
             senderId: event.user.id,
             channel: {
@@ -451,6 +467,46 @@ const LeftPanel = () => {
         }
       };
 
+      const handleChannelTopicEnabled = event => {
+        const splitCID = splitChannelId(event.cid);
+        const channelId = splitCID.channelId;
+        const channelType = splitCID.channelType;
+        dispatch(WatchCurrentChannel(channelId, channelType));
+      };
+
+      const handleChannelTopicDisabled = event => {
+        const topicIdFromQuery = searchParams.get('topicId');
+        const splitCID = splitChannelId(event.cid);
+        const channelId = splitCID.channelId;
+        const channelType = splitCID.channelType;
+        dispatch(WatchCurrentChannel(channelId, channelType));
+
+        if (currentTopic && topicIdFromQuery && currentTopic?.id === topicIdFromQuery) {
+          dispatch(SetCurrentTopic(null));
+          searchParams.delete('topicId');
+          setSearchParams(searchParams, { replace: true });
+        }
+      };
+
+      const handleChannelTopicCreated = event => {
+        const splitParentCID = splitChannelId(event.parent_cid);
+        const parentChannelId = splitParentCID.channelId;
+        const parentChannelType = splitParentCID.channelType;
+
+        const activeChannel = activeChannels.find(c => c.id === parentChannelId);
+        const pinnedChannel = pinnedChannels.find(c => c.id === parentChannelId);
+        const channel = activeChannel || pinnedChannel;
+
+        if (channel) {
+          dispatch(AddTopic(event.channel_id));
+          dispatch(WatchCurrentChannel(parentChannelId, parentChannelType));
+        }
+      };
+
+      const handleChannelTopicUpdated = event => {
+        dispatch(UpdateTopic(event.cid));
+      };
+
       client.on(ClientEvents.ChannelCreated, handleChannelCreated);
       client.on(ClientEvents.ChannelDeleted, handleChannelDeleted);
       client.on(ClientEvents.MessageNew, handleMessageNew);
@@ -464,6 +520,10 @@ const LeftPanel = () => {
       client.on(ClientEvents.Notification.InviteRejected, handleInviteReject);
       client.on(ClientEvents.Notification.InviteAccepted, handleInviteAccept);
       client.on(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
+      client.on(ClientEvents.ChannelTopicEnabled, handleChannelTopicEnabled);
+      client.on(ClientEvents.ChannelTopicDisabled, handleChannelTopicDisabled);
+      client.on(ClientEvents.ChannelTopicCreated, handleChannelTopicCreated);
+      client.on(ClientEvents.ChannelTopicUpdated, handleChannelTopicUpdated);
 
       return () => {
         client.off(ClientEvents.ChannelCreated, handleChannelCreated);
@@ -479,9 +539,24 @@ const LeftPanel = () => {
         client.off(ClientEvents.Notification.InviteRejected, handleInviteReject);
         client.off(ClientEvents.Notification.InviteAccepted, handleInviteAccept);
         client.off(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
+        client.off(ClientEvents.ChannelTopicEnabled, handleChannelTopicEnabled);
+        client.off(ClientEvents.ChannelTopicDisabled, handleChannelTopicDisabled);
+        client.off(ClientEvents.ChannelTopicCreated, handleChannelTopicCreated);
+        client.off(ClientEvents.ChannelTopicUpdated, handleChannelTopicUpdated);
       };
     }
-  }, [dispatch, user_id, client, mutedChannels, activeChannels, pendingChannels, pinnedChannels, users.length]);
+  }, [
+    dispatch,
+    user_id,
+    client,
+    mutedChannels,
+    activeChannels,
+    pendingChannels,
+    pinnedChannels,
+    users.length,
+    currentTopic,
+    searchParams,
+  ]);
 
   useEffect(() => {
     if (mutedChannels) {

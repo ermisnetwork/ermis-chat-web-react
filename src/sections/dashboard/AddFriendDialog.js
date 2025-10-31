@@ -12,19 +12,21 @@ import { MagnifyingGlass, X } from 'phosphor-react';
 import { LoadingSpinner } from '../../components/animate';
 import NoResult from '../../assets/Illustration/NoResult';
 import UserElement from '../../components/UserElement';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
 const AddFriendDialog = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const dispatch = useDispatch();
   const { openAddFriendDialog } = useSelector(state => state.dialog);
   const { isLoading } = useSelector(state => state.app);
   const { user_id } = useSelector(state => state.auth);
-  const { activeChannels, skippedChannels, pendingChannels } = useSelector(state => state.channel);
+  const { activeChannels = [], skippedChannels = [], pendingChannels = [] } = useSelector(state => state.channel);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchedUser, setSearchedUser] = useState(null);
@@ -91,10 +93,10 @@ const AddFriendDialog = () => {
       });
 
       await channel.create();
-      dispatch(showSnackbar({ severity: 'success', message: 'Invitation sent' }));
+      dispatch(showSnackbar({ severity: 'success', message: t('addfriend.snackbar_success') }));
       onCloseAddFriendDialog();
     } catch (error) {
-      dispatch(showSnackbar({ severity: 'error', message: 'Failed to send invite. Please retry' }));
+      dispatch(showSnackbar({ severity: 'error', message: t('addfriend.snackbar_failed') }));
     }
   };
 
@@ -123,7 +125,7 @@ const AddFriendDialog = () => {
       onClose={onCloseAddFriendDialog}
     >
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        {'Add Friend'}
+        {t('addfriend.title')}
         <IconButton onClick={onCloseAddFriendDialog}>
           <X />
         </IconButton>
@@ -136,7 +138,7 @@ const AddFriendDialog = () => {
               {isLoading ? <LoadingSpinner size={18} /> : <MagnifyingGlass size={18} />}
             </SearchIconWrapper>
             <StyledInputBase
-              placeholder="Search"
+              placeholder={t('addfriend.search')}
               inputProps={{ 'aria-label': 'search' }}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -192,7 +194,7 @@ const AddFriendDialog = () => {
                     color: theme.palette.text.secondary,
                   }}
                 >
-                  Search for new contact by entering their phone number or email address.
+                  {t('addfriend.message')}
                 </Typography>
                 <NoResult width={160} height={300} />
                 {searchQuery ? (
@@ -205,7 +207,7 @@ const AddFriendDialog = () => {
                       fontWeight: 600,
                     }}
                   >
-                    No result {searchQuery ? `for "${searchQuery}"` : ''}
+                    {t('addfriend.noResult')} {searchQuery ? `"${searchQuery}"` : ''}
                   </Typography>
                 ) : (
                   <Typography
@@ -217,7 +219,7 @@ const AddFriendDialog = () => {
                       fontWeight: 600,
                     }}
                   >
-                    Oops! Nothing here
+                    {t('addfriend.nothing')}
                   </Typography>
                 )}
                 <Typography
@@ -230,7 +232,7 @@ const AddFriendDialog = () => {
                     marginTop: 1,
                   }}
                 >
-                  Looks like no one matches your search.
+                  {t('addfriend.message_small')}
                 </Typography>
               </Stack>
             )}

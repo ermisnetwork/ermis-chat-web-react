@@ -32,6 +32,7 @@ import { Search, SearchIconWrapper, StyledInputBase } from '../../components/Sea
 import { MagnifyingGlass } from 'phosphor-react';
 import FriendList from './FriendList';
 import MemberAvatar from '../../components/MemberAvatar';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -40,7 +41,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
-
+  const { t } = useTranslation();
   const { user_id } = useSelector(state => state.auth);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,7 +52,7 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
   }, []);
 
   const NewGroupSchema = Yup.object().shape({
-    name: Yup.string().required('Channel name is required'),
+    name: Yup.string().required(t('create_channel.channel_required')),
   });
 
   const defaultValues = {
@@ -66,7 +67,7 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
   });
 
   const { reset, handleSubmit, watch } = methods;
-  const description = watch('description', '');
+  const description = watch(t('create_channel.description'), '');
   const wordCount = description ? description.trim().length : 0;
 
   const onSubmit = async data => {
@@ -94,12 +95,12 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
           setSearchQuery('');
           setSelectedUsers([]);
           onCloseDialogCreateChannel();
-          dispatch(showSnackbar({ severity: 'success', message: 'Channel created successfully' }));
+          dispatch(showSnackbar({ severity: 'success', message: t('create_channel.create_success') }));
         }
       } catch (error) {
         reset();
         setIsLoading(false);
-        dispatch(showSnackbar({ severity: 'error', message: 'Failed to send invite. Please retry' }));
+        dispatch(showSnackbar({ severity: 'error', message: t('create_channel.create_failed') }));
       }
     }
   };
@@ -131,13 +132,13 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
                   marginBottom: '5px',
                 }}
               >
-                TYPE
+                {t('create_channel.type')}
               </Typography>
               <RHFRadio
                 name="public"
                 options={[
-                  { value: 'true', label: 'Public' },
-                  { value: 'false', label: 'Private' },
+                  { value: 'true', label: t('create_channel.public') },
+                  { value: 'false', label: t('create_channel.private') },
                 ]}
                 labelPlacement="start"
                 optionSx={{
@@ -170,8 +171,9 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
                 }}
               >
                 {methods.watch('public') === 'true'
-                  ? 'Public channel is open for anyone to search, view its content, and join.'
-                  : 'Only invited members can find and join a private channel.'}
+                  ? t('create_channel.message_public')
+                  : t('create_channel.message_private')
+                }
               </Typography>
             </Box>
 
@@ -184,13 +186,13 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
                   marginBottom: '5px',
                 }}
               >
-                INFO
+                {t('create_channel.info')}
               </Typography>
 
               <Stack spacing={2}>
                 <RHFTextField
                   name="name"
-                  placeholder="Channel name"
+                  placeholder={t('create_channel.channel_name')}
                   autoFocus
                   InputProps={{
                     startAdornment: (
@@ -210,7 +212,7 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
                   multiline
                   rows={4}
                   name="description"
-                  placeholder="Description"
+                  placeholder={t('create_channel.description')}
                   inputProps={{
                     maxLength: 100,
                   }}
@@ -231,7 +233,7 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
                       marginRight: '0px',
                     },
                   }}
-                  helperText={`${wordCount}/100 words`}
+                  helperText={`${wordCount}/100 ${t('create_channel.words')}`}
                 />
               </Stack>
             </Box>
@@ -245,10 +247,10 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
                 }}
                 sx={{ flex: 1 }}
               >
-                CANCEL
+                {t('create_channel.cancel')}
               </Button>
               <Button size="large" type="submit" variant="contained" sx={{ flex: 1 }}>
-                NEXT
+                {t('create_channel.next')}
               </Button>
             </Stack>
           </>
@@ -257,7 +259,7 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
             <Search>
               <SearchIconWrapper>{<MagnifyingGlass size={18} />}</SearchIconWrapper>
               <StyledInputBase
-                placeholder="Search"
+                placeholder={t('create_channel.search')}
                 inputProps={{ 'aria-label': 'search' }}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -314,7 +316,7 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
 
             <Stack spacing={2} direction={'row'} alignItems="center" sx={step === 2 ? sxButtonGroupStep2 : {}}>
               <Button size="large" onClick={onBack} sx={{ flex: 1 }}>
-                BACK
+                {t('create_channel.back')}
               </Button>
               <LoadingButton
                 size="large"
@@ -324,7 +326,7 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
                 sx={{ flex: 1 }}
                 disabled={selectedUsers.length === 0}
               >
-                CREATE
+                {t('create_channel.create')}
               </LoadingButton>
             </Stack>
           </>
@@ -335,6 +337,7 @@ const CreateGroupForm = ({ onCloseDialogCreateChannel, step, setStep }) => {
 };
 
 const CreateChannel = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { openDialogCreateChannel } = useSelector(state => state.dialog);
   const [step, setStep] = useState(1); // 1: Info, 2: Members
@@ -355,7 +358,7 @@ const CreateChannel = () => {
       keepMounted
       onClose={onCloseDialogCreateChannel}
     >
-      <DialogTitle>{step === 1 ? 'Create new channel' : 'Who would you like to add?'}</DialogTitle>
+      <DialogTitle>{step === 1 ? t('create_channel.title') : t('create_channel.title_addMember') }</DialogTitle>
 
       <DialogContent sx={{ mt: 4 }}>
         <CreateGroupForm onCloseDialogCreateChannel={onCloseDialogCreateChannel} step={step} setStep={onStepChange} />

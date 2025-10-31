@@ -51,7 +51,7 @@ export default function RHFAutocompleteMember({
         };
       }
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
       return { data: [], total: 0 };
     }
   };

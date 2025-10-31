@@ -25,6 +25,7 @@ import Picker from '@emoji-mart/react';
 import { handleError } from '../../utils/commons';
 import { showSnackbar } from '../../redux/slices/app';
 import { LoadingButton } from '@mui/lab';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -32,6 +33,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const NewTopicDialog = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { openNewTopicDialog } = useSelector(state => state.dialog);
   const { currentChannel } = useSelector(state => state.channel);
@@ -43,7 +45,7 @@ const NewTopicDialog = () => {
   };
 
   const NewGroupSchema = Yup.object().shape({
-    name: Yup.string().required('Topic name is required'),
+    name: Yup.string().required(t('newTopicDialog.topic_required')),
   });
 
   const defaultValues = {
@@ -66,10 +68,10 @@ const NewTopicDialog = () => {
 
       if (response) {
         onCloseDialog();
-        dispatch(showSnackbar({ severity: 'success', message: 'Topic created successfully' }));
+        dispatch(showSnackbar({ severity: 'success', message: t('newTopicDialog.topic_success') }));
       }
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     } finally {
       setLoadingButton(false);
     }
@@ -98,7 +100,7 @@ const NewTopicDialog = () => {
         onClose={onCloseDialog}
       >
         <DialogTitle sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          Start a new topic
+          {t('newTopicDialog.title')}
           <IconButton onClick={onCloseDialog}>
             <X />
           </IconButton>
@@ -116,13 +118,13 @@ const NewTopicDialog = () => {
                     marginBottom: '5px',
                   }}
                 >
-                  TOPIC NAME
+                  {t('newTopicDialog.topic_name')}
                 </Typography>
 
                 <Stack spacing={2}>
                   <RHFTextField
                     name="name"
-                    placeholder="What do you want to discuss?"
+                    placeholder={t('newTopicDialog.name_placeholder')}
                     autoFocus
                     InputProps={{
                       startAdornment: (
@@ -157,7 +159,7 @@ const NewTopicDialog = () => {
                     marginBottom: '5px',
                   }}
                 >
-                  TOPIC ICON
+                  {t('newTopicDialog.topic_icon')}
                 </Typography>
 
                 <Stack spacing={2}>
@@ -187,7 +189,7 @@ const NewTopicDialog = () => {
 
               <Stack spacing={2} direction={'row'} alignItems="center">
                 <LoadingButton size="large" type="submit" variant="contained" sx={{ flex: 1 }} loading={loadingButton}>
-                  CREATE
+                  {t('newTopicDialog.create_topic')}
                 </LoadingButton>
               </Stack>
             </Stack>

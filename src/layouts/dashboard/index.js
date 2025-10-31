@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useParams } from 'react-router-dom';
 import SideNav from './SideNav';
 import { useDispatch, useSelector } from 'react-redux';
 import { connectUser } from '../../client';
@@ -15,14 +15,21 @@ import ChannelConfirmDialog from '../../sections/dashboard/ChannelConfirmDialog'
 import ProfileDialog from '../../sections/dashboard/ProfileDialog';
 import ClientsTabPanel from '../../pages/dashboard/ClientsTabPanel';
 import useFaviconBadge from '../../hooks/useFaviconBadge';
-import CallDirectDialog3 from '../../sections/dashboard/CallDirectDialog3';
 import CallDirectDialog2 from '../../sections/dashboard/CallDirectDialog2';
 import Header from './Header';
 import { SetIsUserConnected } from '../../redux/slices/app';
+import TopicPanel from '../../pages/dashboard/TopicPanel';
+import useResponsive from '../../hooks/useResponsive';
+import { ReFetchChannels, WatchCurrentChannel } from '../../redux/slices/channel';
+import { splitChannelId } from '../../utils/commons';
 
 const DashboardLayout = () => {
+  const hiddenTimeRef = useRef(null);
+  const { id } = useParams();
+
   const dispatch = useDispatch();
   const theme = useTheme();
+  const isMobileToMd = useResponsive('down', 'md');
 
   const { isLoggedIn, user_id } = useSelector(state => state.auth);
   const {
@@ -32,31 +39,56 @@ const DashboardLayout = () => {
     openDialogProfile,
     channelConfirm,
   } = useSelector(state => state.dialog);
-  const { unreadChannels } = useSelector(state => state.channel);
+  const { unreadChannels = [] } = useSelector(state => state.channel);
+  const { isUserConnected } = useSelector(state => state.app);
 
   const accessToken = localStorage.getItem(LocalStorageKey.AccessToken);
 
   useFaviconBadge(unreadChannels);
 
   useEffect(() => {
-    let hiddenTime = null;
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        hiddenTime = Date.now();
-      } else if (hiddenTime) {
-        const elapsed = Date.now() - hiddenTime;
-        // Nếu tab bị ẩn hơn 1 tiếng (3600000 ms), reload lại
-        if (elapsed > 3600000) {
-          window.location.reload();
+        hiddenTimeRef.current = Date.now();
+      } else if (hiddenTimeRef.current) {
+        const elapsed = Date.now() - hiddenTimeRef.current;
+        // Nếu tab bị ẩn hơn 30 phút (1800000 ms), reconnect lại
+        if (elapsed > 1800000) {
+          dispatch(ReFetchChannels());
+
+          if (id) {
+            const result = splitChannelId(id);
+            dispatch(WatchCurrentChannel(result.channelId, result.channelType));
+          }
         }
-        hiddenTime = null;
+        hiddenTimeRef.current = null;
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [id, dispatch]);
+
+  // useEffect(() => {
+  //   let hiddenTime = null;
+  //   const handleVisibilityChange = () => {
+  //     if (document.hidden) {
+  //       hiddenTime = Date.now();
+  //     } else if (hiddenTime) {
+  //       const elapsed = Date.now() - hiddenTime;
+  //       // Nếu tab bị ẩn hơn 1 tiếng (3600000 ms), reload lại
+  //       if (elapsed > 3600000) {
+  //         window.location.reload();
+  //       }
+  //       hiddenTime = null;
+  //     }
+  //   };
+  //   document.addEventListener('visibilitychange', handleVisibilityChange);
+  //   return () => {
+  //     document.removeEventListener('visibilitychange', handleVisibilityChange);
+  //   };
+  // }, []);
 
   useEffect(() => {
     // Lưu lại overflow cũ để khôi phục khi unmount
@@ -90,7 +122,16 @@ const DashboardLayout = () => {
     <>
       <Stack direction="row" sx={{ width: '100%', height: '100%', overflow: 'hidden' }}>
         <SideNav />
-        <Stack direction="column" sx={{ height: '100%', minWidth: 'auto', flex: 1, overflow: 'hidden' }}>
+        <Stack
+          direction="column"
+          sx={{
+            height: '100%',
+            minWidth: 'auto',
+            flex: 1,
+            overflow: 'hidden',
+            paddingBottom: isMobileToMd ? '60px' : 0,
+          }}
+        >
           <Header />
 
           <Stack
@@ -106,7 +147,12 @@ const DashboardLayout = () => {
             }}
             spacing={2}
           >
-            <ClientsTabPanel />
+            {isUserConnected && (
+              <>
+                <ClientsTabPanel />
+                <TopicPanel />
+              </>
+            )}
             <Outlet />
           </Stack>
         </Stack>

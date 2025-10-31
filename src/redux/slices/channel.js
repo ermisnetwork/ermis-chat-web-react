@@ -1,11 +1,19 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { ChatType, CurrentChannelStatus, RoleMember, SidebarType } from '../../constants/commons-const';
 import { client } from '../../client';
-import { handleError, myRoleInChannel, splitChannelId } from '../../utils/commons';
+import { handleError, isEmptyObject, myRoleInChannel, splitChannelId } from '../../utils/commons';
 import { CapabilitiesName } from '../../constants/capabilities-const';
 import { setSidebar } from './app';
 import { FetchAllMembers } from './member';
-import { FetchTopics, SetCurrentTopic, SetIsClosedTopic, SetOpenTopicPanel, SetPinnedTopics, SetTopics } from './topic';
+import {
+  SetCurrentTopic,
+  SetIsClosedTopic,
+  SetOpenTopicPanel,
+  SetParentChannel,
+  SetPinnedTopics,
+  SetTopics,
+} from './topic';
+import { onEditMessage, onReplyMessage } from './messages';
 
 const initialState = {
   activeChannels: [], // channels that user has joined or created
@@ -58,6 +66,12 @@ const slice = createSlice({
     updateActiveChannels(state, action) {
       const updatedChannel = action.payload;
       state.activeChannels = state.activeChannels.map(channel =>
+        channel.id === updatedChannel.id ? updatedChannel : channel,
+      );
+    },
+    updatePinnedChannels(state, action) {
+      const updatedChannel = action.payload;
+      state.pinnedChannels = state.pinnedChannels.map(channel =>
         channel.id === updatedChannel.id ? updatedChannel : channel,
       );
     },
@@ -250,6 +264,10 @@ export default slice.reducer;
 const loadDataChannel = (channel, dispatch, user_id) => {
   const channelType = channel.type;
   if (channelType !== ChatType.MESSAGING) {
+    if (!channel.state.read || !channel.state.read[user_id]) {
+      return;
+    }
+
     const myRole = myRoleInChannel(channel);
     const duration = channel.data.member_message_cooldown;
     const lastSend = channel.state.read[user_id].last_send;
@@ -268,10 +286,86 @@ const loadDataChannel = (channel, dispatch, user_id) => {
     if (myRole === RoleMember.MEMBER && duration > 0) {
       dispatch(SetCooldownTime({ duration, lastSend }));
     }
+
+    if (channel.data?.topics_enabled) {
+      dispatch(SetOpenTopicPanel(true));
+      dispatch(SetParentChannel(channel));
+    } else {
+      dispatch(SetOpenTopicPanel(false));
+    }
   } else {
     const membership = channel.state.membership;
     dispatch(SetIsBlocked(membership?.blocked ?? false));
+    dispatch(SetOpenTopicPanel(false));
   }
+};
+
+const categorizeChannels = (channels, userId) => {
+  return channels.reduce(
+    (acc, channel) => {
+      const membership = channel.state.membership;
+      const channelRole = membership.channel_role;
+
+      // Phân loại theo role
+      if (channelRole === RoleMember.PENDING) {
+        acc.pendingChannels.push(channel);
+      } else if (channelRole === RoleMember.SKIPPED) {
+        acc.skippedChannels.push(channel);
+      } else {
+        // Channel đã join - phân loại theo pinned
+        if (channel.data.is_pinned) {
+          acc.pinnedChannels.push(channel);
+        } else {
+          acc.activeChannels.push(channel);
+        }
+
+        // Xử lý unread messages và topics
+        const read = channel.state.read[userId];
+        if (read) {
+          const unreadMessage = read.unread_messages;
+          let unreadTopics = [];
+
+          // Xử lý unread topics cho team channels
+          if (channel.type === ChatType.TEAM && channel.data?.topics_enabled && channel.state.topics) {
+            channel.state.topics.forEach(topic => {
+              const topicRead = topic.state.read?.[userId];
+              const topicUnread = topicRead?.unread_messages;
+              if (topicUnread > 0) {
+                unreadTopics.push({
+                  id: topic.id,
+                  unreadCount: topicUnread,
+                });
+              }
+            });
+          }
+
+          // Thêm vào unread channels nếu có unread messages hoặc topics
+          if (unreadMessage > 0 || unreadTopics.length > 0) {
+            acc.unreadChannels.push({
+              id: channel.id,
+              unreadCount: unreadMessage,
+              unreadTopics,
+            });
+          }
+        }
+      }
+
+      // Xử lý muted channels
+      if (membership.muted) {
+        acc.mutedChannels.push(channel);
+      }
+
+      return acc;
+    },
+    {
+      activeChannels: [],
+      pendingChannels: [],
+      mutedChannels: [],
+      unreadChannels: [],
+      skippedChannels: [],
+      pinnedChannels: [],
+    },
+  );
 };
 
 export function FetchChannels(params) {
@@ -284,10 +378,19 @@ export function FetchChannels(params) {
     };
     const sort = [];
     const options = {
-      message_limit: 1,
+      message_limit: 25,
     };
-    dispatch(slice.actions.fetchChannels({ activeChannels: [], pendingChannels: [] }));
-
+    dispatch(
+      slice.actions.fetchChannels({
+        activeChannels: [],
+        pendingChannels: [],
+        mutedChannels: [],
+        unreadChannels: [],
+        skippedChannels: [],
+        pinnedChannels: [],
+      }),
+    );
+    dispatch(slice.actions.setLoadingChannels(true));
     await client
       .queryChannels(filter, sort, options)
       .then(async response => {
@@ -299,69 +402,8 @@ export function FetchChannels(params) {
         //   return dateB - dateA;
         // });
 
-        const { activeChannels, pendingChannels, mutedChannels, unreadChannels, skippedChannels, pinnedChannels } =
-          response.reduce(
-            (acc, channel) => {
-              if (channel.state.membership.channel_role === RoleMember.PENDING) {
-                acc.pendingChannels.push(channel);
-              } else if (channel.state.membership.channel_role === RoleMember.SKIPPED) {
-                acc.skippedChannels.push(channel);
-              } else {
-                if (channel.data.is_pinned) {
-                  acc.pinnedChannels.push(channel);
-                } else {
-                  acc.activeChannels.push(channel);
-                }
-
-                const read = channel.state.read[user_id];
-                const unreadMessage = read.unread_messages;
-                let unreadTopics = [];
-                if (channel.type === ChatType.TEAM && channel.data?.topics_enabled && channel.state.topics) {
-                  channel.state.topics.forEach(topic => {
-                    const topicRead = topic.state.read?.[user_id];
-                    const topicUnread = topicRead?.unread_messages;
-                    if (topicUnread > 0) {
-                      unreadTopics.push({
-                        id: topic.id,
-                        unreadCount: topicUnread,
-                      });
-                    }
-                  });
-                }
-                if (unreadMessage > 0 || unreadTopics.length > 0) {
-                  acc.unreadChannels.push({
-                    id: channel.id,
-                    unreadCount: unreadMessage,
-                    unreadTopics,
-                  });
-                }
-              }
-
-              if (channel.state.membership.muted) {
-                acc.mutedChannels.push(channel);
-              }
-              return acc;
-            },
-            {
-              activeChannels: [],
-              pendingChannels: [],
-              mutedChannels: [],
-              unreadChannels: [],
-              skippedChannels: [],
-              pinnedChannels: [],
-            },
-          );
-
-        dispatch(
-          slice.actions.fetchChannels({
-            activeChannels,
-            pendingChannels,
-            mutedChannels,
-            unreadChannels,
-            skippedChannels,
-            pinnedChannels,
-          }),
-        );
+        const categorizedChannels = categorizeChannels(response, user_id);
+        dispatch(slice.actions.fetchChannels(categorizedChannels));
         dispatch(slice.actions.setLoadingChannels(false));
       })
       .catch(err => {
@@ -374,7 +416,33 @@ export function FetchChannels(params) {
           }),
         );
         dispatch(slice.actions.setLoadingChannels(false));
-        handleError(dispatch, err);
+        handleError(dispatch, err, t);
+      });
+  };
+}
+
+export function ReFetchChannels() {
+  return async (dispatch, getState) => {
+    if (!client) return;
+    const { user_id } = getState().auth;
+
+    const filter = {
+      type: ['messaging', 'team'],
+    };
+    const sort = [];
+    const options = {
+      message_limit: 25,
+    };
+    await client
+      .queryChannels(filter, sort, options)
+      .then(async response => {
+        dispatch(FetchAllMembers());
+
+        const categorizedChannels = categorizeChannels(response, user_id);
+        dispatch(slice.actions.fetchChannels(categorizedChannels));
+      })
+      .catch(err => {
+        handleError(dispatch, err, t);
       });
   };
 }
@@ -391,64 +459,68 @@ export const SetPendingChannels = payload => {
   };
 };
 
+// export const ConnectCurrentChannel = (channelId, channelType) => {
+//   return async (dispatch, getState) => {
+//     try {
+//       if (!client) return;
+//       dispatch(SetCooldownTime(null));
+//       dispatch(slice.actions.setCurrentChannel(null));
+//       dispatch(SetIsBlocked(false));
+//       dispatch(
+//         slice.actions.setChannelPermissions({
+//           canSendMessage: true,
+//           canEditMessage: true,
+//           canDeleteMessage: true,
+//           canReactMessage: true,
+//           canPinMessage: true,
+//           canCreatePoll: true,
+//           canVotePoll: true,
+//         }),
+//       );
+//       dispatch(SetCurrentTopic(null));
+//       dispatch(SetIsClosedTopic(false));
+//       dispatch(SetTopics([]));
+//       const { user_id } = getState().auth;
+//       const channel = client.channel(channelType, channelId);
+//       const messages = { limit: 25 };
+//       const response = await channel.query({
+//         messages,
+//       });
+
+//       if (response) {
+//         dispatch(slice.actions.setCurrentChannelStatus(CurrentChannelStatus.ACTIVE));
+//         dispatch(setSidebar({ type: SidebarType.Channel, open: false }));
+//         dispatch(slice.actions.setCurrentChannel(channel));
+//         loadDataChannel(channel, dispatch, user_id);
+
+//         if (channel.type === ChatType.TEAM && channel.data?.topics_enabled) {
+//           dispatch(SetOpenTopicPanel(true));
+//           dispatch(FetchTopics(channel.cid));
+//         }
+//       }
+//     } catch (error) {
+//       dispatch(slice.actions.setCurrentChannelStatus(CurrentChannelStatus.ERROR));
+//     }
+//   };
+// };
+
 export const ConnectCurrentChannel = (channelId, channelType) => {
-  return async (dispatch, getState) => {
-    try {
-      if (!client) return;
-      dispatch(SetCooldownTime(null));
-      dispatch(slice.actions.setCurrentChannel(null));
-      dispatch(SetIsBlocked(false));
-      dispatch(
-        slice.actions.setChannelPermissions({
-          canSendMessage: true,
-          canEditMessage: true,
-          canDeleteMessage: true,
-          canReactMessage: true,
-          canPinMessage: true,
-          canCreatePoll: true,
-          canVotePoll: true,
-        }),
-      );
-      dispatch(SetCurrentTopic(null));
-      dispatch(SetIsClosedTopic(false));
-      dispatch(SetTopics([]));
-      const { user_id } = getState().auth;
-      const channel = client.channel(channelType, channelId);
-      // const read = channel.state.read[user_id];
-      // const lastMessageId =
-      //   read && read.unread_messages > 0 && read.last_read_message_id ? read.last_read_message_id : '';
+  return (dispatch, getState) => {
+    if (!client) return;
+    const { user_id } = getState().auth;
+    dispatch(ClearDataChannel());
 
-      const messages = { limit: 25 };
-      // if (lastMessageId) {
-      //   messages.id_gt = lastMessageId;
-      // }
+    const channel = client.channel(channelType, channelId);
 
-      // await channel.watch();
-      const response = await channel.query({
-        messages,
-      });
-
-      if (response) {
-        dispatch(slice.actions.setCurrentChannelStatus(CurrentChannelStatus.ACTIVE));
-        dispatch(setSidebar({ type: SidebarType.Channel, open: false }));
-        dispatch(slice.actions.setCurrentChannel(channel));
-        loadDataChannel(channel, dispatch, user_id);
-
-        const myRole = myRoleInChannel(channel);
-        if (![RoleMember.PENDING, RoleMember.SKIPPED].includes(myRole)) {
-          setTimeout(() => {
-            dispatch(SetMarkReadChannel(channel));
-          }, 100);
-        }
-
-        if (channel.type === ChatType.TEAM && channel.data?.topics_enabled) {
-          dispatch(SetOpenTopicPanel(true));
-          dispatch(FetchTopics(channel.cid));
-        }
-      }
-    } catch (error) {
+    if (isEmptyObject(channel.data)) {
       dispatch(slice.actions.setCurrentChannelStatus(CurrentChannelStatus.ERROR));
+      return;
     }
+
+    dispatch(slice.actions.setCurrentChannelStatus(CurrentChannelStatus.ACTIVE));
+    dispatch(setSidebar({ type: SidebarType.Channel, open: false }));
+    dispatch(slice.actions.setCurrentChannel(channel));
+    loadDataChannel(channel, dispatch, user_id);
   };
 };
 
@@ -457,17 +529,52 @@ export const WatchCurrentChannel = (channelId, channelType) => {
     try {
       if (!client) return;
       const { user_id } = getState().auth;
+      const { currentChannel, activeChannels = [], pinnedChannels = [] } = getState().channel;
       const channel = client.channel(channelType, channelId);
       const response = await channel.watch();
 
       if (response) {
-        dispatch(slice.actions.setCurrentChannel(channel));
-        loadDataChannel(channel, dispatch, user_id);
-        dispatch(slice.actions.updateActiveChannels(channel));
+        if (activeChannels.some(c => c.id === channel.id)) {
+          dispatch(slice.actions.updateActiveChannels(channel));
+        }
+
+        if (pinnedChannels.some(c => c.id === channel.id)) {
+          dispatch(slice.actions.updatePinnedChannels(channel));
+        }
+
+        if (currentChannel && currentChannel.id === channel.id) {
+          dispatch(slice.actions.setCurrentChannel(channel));
+          loadDataChannel(channel, dispatch, user_id);
+        }
       }
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
+  };
+};
+
+export const ClearDataChannel = () => {
+  return (dispatch, getState) => {
+    dispatch(SetCurrentTopic(null));
+    dispatch(onReplyMessage(null));
+    dispatch(onEditMessage(null));
+    dispatch(SetCooldownTime(null));
+    dispatch(SetIsBlocked(false));
+    dispatch(
+      slice.actions.setChannelPermissions({
+        canSendMessage: true,
+        canEditMessage: true,
+        canDeleteMessage: true,
+        canReactMessage: true,
+        canPinMessage: true,
+        canCreatePoll: true,
+        canVotePoll: true,
+      }),
+    );
+    dispatch(SetCurrentTopic(null));
+    dispatch(SetIsClosedTopic(false));
+    // dispatch(SetTopics([]));
+    dispatch(SetParentChannel(null));
   };
 };
 
@@ -648,6 +755,7 @@ export const SetMarkReadChannel = channel => {
   return async (dispatch, getState) => {
     const { user_id } = getState().auth;
     const read = channel.state.read[user_id];
+    if (!read) return;
     const unreadMessage = read.unread_messages;
     if (unreadMessage) {
       await channel.markRead();
@@ -666,7 +774,7 @@ export function FetchAllUnreadData() {
         dispatch(slice.actions.fetchAllUnreadData(response));
       })
       .catch(err => {
-        handleError(dispatch, err);
+        handleError(dispatch, err, t);
       });
   };
 }

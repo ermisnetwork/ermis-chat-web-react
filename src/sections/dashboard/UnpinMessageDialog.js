@@ -4,12 +4,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { LoadingButton } from '@mui/lab';
 import { onUnPinMessage } from '../../redux/slices/messages';
 import { showSnackbar } from '../../redux/slices/app';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
 const UnpinMessageDialog = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { openDialog, messageId } = useSelector(state => state.messages.unPinMessage);
   const { currentChannel } = useSelector(state => state.channel);
@@ -27,7 +29,7 @@ const UnpinMessageDialog = () => {
       setLoadingButton(true);
       const response = await currentChat.unpinMessage(messageId);
       if (response) {
-        dispatch(showSnackbar({ severity: 'success', message: 'Message unpinned' }));
+        dispatch(showSnackbar({ severity: 'success', message: t('unpinMessageDialog.snackbar_submit_success') }));
         onCloseDialog();
         setLoadingButton(false);
       }
@@ -37,7 +39,7 @@ const UnpinMessageDialog = () => {
       dispatch(
         showSnackbar({
           severity: 'error',
-          message: 'Unable to unpin the message. Please try again',
+          message: t('unpinMessageDialog.snackbar_submit_error'),
         }),
       );
     }
@@ -53,16 +55,16 @@ const UnpinMessageDialog = () => {
       onClose={onCloseDialog}
       aria-describedby="alert-dialog-slide-description"
     >
-      <DialogTitle>Unpin this message?</DialogTitle>
+      <DialogTitle>{t('unpinMessageDialog.title')}</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-slide-description">
-          Are you sure you want to unpin this message? <br /> It will no longer appear at the top of the conversation.
+          {t('unpinMessageDialog.message_up')} <br /> {t('unpinMessageDialog.message_down')}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCloseDialog}>Cancel</Button>
+        <Button onClick={onCloseDialog}>{t('unpinMessageDialog.cancel')}</Button>
         <LoadingButton onClick={onSubmit} loading={loadingButton} color="error">
-          Unpin
+          {t('unpinMessageDialog.unpin')}
         </LoadingButton>
       </DialogActions>
     </Dialog>

@@ -24,12 +24,14 @@ import RHFCheckbox from '../../components/hook-form/RHFCheckbox';
 import { handleError } from '../../utils/commons';
 import { FlagIcon, PollIcon } from '../../components/Icons';
 import Iconify from '../../components/Iconify';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
 const CreatePollDialog = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const theme = useTheme();
   const { openCreatePollDialog } = useSelector(state => state.dialog);
@@ -40,14 +42,14 @@ const CreatePollDialog = () => {
   const [loadingButton, setLoadingButton] = useState(false);
 
   const PollSchema = Yup.object().shape({
-    question: Yup.string().required('Question is required'),
+    question: Yup.string().required(t('create_poll.question_required')),
     options: Yup.array()
       .of(
         Yup.object().shape({
-          text: Yup.string().required('Option cannot be empty'),
+          text: Yup.string().required(t('create_poll.question_empty')),
         }),
       )
-      .min(2, 'At least 2 options'),
+      .min(2, t('create_poll.min_options')),
     multipleAnswers: Yup.boolean(),
   });
 
@@ -90,7 +92,7 @@ const CreatePollDialog = () => {
       onCloseDialog();
     } catch (error) {
       setLoadingButton(false);
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
   };
 
@@ -104,7 +106,7 @@ const CreatePollDialog = () => {
       onClose={onCloseDialog}
     >
       <DialogTitle sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        Create a poll
+        {t('create_poll.title')}
         <IconButton onClick={onCloseDialog}>
           <X />
         </IconButton>
@@ -113,10 +115,10 @@ const CreatePollDialog = () => {
         <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
             <Box>
-              <label style={{ fontWeight: 600, fontSize: '12px' }}>QUESTION</label>
+              <label style={{ fontWeight: 600, fontSize: '12px' }}>{t('create_poll.question')}</label>
               <RHFTextField
                 name="question"
-                placeholder="Question name"
+                placeholder={t('create_poll.question_name')}
                 style={{ marginTop: '5px' }}
                 InputProps={{
                   startAdornment: (
@@ -129,13 +131,13 @@ const CreatePollDialog = () => {
             </Box>
 
             <Box>
-              <label style={{ fontWeight: 600, fontSize: '12px' }}>OPTIONS</label>
+              <label style={{ fontWeight: 600, fontSize: '12px' }}>{}{t('create_poll.options')}</label>
               <Stack spacing={2}>
                 {fields.map((field, idx) => (
                   <Stack key={field.id} direction="row" alignItems="center" spacing={1}>
                     <RHFTextField
                       name={`options[${idx}].text`}
-                      placeholder={`Option ${idx + 1}`}
+                      placeholder={`${t('create_poll.option')} ${idx + 1}`}
                       fullWidth
                       InputProps={{
                         startAdornment: (
@@ -167,20 +169,20 @@ const CreatePollDialog = () => {
                     }}
                     fullWidth
                   >
-                    <Iconify icon="ph:plus-bold" width={18} height={18} /> &nbsp;ADD OPTION
+                    <Iconify icon="ph:plus-bold" width={18} height={18} /> &nbsp; {t('create_poll.add_option')}
                   </Button>
                 </Box>
               </Stack>
             </Box>
 
-            <RHFCheckbox name="multipleAnswers" label="Multiple answers" />
+            <RHFCheckbox name="multipleAnswers" label={t('create_poll.multiple_answers')} />
 
             <Stack direction="row" spacing={2} justifyContent="center">
               <Button size="large" onClick={onCloseDialog} sx={{ flex: 1 }}>
-                CANCEL
+                {t('create_poll.cancel')}
               </Button>
               <LoadingButton size="large" type="submit" variant="contained" loading={loadingButton} sx={{ flex: 1 }}>
-                CREATE
+                {t('create_poll.create')}
               </LoadingButton>
             </Stack>
           </Stack>

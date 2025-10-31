@@ -1,9 +1,11 @@
 import { memo } from 'react';
 import { Box, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 // ----------------------------------------------------------------------
 
 function NoFile({ width = 168, height = 240, ...other }) {
+  const { t } = useTranslation();
   return (
     <Box
       {...other}
@@ -344,10 +346,10 @@ function NoFile({ width = 168, height = 240, ...other }) {
       </svg>
 
       <Typography variant="subtitle1" sx={{ fontSize: '20px', fontWeight: 600 }}>
-        It’s a bit empty here
+        {t('noFile.title')}
       </Typography>
       <Typography variant="body1" sx={{ color: 'text.secondary', fontSize: '14px' }}>
-        Share something with your friend — files, links, or media — and it’ll show up right away.
+        {t('noFile.message')}
       </Typography>
     </Box>
   );

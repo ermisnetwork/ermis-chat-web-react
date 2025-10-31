@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 // import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
+import './i18n';
 import reportWebVitals from './reportWebVitals';
 import { Provider as ReduxProvider } from 'react-redux';
 import SettingsProvider from './contexts/SettingsContext';

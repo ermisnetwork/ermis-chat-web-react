@@ -10,12 +10,14 @@ import MemberAvatar from '../../components/MemberAvatar';
 import { AvatarShape } from '../../constants/commons-const';
 import { showSnackbar } from '../../redux/slices/app';
 import { handleError } from '../../utils/commons';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
 const InviteFriendDialog = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const theme = useTheme();
   const { openInviteFriendDialog } = useSelector(state => state.dialog);
@@ -35,9 +37,9 @@ const InviteFriendDialog = () => {
     try {
       setLoadingButton(true);
       await currentChannel.addMembers(selectedUsers.map(user => user.id));
-      dispatch(showSnackbar({ severity: 'success', message: 'Members added successfully' }));
+      dispatch(showSnackbar({ severity: 'success', message: t('inviteFriendDialog.snackbar_success') }));
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     } finally {
       setLoadingButton(false);
       onCloseDialog();
@@ -53,14 +55,14 @@ const InviteFriendDialog = () => {
       keepMounted
       onClose={onCloseDialog}
     >
-      <DialogTitle>Invite members to this channel</DialogTitle>
+      <DialogTitle>{t('inviteFriendDialog.title')}</DialogTitle>
 
       <DialogContent sx={{ mt: 4 }}>
         <Stack spacing={3} sx={{ position: 'relative' }}>
           <Search>
             <SearchIconWrapper>{<MagnifyingGlass size={18} />}</SearchIconWrapper>
             <StyledInputBase
-              placeholder="Search"
+              placeholder={t('inviteFriendDialog.search')}
               inputProps={{ 'aria-label': 'search' }}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -139,7 +141,7 @@ const InviteFriendDialog = () => {
               disabled={selectedUsers.length === 0}
               onClick={onInviteMembers}
             >
-              INVITE {selectedUsers.length} MEMBERS
+              {t('inviteFriendDialog.invite')} {selectedUsers.length} {t('inviteFriendDialog.members')}
             </LoadingButton>
           </Stack>
         </Stack>

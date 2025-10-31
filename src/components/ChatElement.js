@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { Badge, Box, Stack, Typography, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Badge, Box, Stack, Typography, Menu, MenuItem } from '@mui/material';
 import { styled, useTheme, alpha } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -11,20 +11,20 @@ import {
 import ChannelAvatar from './ChannelAvatar';
 import { isChannelDirect, myRoleInChannel } from '../utils/commons';
 import { ClientEvents } from '../constants/events-const';
-import { onEditMessage, onReplyMessage } from '../redux/slices/messages';
 import { Play, PushPin, PushPinSlash, SignOut, Trash } from 'phosphor-react';
 import { AvatarShape, ChatType, ConfirmType, MessageType, RoleMember } from '../constants/commons-const';
 import { setChannelConfirm } from '../redux/slices/dialog';
 import { convertMessageSystem } from '../utils/messageSystem';
 import { useNavigate } from 'react-router-dom';
-import { DEFAULT_PATH } from '../config';
+import { DEFAULT_PATH, TRANSITION } from '../config';
 import { convertMessageSignal } from '../utils/messageSignal';
 import { getDisplayDate } from '../utils/formatTime';
 import { client } from '../client';
 import { SpearkerOffIcon } from './Icons';
 import AvatarGeneralDefault from './AvatarGeneralDefault';
 import TopicAvatar from './TopicAvatar';
-import { SetOpenTopicPanel } from '../redux/slices/topic';
+import { SetOpenTopicPanel, SetParentChannel } from '../redux/slices/topic';
+import { useTranslation } from 'react-i18next';
 
 const StyledChatBox = styled(Box)(({ theme }) => ({
   // width: '100%',
@@ -68,12 +68,13 @@ const StyledMenu = styled(Menu)(({ theme }) => ({
   },
 }));
 
-const ListTopic = ({ topics }) => {
+const ListTopic = React.memo(({ topics }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const maxTopics = 2; // Số topic tối đa hiển thị
 
-  const visibleTopics = topics.slice(0, maxTopics);
-  const hasMore = topics.length > maxTopics;
+  const visibleTopics = useMemo(() => topics.slice(0, maxTopics), [topics, maxTopics]);
+  const hasMore = useMemo(() => topics.length > maxTopics, [topics.length, maxTopics]);
 
   return (
     <Stack direction="row" alignItems="center" gap={2}>
@@ -86,7 +87,7 @@ const ListTopic = ({ topics }) => {
             fontWeight: 400,
           }}
         >
-          General&nbsp;
+          {t('chatElement.general')}&nbsp;
         </Typography>
         <AvatarGeneralDefault size={16} />
       </Stack>
@@ -132,21 +133,36 @@ const ListTopic = ({ topics }) => {
       )}
     </Stack>
   );
-};
+});
 
 const ChatElement = ({ channel }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const theme = useTheme();
   const navigate = useNavigate();
-  const { currentChannel, mutedChannels, unreadChannels } = useSelector(state => state.channel);
+  const { currentChannel, mutedChannels = [], unreadChannels = [] } = useSelector(state => state.channel);
   const { openTopicPanel } = useSelector(state => state.topic);
   const { user_id } = useSelector(state => state.auth);
-  const users = client.state.users ? Object.values(client.state.users) : [];
+
+  // Memoize users array để tránh tạo mới mỗi render
+  const users = useMemo(() => {
+    return client.state.users ? Object.values(client.state.users) : [];
+  }, [client.state.users]);
+
   const channelId = channel?.id || '';
   const channelType = channel?.type || '';
-  const isDirect = isChannelDirect(channel);
-  const myRole = myRoleInChannel(channel);
-  const isPinned = channel.data.is_pinned;
+
+  // Memoize derived states để tránh tính toán lại
+  const isDirect = useMemo(() => isChannelDirect(channel), [channel]);
+  const myRole = useMemo(() => myRoleInChannel(channel), [channel]);
+  const isPinned = useMemo(() => channel.data.is_pinned, [channel.data.is_pinned]);
+  const isEnabledTopics = useMemo(() => channel.data?.topics_enabled, [channel.data?.topics_enabled]);
+  const topics = useMemo(() => (channel.state?.topics ? channel.state?.topics : []), [channel.state?.topics]);
+  const hasUnread = useMemo(
+    () => unreadChannels && unreadChannels.some(item => item.id === channelId),
+    [unreadChannels, channelId],
+  );
+  const isMuted = useMemo(() => mutedChannels.some(channel => channel.id === channelId), [mutedChannels, channelId]);
 
   const [lastMessage, setLastMessage] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
@@ -160,101 +176,141 @@ const ChatElement = ({ channel }) => {
   const showItemDeleteConversation = isDirect;
   const showItemMarkAsRead =
     unreadChannels && unreadChannels.some(item => item.id === channelId && item.unreadCount > 0);
-  const isMuted = mutedChannels.some(channel => channel.id === channelId);
-  const isEnabledTopics = channel.data?.topics_enabled;
-  const topics = channel.state?.topics ? channel.state?.topics : [];
-  const hasUnread = unreadChannels && unreadChannels.some(item => item.id === channelId);
   const isCurrentChannelEnabledTopic = currentChannel?.data?.topics_enabled;
 
-  const replaceMentionsWithNames = inputValue => {
-    users.forEach(user => {
-      inputValue = inputValue.replaceAll(`@${user.id}`, `@${user.name}`);
-    });
-    return inputValue;
-  };
+  const isActiveChannel = useCallback(() => {
+    const isCurrentChannel = currentChannel?.id === channel?.id;
 
-  const getLastMessage = message => {
-    if (message) {
+    if (!isCurrentChannel) return false;
+
+    // Nếu không phải current channel thì không active
+    if (!currentChannel?.data?.topics_enabled) return true;
+
+    // Nếu current channel có topics enabled thì chỉ active khi openTopicPanel = true
+    return openTopicPanel;
+  }, [channel, currentChannel, openTopicPanel]);
+
+  const replaceMentionsWithNames = useCallback(
+    inputValue => {
+      users.forEach(user => {
+        inputValue = inputValue.replaceAll(`@${user.id}`, `@${user.name}`);
+      });
+      return inputValue;
+    },
+    [users],
+  );
+
+  const getLastMessage = useCallback(
+    message => {
+      if (!message) {
+        setLastMessageAt(getDisplayDate(channel.data.created_at));
+        setLastMessage(t('chatElement.no_message'));
+        return;
+      }
+
       const date = message.updated_at ? message.updated_at : message.created_at;
       const sender = message.user;
       const senderId = sender?.id;
       const isMe = user_id === senderId;
-      const senderName = isMe ? 'You' : sender?.name || senderId;
+      const senderName = isMe ? t('chatElement.you') : sender?.name || senderId;
       setLastMessageAt(getDisplayDate(date));
-      if (message.type === MessageType.System) {
-        const messageSystem = convertMessageSystem(message.text, users, isDirect);
-        setLastMessage(`${senderName}: ${messageSystem}`);
-      } else if (message.type === MessageType.Signal) {
-        const messageSignal = convertMessageSignal(message.text);
-        setLastMessage(messageSignal.text || '');
-      } else if (message.type === MessageType.Sticker) {
-        setLastMessage(`${senderName}: Sticker`);
-      } else {
-        if (message.attachments) {
-          const attachmentLast = message.attachments[message.attachments.length - 1];
 
-          const isLinkPreview = attachmentLast.type === 'linkPreview';
-          const isImage = attachmentLast.type === 'image';
-          const isVideo = attachmentLast.type === 'video';
+      switch (message.type) {
+        case MessageType.System: {
+          const messageSystem = convertMessageSystem(message.text, users, isDirect, false, t);
+          setLastMessage(`${senderName}: ${messageSystem}`);
+          break;
+        }
 
-          if (isImage) {
-            setLastMessage(
-              <>
-                {`${senderName}:`}
-                <img
-                  src={attachmentLast.image_url}
-                  alt={attachmentLast.title || 'image'}
-                  style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: '5px',
-                    display: 'inline-block',
-                    verticalAlign: 'top',
-                    margin: '0px 4px',
-                  }}
-                />
-                {attachmentLast.title || 'Photo'}
-              </>,
-            );
-          } else if (isVideo) {
-            setLastMessage(
-              <>
-                {`${senderName}:`}
-                <span style={{ position: 'relative', display: 'inline-block', margin: '0px 4px' }}>
-                  <img
-                    src={attachmentLast.thumb_url}
-                    alt={attachmentLast.title || 'video'}
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: '5px',
-                      display: 'inline-block',
-                      verticalAlign: 'top',
-                    }}
-                  />
-                  <Play
-                    size={10}
-                    color="#fff"
-                    weight="fill"
-                    style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
-                  />
-                </span>
-                {attachmentLast.title || 'Video'}
-              </>,
-            );
+        case MessageType.Signal: {
+          const messageSignal = convertMessageSignal(message.text, t);
+          setLastMessage(messageSignal.text || '');
+          break;
+        }
+
+        case MessageType.Sticker: {
+          setLastMessage(`${senderName}: ${t('chatElement.sticker')}`);
+          break;
+        }
+
+        default: {
+          // MessageType.Regular
+          if (message.attachments) {
+            const attachmentLast = message.attachments[message.attachments.length - 1];
+            const { type: attachmentType } = attachmentLast;
+
+            switch (attachmentType) {
+              case 'image': {
+                setLastMessage(
+                  <>
+                    {`${senderName}:`}
+                    <img
+                      src={attachmentLast.image_url}
+                      alt={attachmentLast.title || 'image'}
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: '5px',
+                        display: 'inline-block',
+                        verticalAlign: 'top',
+                        margin: '0px 4px',
+                      }}
+                    />
+                    {attachmentLast.title || t('chatElement.photo')}
+                  </>,
+                );
+                break;
+              }
+
+              case 'video': {
+                setLastMessage(
+                  <>
+                    {`${senderName}:`}
+                    <span style={{ position: 'relative', display: 'inline-block', margin: '0px 4px' }}>
+                      <img
+                        src={attachmentLast.thumb_url}
+                        alt={attachmentLast.title || 'video'}
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: '5px',
+                          display: 'inline-block',
+                          verticalAlign: 'top',
+                        }}
+                      />
+                      <Play
+                        size={10}
+                        color="#fff"
+                        weight="fill"
+                        style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
+                      />
+                    </span>
+                    {attachmentLast.title || 'Video'}
+                  </>,
+                );
+                break;
+              }
+
+              case 'linkPreview': {
+                setLastMessage(`${senderName}: ${attachmentLast.link_url}`);
+                break;
+              }
+
+              default: {
+                setLastMessage(`${senderName}: ${attachmentLast.title}`);
+                break;
+              }
+            }
           } else {
-            setLastMessage(`${senderName}: ${isLinkPreview ? attachmentLast.link_url : attachmentLast.title}`);
+            const messagePreview = replaceMentionsWithNames(message.text);
+            setLastMessage(`${senderName}: ${messagePreview}`);
           }
-        } else {
-          const messagePreview = replaceMentionsWithNames(message.text);
-          setLastMessage(`${senderName}: ${messagePreview}`);
+          break;
         }
       }
-    } else {
-      setLastMessageAt(getDisplayDate(channel.data.created_at));
-      setLastMessage('No messages here yet');
-    }
-  };
+    },
+    [user_id, users, isDirect, t, replaceMentionsWithNames, channel.data.created_at],
+  );
 
   // Hàm tối ưu để tìm tin nhắn mới nhất
   const getOptimizedLastMessage = useCallback(channel => {
@@ -303,6 +359,10 @@ const ChatElement = ({ channel }) => {
 
   useEffect(() => {
     getLastMessage(optimizedLastMessage);
+  }, [optimizedLastMessage]);
+
+  useEffect(() => {
+    // getLastMessage(optimizedLastMessage);
 
     const membership = channel.state.membership;
     const blocked = membership?.blocked ?? false;
@@ -450,35 +510,49 @@ const ChatElement = ({ channel }) => {
       client.off(ClientEvents.MemberBlocked, handleMemberBlocked);
       client.off(ClientEvents.MemberUnblocked, handleMemberUnBlocked);
     };
-  }, [channel, user_id, users.length, unreadChannels, getOptimizedLastMessage]);
+  }, [channel, user_id, unreadChannels, getOptimizedLastMessage, getLastMessage, dispatch]);
 
-  const onLeftClick = () => {
-    if (!isRightClick) {
-      navigate(`${DEFAULT_PATH}/${channel.cid}`);
-      dispatch(onReplyMessage(null));
-      dispatch(onEditMessage(null));
+  // const onLeftClick = useCallback(() => {
+  //   if (!isRightClick) {
+  //     navigate(`${DEFAULT_PATH}/${channel.cid}`);
+  //     dispatch(onReplyMessage(null));
+  //     dispatch(onEditMessage(null));
 
-      dispatch(SetOpenTopicPanel(isEnabledTopics ? true : false));
-    }
+  //     dispatch(SetOpenTopicPanel(isEnabledTopics ? true : false));
+  //   }
+  //   setAnchorEl(null);
+  // }, [isRightClick, navigate, channel.cid, dispatch, isEnabledTopics]);
+
+  const onLeftClick = useCallback(() => {
     setAnchorEl(null);
-  };
 
-  const onRightClick = event => {
+    if (!isRightClick) {
+      if (isEnabledTopics) {
+        dispatch(SetOpenTopicPanel(true));
+        dispatch(SetParentChannel(channel));
+      } else {
+        dispatch(SetOpenTopicPanel(false));
+        navigate(`${DEFAULT_PATH}/${channel.cid}`);
+      }
+    }
+  }, [isRightClick, navigate, dispatch, isEnabledTopics, channel]);
+
+  const onRightClick = useCallback(event => {
     event.preventDefault();
     setIsRightClick(true);
     setAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const onCloseMenu = () => {
+  const onCloseMenu = useCallback(() => {
     setAnchorEl(null);
     setIsRightClick(false);
-  };
+  }, []);
 
-  const onMarkAsRead = () => {
+  const onMarkAsRead = useCallback(() => {
     dispatch(SetMarkReadChannel(channel));
-  };
+  }, [dispatch, channel]);
 
-  const onLeave = () => {
+  const onLeave = useCallback(() => {
     const payload = {
       openDialog: true,
       channel,
@@ -486,9 +560,9 @@ const ChatElement = ({ channel }) => {
       type: ConfirmType.LEAVE,
     };
     dispatch(setChannelConfirm(payload));
-  };
+  }, [channel, user_id, dispatch]);
 
-  const onDelete = () => {
+  const onDelete = useCallback(() => {
     const payload = {
       openDialog: true,
       channel,
@@ -496,9 +570,9 @@ const ChatElement = ({ channel }) => {
       type: ConfirmType.DELETE_CHANNEL,
     };
     dispatch(setChannelConfirm(payload));
-  };
+  }, [channel, user_id, dispatch]);
 
-  const onClearChatHistory = () => {
+  const onClearChatHistory = useCallback(() => {
     const payload = {
       openDialog: true,
       channel,
@@ -506,15 +580,26 @@ const ChatElement = ({ channel }) => {
       type: ConfirmType.TRUNCATE,
     };
     dispatch(setChannelConfirm(payload));
-  };
+  }, [channel, user_id, dispatch]);
 
-  const onPinChannel = async () => {
+  const onPinChannel = useCallback(async () => {
     if (isPinned) {
       await client.unpinChannel(channelType, channelId);
     } else {
       await client.pinChannel(channelType, channelId);
     }
-  };
+  }, [isPinned, channelType, channelId]);
+
+  const renderChannelAvatar = useMemo(() => {
+    return (
+      <ChannelAvatar
+        channel={channel}
+        width={openTopicPanel ? 50 : 60}
+        height={openTopicPanel ? 50 : 60}
+        shape={AvatarShape.Round}
+      />
+    );
+  }, [channel, openTopicPanel]);
 
   return (
     <>
@@ -522,15 +607,23 @@ const ChatElement = ({ channel }) => {
         onClick={onLeftClick}
         onContextMenu={onRightClick}
         sx={{
-          backgroundColor:
-            currentChannel?.id === channelId ? `${alpha(theme.palette.primary.main, 0.2)} !important` : 'transparent',
+          backgroundColor: isActiveChannel() ? `${alpha(theme.palette.primary.main, 0.2)} !important` : 'transparent',
           padding: '8px',
           margin: '-8px',
+          transition: TRANSITION,
+          height: openTopicPanel ? 66 : 'auto',
         }}
         gap={2}
       >
         {/* -------------------------------avatar------------------------------- */}
-        <Box sx={{ position: 'relative', width: 60, height: 60 }}>
+        <Box
+          sx={{
+            position: 'relative',
+            width: openTopicPanel ? 50 : 60,
+            height: openTopicPanel ? 50 : 60,
+            transition: TRANSITION,
+          }}
+        >
           {hasUnread && openTopicPanel ? (
             <Badge
               variant="dot"
@@ -548,15 +641,18 @@ const ChatElement = ({ channel }) => {
               }}
             />
           ) : null}
-          <ChannelAvatar channel={channel} width={60} height={60} shape={AvatarShape.Round} />
+          {renderChannelAvatar}
         </Box>
 
         {/* -------------------------------content------------------------------- */}
         <Box
           sx={{
-            flex: openTopicPanel ? 0 : 1,
+            flex: 1,
             minWidth: 'auto',
             overflow: 'hidden',
+            transition: TRANSITION,
+            transform: openTopicPanel ? 'scale(0)' : 'scale(1)',
+            opacity: openTopicPanel ? 0 : 1,
           }}
         >
           {/* -------------------------------channel name------------------------------- */}
@@ -616,7 +712,7 @@ const ChatElement = ({ channel }) => {
                   fontWeight: hasUnread ? 600 : 400,
                 }}
               >
-                {isBlocked ? 'You have block this user' : lastMessage}
+                {isBlocked ? t('chatElement.blocked') : lastMessage}
               </Typography>
 
               {hasUnread ? <Badge variant="dot" color="error" sx={{ margin: '0 10px 0 15px' }} /> : null}
@@ -643,7 +739,7 @@ const ChatElement = ({ channel }) => {
         {/* --------------------Pin/Unpin channel---------------- */}
         <MenuItem onClick={onPinChannel}>
           {isPinned ? <PushPinSlash /> : <PushPin />}
-          {isPinned ? 'Unpin from top' : 'Pin to top'}
+          {isPinned ? t('chatElement.unpinned') : t('chatElement.pinned')}
         </MenuItem>
 
         {/* --------------------Mark as read---------------- */}
@@ -658,7 +754,7 @@ const ChatElement = ({ channel }) => {
         {showItemDeleteChannel && (
           <MenuItem sx={{ color: theme.palette.error.main }} onClick={onDelete}>
             <Trash color={theme.palette.error.main} />
-            Delete channel
+            {t('chatElement.delete_channel')}
           </MenuItem>
         )}
 
@@ -666,7 +762,7 @@ const ChatElement = ({ channel }) => {
         {showItemLeaveChannel && (
           <MenuItem sx={{ color: theme.palette.error.main }} onClick={onLeave}>
             <SignOut color={theme.palette.error.main} />
-            Leave channel
+            {t('chatElement.leave_channel')}
           </MenuItem>
         )}
 
@@ -674,7 +770,7 @@ const ChatElement = ({ channel }) => {
         {showItemDeleteConversation && (
           <MenuItem sx={{ color: theme.palette.error.main }} onClick={onClearChatHistory}>
             <Trash color={theme.palette.error.main} />
-            Clear chat history
+            {t('chatElement.clear_chat_history')}
           </MenuItem>
         )}
       </StyledMenu>

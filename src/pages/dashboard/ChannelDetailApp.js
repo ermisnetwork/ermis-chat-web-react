@@ -1,19 +1,29 @@
-import React, { useEffect } from 'react';
-import ChatComponent from './ChatComponent';
+import React, { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { CurrentChannelStatus, SidebarType } from '../../constants/commons-const';
 import { useParams, useNavigate } from 'react-router-dom';
-import { splitChannelId } from '../../utils/commons';
-import { ConnectCurrentChannel } from '../../redux/slices/channel';
+
+// Constants
+import { CurrentChannelStatus, SidebarType } from '../../constants/commons-const';
 import { DEFAULT_PATH } from '../../config';
+
+// Utils
+import { splitChannelId } from '../../utils/commons';
+
+// Redux
+import { ConnectCurrentChannel } from '../../redux/slices/channel';
+
+// Components
+import ChatComponent from './ChatComponent';
 import ChannelNotFound from '../../sections/dashboard/ChannelNotFound';
 import SidebarPanel from './SidebarPanel';
 import BoxContainer from '../../layouts/dashboard/BoxContainer';
-import { client } from '../../client';
+import LoadingScreen from '../../components/LoadingScreen';
+import InviteFriendDialog from '../../sections/dashboard/InviteFriendDialog';
+
+// Sidebar Components
 import SidebarChannelInfo from '../../sections/dashboard/SidebarChannelInfo';
 import SidebarChannelType from '../../sections/dashboard/SidebarChannelType';
 import SidebarMembers from '../../sections/dashboard/SidebarMembers';
-import InviteFriendDialog from '../../sections/dashboard/InviteFriendDialog';
 import SidebarPermissions from '../../sections/dashboard/SidebarPermissions';
 import SidebarAdministrators from '../../sections/dashboard/SidebarAdministrators';
 import SidebarBanned from '../../sections/dashboard/SidebarBanned';
@@ -26,112 +36,67 @@ import SidebarTopicInfo from '../../sections/dashboard/SidebarTopicInfo';
 const ChannelDetailApp = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const { currentChannelStatus } = useSelector(state => state.channel);
+  const { currentChannelStatus, loadingChannels } = useSelector(state => state.channel);
   const { sideBar, isUserConnected } = useSelector(state => state.app);
-  const users = client.state.users ? Object.values(client.state.users) : [];
-
   const { id } = useParams();
 
   useEffect(() => {
-    if (id && isUserConnected) {
-      const result = splitChannelId(id);
-      if (result) {
-        dispatch(ConnectCurrentChannel(result.channelId, result.channelType));
-      } else {
-        navigate(`${DEFAULT_PATH}`);
-      }
+    if (!id || !isUserConnected || loadingChannels) {
+      return;
     }
-  }, [dispatch, id, isUserConnected]);
+
+    const result = splitChannelId(id);
+    if (result) {
+      dispatch(ConnectCurrentChannel(result.channelId, result.channelType));
+    } else {
+      navigate(DEFAULT_PATH);
+    }
+  }, [dispatch, id, isUserConnected, navigate, loadingChannels]);
+
+  // Memoized sidebar content to prevent unnecessary re-renders
+  const sidebarContent = useMemo(() => {
+    switch (sideBar?.type) {
+      case SidebarType.Channel:
+        return <SidebarChannelInfo />;
+      case SidebarType.ChannelType:
+        return <SidebarChannelType />;
+      case SidebarType.Members:
+        return <SidebarMembers />;
+      case SidebarType.Permissions:
+        return <SidebarPermissions />;
+      case SidebarType.Administrators:
+        return <SidebarAdministrators />;
+      case SidebarType.BannedUsers:
+        return <SidebarBanned />;
+      case SidebarType.SearchMessage:
+        return <SidebarSearchMessage />;
+      case SidebarType.KeywordFiltering:
+        return <SidebarKeywords />;
+      case SidebarType.UserInfo:
+        return <SidebarUserInfo />;
+      case SidebarType.ChannelTopics:
+        return <SidebarChannelTopic />;
+      case SidebarType.TopicInfo:
+        return <SidebarTopicInfo />;
+      default:
+        return null;
+    }
+  }, [sideBar?.type]);
 
   return (
     <>
       <BoxContainer>
-        {currentChannelStatus === CurrentChannelStatus.ERROR ? <ChannelNotFound /> : <ChatComponent />}
+        {loadingChannels ? (
+          <LoadingScreen />
+        ) : currentChannelStatus === CurrentChannelStatus.ERROR ? (
+          <ChannelNotFound />
+        ) : (
+          <ChatComponent />
+        )}
         <InviteFriendDialog />
       </BoxContainer>
 
-      {sideBar.open &&
-        (() => {
-          switch (sideBar.type) {
-            case SidebarType.Channel:
-              return (
-                <SidebarPanel>
-                  <SidebarChannelInfo />
-                </SidebarPanel>
-              );
-
-            case SidebarType.ChannelType:
-              return (
-                <SidebarPanel>
-                  <SidebarChannelType />
-                </SidebarPanel>
-              );
-
-            case SidebarType.Members:
-              return (
-                <SidebarPanel>
-                  <SidebarMembers />
-                </SidebarPanel>
-              );
-
-            case SidebarType.Permissions:
-              return (
-                <SidebarPanel>
-                  <SidebarPermissions />
-                </SidebarPanel>
-              );
-
-            case SidebarType.Administrators:
-              return (
-                <SidebarPanel>
-                  <SidebarAdministrators />
-                </SidebarPanel>
-              );
-
-            case SidebarType.BannedUsers:
-              return (
-                <SidebarPanel>
-                  <SidebarBanned />
-                </SidebarPanel>
-              );
-
-            case SidebarType.SearchMessage:
-              return (
-                <SidebarPanel>
-                  <SidebarSearchMessage />
-                </SidebarPanel>
-              );
-
-            case SidebarType.KeywordFiltering:
-              return (
-                <SidebarPanel>
-                  <SidebarKeywords />
-                </SidebarPanel>
-              );
-            case SidebarType.UserInfo:
-              return (
-                <SidebarPanel>
-                  <SidebarUserInfo />
-                </SidebarPanel>
-              );
-            case SidebarType.ChannelTopics:
-              return (
-                <SidebarPanel>
-                  <SidebarChannelTopic />
-                </SidebarPanel>
-              );
-            case SidebarType.TopicInfo:
-              return (
-                <SidebarPanel>
-                  <SidebarTopicInfo />
-                </SidebarPanel>
-              );
-
-            default:
-              break;
-          }
-        })()}
+      <SidebarPanel>{sidebarContent}</SidebarPanel>
     </>
   );
 };

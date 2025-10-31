@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { RoleMember, SidebarType } from '../../constants/commons-const';
+import { CurrentChannelStatus, SidebarType } from '../../constants/commons-const';
 import { client } from '../../client';
-import { handleError, myRoleInChannel } from '../../utils/commons';
+import { handleError, isEmptyObject } from '../../utils/commons';
 import { setSidebar } from './app';
-import { SetMarkReadChannel } from './channel';
+import { setCurrentChannelStatus } from './channel';
 
 const initialState = {
   currentTopic: null,
@@ -12,6 +12,7 @@ const initialState = {
   loadingTopics: false,
   isClosedTopic: false,
   openTopicPanel: false,
+  parentChannel: null,
 };
 
 const slice = createSlice({
@@ -33,6 +34,13 @@ const slice = createSlice({
     removeTopic(state, action) {
       const topicId = action.payload;
       state.topics = state.topics.filter(topic => topic.id !== topicId);
+    },
+    updateTopic(state, action) {
+      const updatedTopic = action.payload;
+      const index = state.topics.findIndex(topic => topic.id === updatedTopic.id);
+      if (index !== -1) {
+        state.topics[index] = updatedTopic;
+      }
     },
     setLoadingTopics(state, action) {
       state.loadingTopics = action.payload;
@@ -56,6 +64,9 @@ const slice = createSlice({
     setOpenTopicPanel(state, action) {
       state.openTopicPanel = action.payload;
     },
+    setParentChannel(state, action) {
+      state.parentChannel = action.payload;
+    },
   },
 });
 
@@ -73,78 +84,110 @@ const watchTopic = async topicId => {
       return topic;
     }
   } catch (error) {
-    handleError(dispatch, error);
+    handleError(dispatch, error, t);
     return null;
   }
 };
 
-export const FetchTopics = channelCID => {
-  return async (dispatch, getState) => {
-    try {
-      if (!client) return;
+// export const FetchTopics = channelCID => {
+//   return async (dispatch, getState) => {
+//     try {
+//       if (!client) return;
 
-      const filter = {
-        type: ['topic'],
-        parent_cid: channelCID,
-        // include_parent: true,
-      };
-      const sort = [];
-      const options = {
-        message_limit: 25,
-      };
-      dispatch(SetLoadingTopics(true));
-      const response = await client.queryChannels(filter, sort, options);
+//       const filter = {
+//         type: ['topic'],
+//         parent_cid: channelCID,
+//         // include_parent: true,
+//       };
+//       const sort = [];
+//       const options = {
+//         message_limit: 25,
+//       };
+//       dispatch(SetLoadingTopics(true));
+//       const response = await client.queryChannels(filter, sort, options);
 
-      const { topics, pinnedTopics } = response.reduce(
-        (acc, topic) => {
-          if (topic.data.is_pinned) {
-            acc.pinnedTopics.push(topic);
-          } else {
-            acc.topics.push(topic);
-          }
-          return acc;
-        },
-        {
-          topics: [],
-          pinnedTopics: [],
-        },
-      );
+//       const { topics, pinnedTopics } = response.reduce(
+//         (acc, topic) => {
+//           if (topic.data.is_pinned) {
+//             acc.pinnedTopics.push(topic);
+//           } else {
+//             acc.topics.push(topic);
+//           }
+//           return acc;
+//         },
+//         {
+//           topics: [],
+//           pinnedTopics: [],
+//         },
+//       );
 
-      dispatch(SetTopics(topics));
-      dispatch(SetPinnedTopics(pinnedTopics));
-      dispatch(SetLoadingTopics(false));
-    } catch (error) {
-      dispatch(SetLoadingTopics(false));
-    }
+//       dispatch(SetTopics(topics));
+//       dispatch(SetPinnedTopics(pinnedTopics));
+//       dispatch(SetLoadingTopics(false));
+//     } catch (error) {
+//       dispatch(SetLoadingTopics(false));
+//     }
+//   };
+// };
+
+// export const ConnectCurrentTopic = topicId => {
+//   return async (dispatch, getState) => {
+//     try {
+//       if (!client) return;
+//       // dispatch(slice.actions.setCurrentTopic(null));
+//       dispatch(SetIsClosedTopic(false));
+//       const { user_id } = getState().auth;
+//       const topic = client.channel('topic', topicId);
+//       const messages = { limit: 25 };
+//       const response = await topic.query({
+//         messages,
+//       });
+
+//       if (response) {
+//         dispatch(setSidebar({ type: SidebarType.Channel, open: false }));
+//         dispatch(slice.actions.setCurrentTopic(topic));
+//         dispatch(SetIsClosedTopic(topic.data?.is_closed_topic ?? false));
+//       }
+//     } catch (error) {}
+//   };
+// };
+
+export const FetchTopics = channel => {
+  return (dispatch, getState) => {
+    const { topics, pinnedTopics } = channel.state.topics.reduce(
+      (acc, topic) => {
+        if (topic.data.is_pinned) {
+          acc.pinnedTopics.push(topic);
+        } else {
+          acc.topics.push(topic);
+        }
+        return acc;
+      },
+      {
+        topics: [],
+        pinnedTopics: [],
+      },
+    );
+
+    dispatch(SetTopics(topics));
+    dispatch(SetPinnedTopics(pinnedTopics));
   };
 };
 
 export const ConnectCurrentTopic = topicId => {
-  return async (dispatch, getState) => {
-    try {
-      if (!client) return;
-      // dispatch(slice.actions.setCurrentTopic(null));
-      dispatch(SetIsClosedTopic(false));
-      const { user_id } = getState().auth;
-      const topic = client.channel('topic', topicId);
-      const messages = { limit: 25 };
-      const response = await topic.query({
-        messages,
-      });
+  return (dispatch, getState) => {
+    dispatch(SetIsClosedTopic(false));
+    const topic = client.channel('topic', topicId);
 
-      if (response) {
-        dispatch(setSidebar({ type: SidebarType.Channel, open: false }));
-        dispatch(slice.actions.setCurrentTopic(topic));
-        dispatch(SetIsClosedTopic(topic.data?.is_closed_topic ?? false));
+    if (isEmptyObject(topic.data)) {
+      dispatch(setCurrentChannelStatus(CurrentChannelStatus.ERROR));
+      dispatch(SetOpenTopicPanel(false));
+      return;
+    }
 
-        const myRole = myRoleInChannel(topic);
-        if (![RoleMember.PENDING, RoleMember.SKIPPED].includes(myRole)) {
-          setTimeout(() => {
-            dispatch(SetMarkReadChannel(topic));
-          }, 100);
-        }
-      }
-    } catch (error) {}
+    dispatch(setSidebar({ type: SidebarType.Channel, open: false }));
+    dispatch(slice.actions.setCurrentTopic(topic));
+    dispatch(SetIsClosedTopic(topic.data?.is_closed_topic ?? false));
   };
 };
 
@@ -180,6 +223,15 @@ export const RemoveTopic = topicId => {
   return (dispatch, getState) => {
     dispatch(slice.actions.removeTopic(topicId));
     dispatch(slice.actions.removePinnedTopic(topicId));
+  };
+};
+
+export const UpdateTopic = topicCID => {
+  return (dispatch, getState) => {
+    const topic = client.activeChannels[topicCID];
+    if (topic) {
+      dispatch(slice.actions.updateTopic(topic));
+    }
   };
 };
 
@@ -223,5 +275,14 @@ export const RemovePinnedTopic = topicId => {
 export const SetOpenTopicPanel = isOpen => {
   return async (dispatch, getState) => {
     dispatch(slice.actions.setOpenTopicPanel(isOpen));
+  };
+};
+
+export const SetParentChannel = channel => {
+  return async (dispatch, getState) => {
+    if (!channel) return;
+
+    dispatch(slice.actions.setParentChannel(channel));
+    dispatch(FetchTopics(channel));
   };
 };

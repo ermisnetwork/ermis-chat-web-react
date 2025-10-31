@@ -9,10 +9,12 @@ import { DeleteAccount, DeleteAccountNoAuth, GetChallenge, GetChallengeNoAuth } 
 import { useAccount, useDisconnect, useSignTypedData } from 'wagmi';
 import { useWeb3Modal } from '@web3modal/wagmi/react';
 import WalletWrapper from '../../layouts/wallet';
+import { useTranslation } from 'react-i18next';
 
 const CardDeleteAccount = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { signTypedDataAsync } = useSignTypedData();
   const { connector, address } = useAccount();
@@ -73,9 +75,9 @@ const CardDeleteAccount = () => {
 
     if (signature) {
       if (isLoggedIn) {
-        dispatch(DeleteAccount(signature));
+        dispatch(DeleteAccount(signature, t));
       } else {
-        dispatch(DeleteAccountNoAuth(signature, address.toLowerCase()));
+        dispatch(DeleteAccountNoAuth(signature, address.toLowerCase(), t));
       }
     }
   };
@@ -84,33 +86,31 @@ const CardDeleteAccount = () => {
     <Card variant="outlined" sx={{ maxWidth: '500px' }}>
       <CardContent>
         <Typography variant="h5" component="div">
-          Account Deletion Confirmation
+          {t('delete_account.title')}
         </Typography>
         <Divider sx={{ margin: '15px 0' }} />
         <div>
-          <p>Deleting your account will result in:</p>
+          <p>{t('delete_account.message')}</p>
           <ul style={{ paddingLeft: '15px' }}>
             <li>
-              <strong>Loss of all data</strong>: All personal information, chat history, and contacts on the Ermis
-              platform will be permanently deleted and cannot be recovered.
+              <strong>{t('delete_account.list_message_fisrt-strong')}</strong>{t('delete_account.list_message_fisrt')}
             </li>
             <li>
-              <strong>No impact on SDK-integrated conversations</strong>: Any conversations integrated through the SDK
-              will remain unaffected.
+              <strong>{t('delete_account.list_message_two-strong')}</strong>{t('delete_account.list_message_two')}
             </li>
           </ul>
-          <p style={{ marginTop: '15px' }}>Are you sure you want to continue?</p>
+          <p style={{ marginTop: '15px' }}>{t('delete_account.message_question')}</p>
         </div>
       </CardContent>
       <CardActions sx={{ justifyContent: 'flex-end', padding: '8px 24px 24px' }}>
-        <Button onClick={onCancel}>Cancel</Button>
+        <Button onClick={onCancel}>{t('delete_account.cancel')}</Button>
         {address ? (
           <LoadingButton color="error" onClick={onDelete} loading={isLoading}>
-            Delete
+            {t('delete_account.delete')}
           </LoadingButton>
         ) : (
           <Button variant="contained" sx={{ textTransform: 'none' }} onClick={onOpenModalWallet}>
-            Connect wallet
+            {t('delete_account.connect_wallet')}
           </Button>
         )}
       </CardActions>

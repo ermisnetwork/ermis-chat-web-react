@@ -4,8 +4,9 @@ import { useTheme, IconButton, Popover, Tabs, Tab, Box } from '@mui/material';
 import { SmileyStickerIcon } from './Icons';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
+import { useTranslation } from 'react-i18next';
 
-const LIST_TAB = ['Emoji', 'Stickers'];
+const LIST_TAB = ['emojiPickerPopover.emoji', 'emojiPickerPopover.sticker'];
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -27,6 +28,7 @@ function CustomTabPanel(props) {
 const EmojiPickerPopover = ({ inputRef, value, setValue, setStickerUrl }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
+  const { t } = useTranslation();
   const [anchorEl, setAnchorEl] = useState(null);
   const [indexTab, setIndexTab] = useState(0);
 
@@ -96,7 +98,7 @@ const EmojiPickerPopover = ({ inputRef, value, setValue, setStickerUrl }) => {
             variant="fullWidth"
           >
             {LIST_TAB.map((item, index) => {
-              return <Tab key={index} label={item} />;
+              return <Tab key={index} label={t(item)} />;
             })}
           </Tabs>
         </Box>
@@ -117,7 +119,7 @@ const EmojiPickerPopover = ({ inputRef, value, setValue, setStickerUrl }) => {
             width="100%"
             height="100%"
             style={{ border: 'none' }}
-            title="Sticker Picker"
+            title={t('emojiPickerPopover.title')}
           />
         </CustomTabPanel>
       </Popover>

@@ -8,8 +8,10 @@ import { PeopleIcon, UserSupportIcon, DeviceMessageIcon } from '../../components
 import { SetSearchQuery } from '../../redux/slices/app';
 import { ChatType, ContactType, RoleMember } from '../../constants/commons-const';
 import useResponsive from '../../hooks/useResponsive';
+import { useTranslation } from 'react-i18next';
 
 const SidebarContacts = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const dispatch = useDispatch();
   const isMobileToMd = useResponsive('down', 'md');
@@ -44,19 +46,19 @@ const SidebarContacts = () => {
   const buttonList = [
     {
       key: ContactType.Friends,
-      label: 'Friends list',
+      label: t('contact.friends_list'),
       icon: <PeopleIcon color={theme.palette.text.primary} />,
       count: directChannels.length,
     },
     {
       key: ContactType.Channels,
-      label: 'Channels list',
+      label:t('contact.channel_list'),
       icon: <DeviceMessageIcon color={theme.palette.text.primary} />,
       count: teamChannels.length,
     },
     {
       key: ContactType.Request,
-      label: 'Friend/Channel Request',
+      label: t('contact.channel_request'),
       icon: <UserSupportIcon color={theme.palette.text.primary} />,
       count: requestCount,
     },
@@ -73,7 +75,7 @@ const SidebarContacts = () => {
           <Search>
             <SearchIconWrapper>{<MagnifyingGlass size={18} />}</SearchIconWrapper>
             <StyledInputBase
-              placeholder="Search"
+              placeholder={t('contact.search')}
               inputProps={{ 'aria-label': 'search' }}
               value={searchQuery}
               onChange={e => dispatch(SetSearchQuery(e.target.value))}

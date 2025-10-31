@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Dialog, DialogContent, DialogTitle, Slide, Stack } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton, Slide, Stack } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { client } from '../../client';
 import { ChatType, RoleMember } from '../../constants/commons-const';
@@ -8,21 +8,23 @@ import { CloseDialogNewDirectMessage } from '../../redux/slices/dialog';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PATH } from '../../config';
 import { Search, SearchIconWrapper, StyledInputBase } from '../../components/Search';
-import { MagnifyingGlass } from 'phosphor-react';
+import { MagnifyingGlass, X } from 'phosphor-react';
 import FriendList from './FriendList';
 import { LoadingSpinner } from '../../components/animate';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
 const NewDirectMessage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { openDialogNewDirectMessage } = useSelector(state => state.dialog);
   const { isLoading } = useSelector(state => state.app);
   const { user_id } = useSelector(state => state.auth);
-  const { activeChannels, skippedChannels, pendingChannels } = useSelector(state => state.channel);
+  const { activeChannels = [], skippedChannels = [], pendingChannels = [] } = useSelector(state => state.channel);
   const [searchQuery, setSearchQuery] = useState('');
 
   // invitedChannels: các channel direct mà bạn đã gửi lời mời, đối phương chưa xác nhận tham gia.
@@ -54,10 +56,10 @@ const NewDirectMessage = () => {
       });
 
       await channel.create();
-      dispatch(showSnackbar({ severity: 'success', message: 'Invitation sent' }));
+      dispatch(showSnackbar({ severity: 'success', message: t('new_message.snackbar_success') }));
       onCloseDialogNewDirectMessage();
     } catch (error) {
-      dispatch(showSnackbar({ severity: 'error', message: 'Failed to send invite. Please retry' }));
+      dispatch(showSnackbar({ severity: 'error', message: t('new_message.snackbar_failed') }));
     }
   };
 
@@ -87,7 +89,12 @@ const NewDirectMessage = () => {
       keepMounted
       onClose={onCloseDialogNewDirectMessage}
     >
-      <DialogTitle>{'Start a new conversation'}</DialogTitle>
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {t('new_message.title')}
+        <IconButton onClick={onCloseDialogNewDirectMessage}>
+          <X />
+        </IconButton>
+      </DialogTitle>
 
       <DialogContent sx={{ mt: 4 }}>
         <Stack spacing={3}>
@@ -96,7 +103,7 @@ const NewDirectMessage = () => {
               {isLoading ? <LoadingSpinner size={18} /> : <MagnifyingGlass size={18} />}
             </SearchIconWrapper>
             <StyledInputBase
-              placeholder="Search"
+              placeholder={t('create_channel.search')}
               inputProps={{ 'aria-label': 'search' }}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}

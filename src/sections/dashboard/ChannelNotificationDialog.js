@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { LoadingButton } from '@mui/lab';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -20,31 +21,31 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const options = [
   {
-    label: 'Mute for 15 minutes',
+    label: 'muteNotificationsDialog.mute_15_minutes',
     value: '900000',
   },
   {
-    label: 'Mute for 1 hour',
+    label: 'muteNotificationsDialog.mute_1_hour',
     value: '3600000',
   },
   {
-    label: 'Mute for 8 hours',
+    label: 'muteNotificationsDialog.mute_8_hours',
     value: '28800000',
   },
   {
-    label: 'Until i turn it back on',
+    label: 'muteNotificationsDialog.until_i_turn_it_back_on',
     value: 'null',
   },
 ];
 
 const defaultDuration = {
-  label: 'Mute for 15 minutes',
+  label: 'muteNotificationsDialog.mute_15_minutes',
   value: '900000',
 };
 
 const ChannelNotificationDialog = ({ openDialogMuted, setOpenDialogMuted }) => {
   const { currentChannel } = useSelector(state => state.channel);
-
+  const { t } = useTranslation();
   const [duration, setDuration] = useState(defaultDuration);
 
   const onCloseDialog = () => {
@@ -85,19 +86,19 @@ const ChannelNotificationDialog = ({ openDialogMuted, setOpenDialogMuted }) => {
         },
       }}
     >
-      <DialogTitle>Mute Notifications</DialogTitle>
+      <DialogTitle>{t('muteNotificationsDialog.title')}</DialogTitle>
       <DialogContent>
         <FormControl>
           <RadioGroup name="duration-group" value={duration.value} onChange={onChangeDuration}>
             {options.map(option => (
-              <FormControlLabel value={option.value} key={option.value} control={<Radio />} label={option.label} />
+              <FormControlLabel value={option.value} key={option.value} control={<Radio />} label={t(option.label)} />
             ))}
           </RadioGroup>
         </FormControl>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCloseDialog}>Cancel</Button>
-        <LoadingButton onClick={onSubmit}>Accept</LoadingButton>
+        <Button onClick={onCloseDialog}>{t('muteNotificationsDialog.cancel')}</Button>
+        <LoadingButton onClick={onSubmit}>{t('muteNotificationsDialog.accept')}</LoadingButton>
       </DialogActions>
     </Dialog>
   );

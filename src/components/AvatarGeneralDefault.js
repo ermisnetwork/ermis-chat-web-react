@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import { ChatPurpleIcon } from './Icons';
+import { TRANSITION } from '../config';
 
 const AvatarGeneralDefault = ({ size = 40 }) => {
   const getFontSizeAvatar = size => {
@@ -7,9 +8,20 @@ const AvatarGeneralDefault = ({ size = 40 }) => {
   };
 
   return (
-    <Box sx={{ position: 'relative', width: size, height: size }}>
+    <Box sx={{ position: 'relative', width: size, height: size, transition: TRANSITION }}>
       <ChatPurpleIcon size={size} />
-      <Typography variant="body1" sx={{ fontSize: getFontSizeAvatar(size), fontWeight: 600, color: '#fff', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+      <Typography
+        variant="body1"
+        sx={{
+          fontSize: getFontSizeAvatar(size),
+          fontWeight: 600,
+          color: '#fff',
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+        }}
+      >
         G
       </Typography>
     </Box>

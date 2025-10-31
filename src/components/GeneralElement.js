@@ -1,19 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Badge, Box, Stack, Typography } from '@mui/material';
 import { alpha, styled, useTheme } from '@mui/material/styles';
-import { useDispatch, useSelector } from 'react-redux';
-import { ClientEvents } from '../constants/events-const';
 import { Play } from 'phosphor-react';
-import { MessageType } from '../constants/commons-const';
+import PropTypes from 'prop-types';
+
+import { ClientEvents } from '../constants/events-const';
+import { MessageType, SidebarType } from '../constants/commons-const';
+import { DEFAULT_PATH } from '../config';
 import { convertMessageSystem } from '../utils/messageSystem';
 import { convertMessageSignal } from '../utils/messageSignal';
 import { getDisplayDate } from '../utils/formatTime';
 import { client } from '../client';
 import AvatarGeneralDefault from './AvatarGeneralDefault';
-import { useNavigate } from 'react-router-dom';
-import { DEFAULT_PATH } from '../config';
-import { onEditMessage, onReplyMessage } from '../redux/slices/messages';
-import { SetIsClosedTopic } from '../redux/slices/topic';
+import { setSidebar } from '../redux/slices/app';
+
+// Constants
+const ATTACHMENT_IMAGE_SIZE = 20;
+const PLAY_ICON_SIZE = 10;
+const PLAY_ICON_STYLE = {
+  position: 'absolute',
+  left: '50%',
+  top: '50%',
+  transform: 'translate(-50%, -50%)',
+};
+
+const CALL_SIGNALS_TO_IGNORE = ['1', '4']; // AudioCallStarted, VideoCallStarted
 
 const StyledGeneralItem = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -30,177 +44,202 @@ const StyledGeneralItem = styled(Box)(({ theme }) => ({
 }));
 
 const GeneralElement = ({ idSelected }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { currentChannel, unreadChannels = [] } = useSelector(state => state.channel);
+  const { unreadChannels = [] } = useSelector(state => state.channel);
+  const { parentChannel } = useSelector(state => state.topic);
   const { user_id } = useSelector(state => state.auth);
-  const users = client.state.users ? Object.values(client.state.users) : [];
 
   const [lastMessage, setLastMessage] = useState('');
   const [lastMessageAt, setLastMessageAt] = useState('');
 
-  const replaceMentionsWithNames = inputValue => {
-    users.forEach(user => {
-      inputValue = inputValue.replaceAll(`@${user.id}`, `@${user.name}`);
-    });
-    return inputValue;
-  };
+  // Memoized values
+  const users = useMemo(() => (client.state.users ? Object.values(client.state.users) : []), [client.state.users]);
 
-  const getLastMessage = message => {
-    if (message) {
-      const date = message.updated_at ? message.updated_at : message.created_at;
-      const sender = message.user;
-      const senderId = sender?.id;
-      const isMe = user_id === senderId;
-      const senderName = isMe ? 'You' : sender?.name || senderId;
-      setLastMessageAt(getDisplayDate(date));
-      if (message.type === MessageType.System) {
-        const messageSystem = convertMessageSystem(message.text, users, false);
-        setLastMessage(`${senderName}: ${messageSystem}`);
-      } else if (message.type === MessageType.Signal) {
-        const messageSignal = convertMessageSignal(message.text);
-        setLastMessage(messageSignal.text || '');
-      } else if (message.type === MessageType.Sticker) {
-        setLastMessage(`${senderName}: Sticker`);
-      } else {
-        if (message.attachments) {
+  const hasUnread = useMemo(
+    () => unreadChannels?.some(item => item.id === parentChannel?.id && item.unreadCount > 0),
+    [unreadChannels, parentChannel?.id],
+  );
+
+  const isSelected = useMemo(() => idSelected === parentChannel?.id, [idSelected, parentChannel?.id]);
+
+  // Memoized helper functions
+  const replaceMentionsWithNames = useCallback(
+    inputValue => {
+      let result = inputValue;
+      users.forEach(user => {
+        result = result.replaceAll(`@${user.id}`, `@${user.name}`);
+      });
+      return result;
+    },
+    [users],
+  );
+
+  const renderAttachmentPreview = useCallback((attachment, senderName) => {
+    const isImage = attachment.type === 'image';
+    const isVideo = attachment.type === 'video';
+    const isLinkPreview = attachment.type === 'linkPreview';
+
+    if (isImage) {
+      return (
+        <>
+          {`${senderName}:`}
+          <img
+            src={attachment.image_url}
+            alt={attachment.title || 'image'}
+            style={{
+              width: ATTACHMENT_IMAGE_SIZE,
+              height: ATTACHMENT_IMAGE_SIZE,
+              borderRadius: '5px',
+              display: 'inline-block',
+              verticalAlign: 'top',
+              margin: '0px 4px',
+            }}
+          />
+          {attachment.title || 'Photo'}
+        </>
+      );
+    }
+
+    if (isVideo) {
+      return (
+        <>
+          {`${senderName}:`}
+          <span style={{ position: 'relative', display: 'inline-block', margin: '0px 4px' }}>
+            <img
+              src={attachment.thumb_url}
+              alt={attachment.title || 'video'}
+              style={{
+                width: ATTACHMENT_IMAGE_SIZE,
+                height: ATTACHMENT_IMAGE_SIZE,
+                borderRadius: '5px',
+                display: 'inline-block',
+                verticalAlign: 'top',
+              }}
+            />
+            <Play size={PLAY_ICON_SIZE} color="#fff" weight="fill" style={PLAY_ICON_STYLE} />
+          </span>
+          {attachment.title || 'Video'}
+        </>
+      );
+    }
+
+    return `${senderName}: ${isLinkPreview ? attachment.link_url : attachment.title}`;
+  }, []);
+
+  const getLastMessage = useCallback(
+    message => {
+      if (message) {
+        const date = message.updated_at || message.created_at;
+        const sender = message.user;
+        const senderId = sender?.id;
+        const isMe = user_id === senderId;
+        const senderName = isMe ? t('you') : sender?.name || senderId;
+
+        setLastMessageAt(getDisplayDate(date));
+
+        if (message.type === MessageType.System) {
+          const messageSystem = convertMessageSystem(message.text, users, false, false, t);
+          setLastMessage(`${senderName}: ${messageSystem}`);
+        } else if (message.type === MessageType.Signal) {
+          const messageSignal = convertMessageSignal(message.text, t);
+          setLastMessage(messageSignal.text || '');
+        } else if (message.type === MessageType.Sticker) {
+          setLastMessage(`${senderName}: ${t('chatElement.sticker')}`);
+        } else if (message.attachments) {
           const attachmentLast = message.attachments[message.attachments.length - 1];
-
-          const isLinkPreview = attachmentLast.type === 'linkPreview';
-          const isImage = attachmentLast.type === 'image';
-          const isVideo = attachmentLast.type === 'video';
-
-          if (isImage) {
-            setLastMessage(
-              <>
-                {`${senderName}:`}
-                <img
-                  src={attachmentLast.image_url}
-                  alt={attachmentLast.title || 'image'}
-                  style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: '5px',
-                    display: 'inline-block',
-                    verticalAlign: 'top',
-                    margin: '0px 4px',
-                  }}
-                />
-                {attachmentLast.title || 'Photo'}
-              </>,
-            );
-          } else if (isVideo) {
-            setLastMessage(
-              <>
-                {`${senderName}:`}
-                <span style={{ position: 'relative', display: 'inline-block', margin: '0px 4px' }}>
-                  <img
-                    src={attachmentLast.thumb_url}
-                    alt={attachmentLast.title || 'video'}
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: '5px',
-                      display: 'inline-block',
-                      verticalAlign: 'top',
-                    }}
-                  />
-                  <Play
-                    size={10}
-                    color="#fff"
-                    weight="fill"
-                    style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
-                  />
-                </span>
-                {attachmentLast.title || 'Video'}
-              </>,
-            );
-          } else {
-            setLastMessage(`${senderName}: ${isLinkPreview ? attachmentLast.link_url : attachmentLast.title}`);
-          }
+          setLastMessage(renderAttachmentPreview(attachmentLast, senderName));
         } else {
           const messagePreview = replaceMentionsWithNames(message.text);
           setLastMessage(`${senderName}: ${messagePreview}`);
         }
+      } else {
+        setLastMessageAt(getDisplayDate(parentChannel?.data?.created_at));
+        setLastMessage(t('chatElement.no_message'));
       }
-    } else {
-      setLastMessageAt(getDisplayDate(currentChannel?.data?.created_at));
-      setLastMessage('No messages here yet');
-    }
-  };
+    },
+    [user_id, users, t, parentChannel?.data?.created_at, renderAttachmentPreview, replaceMentionsWithNames],
+  );
 
-  useEffect(() => {
-    const lastMsg =
-      currentChannel.state.messages.length > 0
-        ? currentChannel.state.messages[currentChannel.state.messages.length - 1]
-        : null;
-    getLastMessage(lastMsg);
-
-    const handleMessageNew = event => {
-      if (event.channel_id === currentChannel.data.id) {
-        if (!(event.message.type === MessageType.Signal && ['1', '4'].includes(event.message.text[0]))) {
-          // không cần hiển thị last message với AudioCallStarted (1) hoặc VideoCallStarted (4) khi có cuộc gọi
+  // Memoized event handlers
+  const handleMessageNew = useCallback(
+    event => {
+      if (event.channel_id === parentChannel?.data?.id) {
+        if (!(event.message.type === MessageType.Signal && CALL_SIGNALS_TO_IGNORE.includes(event.message.text[0]))) {
           getLastMessage(event.message);
         }
       }
-    };
+    },
+    [parentChannel?.data?.id, getLastMessage],
+  );
 
-    const handleMessageUpdated = event => {
-      if (event.channel_id === currentChannel.data.id) {
+  const handleMessageUpdated = useCallback(
+    event => {
+      if (event.channel_id === parentChannel?.data?.id) {
         const lastMsg =
-          currentChannel.state.messages.length > 0
-            ? currentChannel.state.messages[currentChannel.state.messages.length - 1]
+          parentChannel?.state?.messages?.length > 0
+            ? parentChannel.state.messages[parentChannel.state.messages.length - 1]
             : null;
         getLastMessage(lastMsg);
       }
-    };
+    },
+    [parentChannel?.data?.id, parentChannel?.state?.messages, getLastMessage],
+  );
 
-    const handleMessageDeleted = event => {
-      if (event.channel_id === currentChannel.data.id) {
+  const handleMessageDeleted = useCallback(
+    event => {
+      if (event.channel_id === parentChannel?.data?.id) {
         const lastMsg =
-          currentChannel.state.messages.length > 0
-            ? currentChannel.state.messages[currentChannel.state.messages.length - 1]
+          parentChannel?.state?.messages?.length > 0
+            ? parentChannel.state.messages[parentChannel.state.messages.length - 1]
             : null;
         getLastMessage(lastMsg);
       }
-    };
+    },
+    [parentChannel?.data?.id, parentChannel?.state?.messages, getLastMessage],
+  );
+
+  const onLeftClick = useCallback(() => {
+    navigate(`${DEFAULT_PATH}/${parentChannel?.cid}`);
+    dispatch(setSidebar({ type: SidebarType.Channel, open: false }));
+  }, [navigate, parentChannel?.cid]);
+
+  useEffect(() => {
+    const lastMsg =
+      parentChannel?.state?.messages?.length > 0
+        ? parentChannel.state.messages[parentChannel.state.messages.length - 1]
+        : null;
+    getLastMessage(lastMsg);
 
     client.on(ClientEvents.MessageNew, handleMessageNew);
     client.on(ClientEvents.MessageUpdated, handleMessageUpdated);
     client.on(ClientEvents.MessageDeleted, handleMessageDeleted);
+
     return () => {
       client.off(ClientEvents.MessageNew, handleMessageNew);
       client.off(ClientEvents.MessageUpdated, handleMessageUpdated);
       client.off(ClientEvents.MessageDeleted, handleMessageDeleted);
     };
-  }, [currentChannel, user_id, users.length]);
+  }, [parentChannel, getLastMessage, handleMessageNew, handleMessageUpdated, handleMessageDeleted]);
 
-  const onLeftClick = () => {
-    navigate(`${DEFAULT_PATH}/${currentChannel?.cid}`);
-    dispatch(onReplyMessage(null));
-    dispatch(onEditMessage(null));
-    dispatch(SetIsClosedTopic(false));
-  };
-
-  const hasUnread =
-    unreadChannels && unreadChannels.some(item => item.id === currentChannel.id && item.unreadCount > 0);
+  // Memoized styles
+  const containerStyle = useMemo(
+    () => ({
+      backgroundColor: isSelected ? `${alpha(theme.palette.primary.main, 0.1)} !important` : 'transparent',
+    }),
+    [isSelected, theme.palette.primary.main],
+  );
 
   return (
-    <StyledGeneralItem
-      onClick={onLeftClick}
-      sx={{
-        backgroundColor:
-          idSelected === currentChannel.id ? `${alpha(theme.palette.primary.main, 0.1)} !important` : 'transparent',
-      }}
-      gap={1}
-    >
-      {/* -------------------------------avatar------------------------------- */}
+    <StyledGeneralItem onClick={onLeftClick} sx={containerStyle} gap={1}>
+      {/* Avatar */}
       <AvatarGeneralDefault />
 
-      {/* -------------------------------content------------------------------- */}
+      {/* Content */}
       <Box sx={{ flex: 1, minWidth: 'auto', overflow: 'hidden' }}>
-        {/* -------------------------------name------------------------------- */}
+        {/* Name and timestamp */}
         <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
           <Typography
             variant="subtitle2"
@@ -213,26 +252,21 @@ const GeneralElement = ({ idSelected }) => {
               fontSize: '14px',
             }}
           >
-            General
+            {t('chat_element.general')}
           </Typography>
 
-          <Stack direction="row" alignItems="center" justifyContent="flex-end" gap={1}>
-            <Typography
-              sx={{
-                color: theme.palette.text.secondary,
-                minWidth: 'auto',
-                flex: 1,
-                overflow: 'hidden',
-                fontSize: '10px',
-              }}
-              variant="caption"
-            >
-              {lastMessageAt}
-            </Typography>
-          </Stack>
+          <Typography
+            sx={{
+              color: theme.palette.text.secondary,
+              fontSize: '10px',
+            }}
+            variant="caption"
+          >
+            {lastMessageAt}
+          </Typography>
         </Stack>
 
-        {/* -------------------------------last message------------------------------- */}
+        {/* Last message and badge */}
         <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
           <Typography
             variant="caption"
@@ -251,11 +285,16 @@ const GeneralElement = ({ idSelected }) => {
             {lastMessage}
           </Typography>
 
-          {hasUnread ? <Badge variant="dot" color="error" sx={{ margin: '0 10px 0 15px' }} /> : null}
+          {hasUnread && <Badge variant="dot" color="error" sx={{ margin: '0 10px 0 15px' }} />}
         </Stack>
       </Box>
     </StyledGeneralItem>
   );
+};
+
+// PropTypes validation
+GeneralElement.propTypes = {
+  idSelected: PropTypes.string,
 };
 
 export default GeneralElement;

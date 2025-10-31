@@ -21,6 +21,7 @@ import { SetPinnedMessages } from '../redux/slices/channel';
 import { ClientEvents } from '../constants/events-const';
 import { MessageType } from '../constants/commons-const';
 import { ChatJumpIcon } from './Icons';
+import { useTranslation } from 'react-i18next';
 
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? '#fff' : theme.palette.background.paper,
@@ -47,7 +48,7 @@ const MessageBox = ({ message, setIsOpen, showActions, messageCount }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const { mentions } = useSelector(state => state.channel);
-
+  const { t } = useTranslation();
   const sender = message.user;
   const senderName = sender ? sender?.name : formatString(message.user.id);
 
@@ -118,7 +119,7 @@ const MessageBox = ({ message, setIsOpen, showActions, messageCount }) => {
             maxWidth: '100%',
           }}
         >
-          From <strong>{senderName}</strong>
+          {t('from')} <strong>{senderName}</strong>
         </Typography>
       </Box>
 

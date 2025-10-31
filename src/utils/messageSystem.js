@@ -1,9 +1,8 @@
 import { LocalStorageKey } from '../constants/localStorage-const';
 import { formatString, getMemberInfo } from './commons';
 
-export function convertMessageSystem(input, all_members, isDirect, isNotify = false) {
+export function convertMessageSystem(input, all_members, isDirect, isNotify = false, t) {
   if (!input) return '';
-
   const parts = input.split(' ');
   const number = parseInt(parts[0]);
   const userId = parts[1];
@@ -11,7 +10,7 @@ export function convertMessageSystem(input, all_members, isDirect, isNotify = fa
   const isMe = myUserId === userId;
   const memberInfo = getMemberInfo(userId, all_members);
   const userName = memberInfo ? memberInfo.name : formatString(userId);
-  const name = isMe ? 'You' : userName;
+  const name = isMe ? t('messageSystem.You') : userName;
 
   let channelName = '';
   let duration = '';
@@ -21,7 +20,7 @@ export function convertMessageSystem(input, all_members, isDirect, isNotify = fa
   }
 
   if (number === 14) {
-    channelType = parts[2] === 'true' ? 'public' : 'private';
+    channelType = parts[2] === 'true' ? t('messageSystem.public') : t('messageSystem.private');
   }
 
   if (number === 15) {
@@ -33,111 +32,111 @@ export function convertMessageSystem(input, all_members, isDirect, isNotify = fa
   switch (number) {
     case 1: // UpdateName
       if (isNotify) {
-        message = `${name} has changed the channel name`;
+        message = `${name} ${t('messageSystem.channel_update_name')}`;
       } else {
-        message = `${name} changed the channel name to ${formatString(channelName, 20, 20)}`;
+        message = `${name} ${t('messageSystem.channel_update_name_to')} ${formatString(channelName, 20, 20)}`;
       }
       break;
     case 2: // UpdateImageDesc
-      message = `${name} has changed the channel avatar`;
+      message = `${name} ${t('messageSystem.channel_update_avatar')}`;
       break;
     case 3: // UpdateDescription
-      message = `${name} has changed the channel description`;
+      message = `${name} ${t('messageSystem.channel_update_description')}`;
       break;
     case 4: // MemberRemoved
       if (isNotify) {
-        message = `${name} have been removed`;
+        message = `${name} ${t('messageSystem.member_removed')}`;
       } else {
-        message = `${name} has been removed from this channel`;
+        message = `${name} ${t('messageSystem.member_removed_from_channel')}`;
       }
       break;
     case 5: // MemberBanned
       if (isNotify) {
-        message = `${name} have been banned from interacting`;
+        message = `${name} ${t('messageSystem.member_banned')}`;
       } else {
-        message = `${name} has been banned from interacting in this channel by Channel Admin`;
+        message = `${name} ${t('messageSystem.member_banned_by_admin')}`;
       }
       break;
     case 6: // MemberUnbanned
       if (isNotify) {
-        message = `${name} have been unbanned`;
+        message = `${name} ${t('messageSystem.member_unbanned')}`;
       } else {
-        message = `${name} have been unbanned and now can interact in this channel`;
+        message = `${name} ${t('messageSystem.member_unbanned_channel')}`;
       }
       break;
     case 7: // MemberPromoted
       if (isNotify) {
-        message = `${name} have been assigned as the moderator`;
+        message = `${name} ${t('messageSystem.member_promoted')}`;
       } else {
-        message = `${name} has been assigned as the moderator for this channel`;
+        message = `${name} h${t('messageSystem.member_promoted_channel')}`;
       }
       break;
     case 8: // MemberDemoted
       if (isNotify) {
-        message = `${name} have been removed as the moderator`;
+        message = `${name} ${t('messageSystem.member_demoted')}`;
       } else {
-        message = `${name} has been removed as the moderator from this channel`;
+        message = `${name} ${t('messageSystem.member_demoted_channel')}`;
       }
       break;
     case 9: // UpdateChannelMemberCapabilities
-      message = `${name} has updated member permission of channel`;
+      message = `${name} ${t('messageSystem.channel_update_member_capabilities')}`;
       break;
     case 10: // InviteAccepted
       if (isNotify) {
-        message = `${name} joined ${isDirect ? 'conversation' : 'channel'}`;
+        message = `${name} ${t('messageSystem.member_joined')} ${isDirect ? t('messageSystem.conversation') : t('messageSystem.channel')}`;
       } else {
-        message = `${name} joined this ${isDirect ? 'conversation' : 'channel'}`;
+        message = `${name} ${t('messageSystem.joined_channel')} ${isDirect ? t('messageSystem.conversation') : t('messageSystem.channel')}`;
       }
       break;
     case 11: // InviteRejected
       if (isNotify) {
-        message = `${name} has declined to join channel`;
+        message = `${name} ${t('messageSystem.invite_rejected')}`;
       } else {
-        message = `${name} has declined to join this channel`;
+        message = `${name} ${t('messageSystem.invite_rejected_channel')}`;
       }
       break;
     case 12: // MemberLeave
       if (isNotify) {
-        message = `${name} has leaved channel`;
+        message = `${name} ${t('messageSystem.member_leaved')}`;
       } else {
-        message = `${name} has leaved this channel`;
+        message = `${name} ${t('messageSystem.member_leaved_channel')}`;
       }
       break;
     case 13: // TruncateMessages
       if (isNotify) {
-        message = `${name} has truncate all messages`;
+        message = `${name} ${t('messageSystem.channel_truncate_messages')}`;
       } else {
-        message = `${name} has truncate all messages of this channel`;
+        message = `${name} ${t('messageSystem.channel_truncate_messages_all')}`;
       }
       break;
     case 14: // UpdatePublic
       if (isNotify) {
-        message = `${name} has made channel ${channelType}`;
+        message = `${name} ${t('messageSystem.channel_update_public')} ${channelType}`;
       } else {
-        message = `${name} has made this channel ${channelType}`;
+        message = `${name} ${t('messageSystem.channel_update_public_this')} ${channelType}`;
       }
       break;
     case 15: // UpdateMemberMessageCooldown
       message =
         duration === '0'
-          ? `Cooldown has been disabled`
-          : `Cooldown feature enabled by Channel Admin. Cooldown duration set to ${convertDuration(duration)}`;
+          ? `${t('messageSystem.channel_update_cooldown_disabled')}`
+          : `${t('messageSystem.channel_update_cooldown_enabled')} ${convertDuration(duration, t)}`;
       break;
     case 16: // UpdateFilterWords
-      message = `${name} has update channel filter words`;
+      message = `${name} ${t('messageSystem.channel_update_filter_words')}`;
       break;
     case 17: // MemberJoined
       if (isNotify) {
-        message = `${name} has joined to channel`;
+        message = `${name} ${t('messageSystem.member_joined_channel')}`;
       } else {
-        message = `${name} has joined to this channel`;
+        message = `${name} ${t('messageSystem.member_joined_this_channel')}`;
       }
       break;
     case 19: // PinnedMessage
-      message = `${name} pinned a message`;
+      message = `${name} ${t('messageSystem.message_pinned')}`;
       break;
     case 20: // UnPinnedMessage
-      message = `${name} unpinned a message`;
+      message = `${name} ${t('messageSystem.message_unpinned')}`;
       break;
     default:
       message = input;
@@ -146,26 +145,26 @@ export function convertMessageSystem(input, all_members, isDirect, isNotify = fa
   return message;
 }
 
-export function convertDuration(duration) {
+export function convertDuration(duration, t) {
   let durationText;
   switch (duration) {
     case '10000':
-      durationText = '10 seconds';
+      durationText = `10 ${t('messageSystem.seconds')}`;
       break;
     case '30000':
-      durationText = '30 seconds';
+      durationText = `30 ${t('messageSystem.seconds')}`;
       break;
     case '60000':
-      durationText = '1 minutes';
+      durationText = `1 ${t('messageSystem.minutes')}`;
       break;
     case '300000':
-      durationText = '5 minutes';
+      durationText = `5 ${t('messageSystem.minutes')}`;
       break;
     case '900000':
-      durationText = '15 minutes';
+      durationText = `15 ${t('messageSystem.minutes')}`;
       break;
     case '3600000':
-      durationText = '60 minutes';
+      durationText = `60 ${t('messageSystem.minutes')}`;
       break;
     default:
       durationText = '';
@@ -175,9 +174,8 @@ export function convertDuration(duration) {
   return durationText;
 }
 
-export function renderSystemMessage(input, all_members, isDirect, messages = []) {
+export function renderSystemMessage(input, all_members, isDirect, messages = [], t) {
   if (!input) return '';
-
   const parts = input.split(' ');
   const number = parseInt(parts[0]);
   const userId = parts[1];
@@ -185,7 +183,7 @@ export function renderSystemMessage(input, all_members, isDirect, messages = [])
   const isMe = myUserId === userId;
   const memberInfo = getMemberInfo(userId, all_members);
   const userName = memberInfo ? memberInfo.name : formatString(userId);
-  const name = isMe ? 'You' : userName;
+  const name = isMe ? t('messageSystem.You') : userName;
 
   let channelName = '';
   let duration = '';
@@ -196,7 +194,7 @@ export function renderSystemMessage(input, all_members, isDirect, messages = [])
   }
 
   if (number === 14) {
-    channelType = parts[2] === 'true' ? 'public' : 'private';
+    channelType = parts[2] === 'true' ? t('messageSystem.public') : t('messageSystem.private');
   }
 
   if (number === 15) {
@@ -213,64 +211,64 @@ export function renderSystemMessage(input, all_members, isDirect, messages = [])
   let message;
   switch (number) {
     case 1: // UpdateName
-      message = `<strong>${name}</strong> changed the channel name to <strong>${formatString(channelName, 20, 20)}</strong>`;
+      message = `<strong>${name}</strong> ${t('messageSystem.channel_update_name_to')} <strong>${formatString(channelName, 20, 20)}</strong>`;
       break;
     case 2: // UpdateImageDesc
-      message = `<strong>${name}</strong> has changed the channel avatar`;
+      message = `<strong>${name}</strong> ${t('messageSystem.channel_update_avatar')}`;
       break;
     case 3: // UpdateDescription
-      message = `<strong>${name}</strong> has changed the channel description`;
+      message = `<strong>${name}</strong> ${t('messageSystem.channel_update_description')}`;
       break;
     case 4: // MemberRemoved
-      message = `<strong>${name}</strong> has been removed from this channel`;
+      message = `<strong>${name}</strong> ${t('messageSystem.member_removed_from_channel')}`;
       break;
     case 5: // MemberBanned
-      message = `<strong>${name}</strong> has been banned from interacting in this channel by Channel Admin`;
+      message = `<strong>${name}</strong> ${t('messageSystem.member_banned_by_admin')}`;
       break;
     case 6: // MemberUnbanned
-      message = `<strong>${name}</strong> have been unbanned and now can interact in this channel`;
+      message = `<strong>${name}</strong> ${t('messageSystem.member_unbanned_channel')}`;
       break;
     case 7: // MemberPromoted
-      message = `<strong>${name}</strong> has been assigned as the moderator for this channel`;
+      message = `<strong>${name}</strong> ${t('messageSystem.member_promoted_channel')}`;
       break;
     case 8: // MemberDemoted
-      message = `<strong>${name}</strong> has been removed as the moderator from this channel`;
+      message = `<strong>${name}</strong> ${t('messageSystem.member_demoted_channel')}`;
       break;
     case 9: // UpdateChannelMemberCapabilities
-      message = `<strong>${name}</strong> has updated member permission of channel`;
+      message = `<strong>${name}</strong> ${t('messageSystem.channel_update_member_capabilities')}`;
       break;
     case 10: // InviteAccepted
-      message = `<strong>${name}</strong> joined this ${isDirect ? 'conversation' : 'channel'}`;
+      message = `<strong>${name}</strong> ${t('messageSystem.joined_channel')} ${isDirect ? t('messageSystem.conversation') : t('messageSystem.channel')}`;
       break;
     case 11: // InviteRejected
-      message = `<strong>${name}</strong> has declined to join this channel`;
+      message = `<strong>${name}</strong> ${t('messageSystem.invite_rejected_channel')}`;
       break;
     case 12: // MemberLeave
-      message = `<strong>${name}</strong> has leaved this channel`;
+      message = `<strong>${name}</strong> ${t('messageSystem.member_leaved_channel')}`;
       break;
     case 13: // TruncateMessages
-      message = `<strong>${name}</strong> has truncate all messages of this channel`;
+      message = `<strong>${name}</strong> ${t('messageSystem.channel_truncate_messages_all')}`;
       break;
     case 14: // UpdatePublic
-      message = `<strong>${name}</strong> has made this channel <strong>${channelType}</strong>`;
+      message = `<strong>${name}</strong> ${t('messageSystem.channel_update_public_this')} <strong>${channelType}</strong>`;
       break;
     case 15: // UpdateMemberMessageCooldown
       message =
         duration === '0'
-          ? `Cooldown has been disabled`
-          : `Cooldown feature enabled by Channel Admin. Cooldown duration set to <strong>${convertDuration(duration)}</strong>`;
+          ? `${t('messageSystem.channel_update_cooldown_disabled')}`
+          : `${t('messageSystem.channel_update_cooldown_enabled')} <strong>${convertDuration(duration, t)}</strong>`;
       break;
     case 16: // UpdateFilterWords
-      message = `<strong>${name}</strong> has update channel filter words`;
+      message = `<strong>${name}</strong> ${t('messageSystem.channel_update_filter_words')}`;
       break;
     case 17: // MemberJoined
-      message = `<strong>${name}</strong> has joined to this channel`;
+      message = `<strong>${name}</strong> ${t('messageSystem.member_joined_this_channel')}`;
       break;
     case 19: // PinnedMessage
-      message = `<strong>${name}</strong> pinned a message ${msgPreview ? `<strong>${formatString(msgPreview, 20, 10)}</strong>` : ''}`;
+      message = `<strong>${name}</strong> ${t('messageSystem.message_pinned')} ${msgPreview ? `<strong>${formatString(msgPreview, 20, 10)}</strong>` : ''}`;
       break;
     case 20: // UnPinnedMessage
-      message = `<strong>${name}</strong> unpinned a message ${msgPreview ? `<strong>${formatString(msgPreview, 20, 10)}</strong>` : ''}`;
+      message = `<strong>${name}</strong> ${t('messageSystem.message_unpinned')} ${msgPreview ? `<strong>${formatString(msgPreview, 20, 10)}</strong>` : ''}`;
       break;
     default:
       message = input;

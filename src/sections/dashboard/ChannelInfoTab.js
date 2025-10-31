@@ -11,6 +11,7 @@ import NoFile from '../../assets/Illustration/NoFile';
 import LinkElement from '../../components/LinkElement';
 import { SetUserInfo, UpdateSidebarType } from '../../redux/slices/app';
 import ImageCanvas from '../../components/ImageCanvas';
+import { useTranslation } from 'react-i18next';
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   minHeight: 'auto',
@@ -51,6 +52,7 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
 }));
 
 const TabMembers = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { currentChannel } = useSelector(state => state.channel);
   const members = Object.values(currentChannel?.state?.members || {}) || [];
@@ -174,10 +176,11 @@ const TabFiles = ({ files }) => {
 };
 
 const ChannelInfoTab = ({ currentChat }) => {
+  const { t } = useTranslation();
   const [listTab, setListTab] = useState([
-    { label: 'Media', value: TabValueChannelInfo.Media },
-    { label: 'Links', value: TabValueChannelInfo.Links },
-    { label: 'Files', value: TabValueChannelInfo.Files },
+    { label: t('channelInfoTab.media'), value: TabValueChannelInfo.Media },
+    { label: t('channelInfoTab.links'), value: TabValueChannelInfo.Links },
+    { label: t('channelInfoTab.files'), value: TabValueChannelInfo.Files },
   ]);
   const [tabSeledected, setTabSelected] = useState(TabValueChannelInfo.Media);
   const [medias, setMedias] = useState([]);
@@ -186,9 +189,18 @@ const ChannelInfoTab = ({ currentChat }) => {
 
   useEffect(() => {
     if (currentChat.type === ChatType.TEAM) {
-      setListTab(prev => [{ label: 'Members', value: TabValueChannelInfo.Members }, ...prev]);
+      setListTab(prev => [{ label: t('channelInfoTab.members'), value: TabValueChannelInfo.Members }, ...prev]);
       setTabSelected(TabValueChannelInfo.Members);
     }
+
+    return () => {
+      setListTab([
+        { label: t('channelInfoTab.media'), value: TabValueChannelInfo.Media },
+        { label: t('channelInfoTab.links'), value: TabValueChannelInfo.Links },
+        { label: t('channelInfoTab.files'), value: TabValueChannelInfo.Files },
+      ]);
+      setTabSelected(TabValueChannelInfo.Media);
+    };
   }, [currentChat]);
 
   useEffect(() => {
@@ -202,6 +214,7 @@ const ChannelInfoTab = ({ currentChat }) => {
           setMedias(
             attachments
               .filter(attachment => ['image', 'video'].includes(attachment.attachment_type))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
               .map(item => {
                 const isVideo = item.content_type.startsWith('video/');
 

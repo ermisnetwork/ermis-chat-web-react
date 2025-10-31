@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Stack, Typography, Tabs, Tab, Chip, Button } from '@mui/material';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import ChatElement from '../../components/ChatElement';
@@ -8,8 +8,9 @@ import HomeSearch from '../../components/Search/HomeSearch';
 import SkeletonChannels from '../../components/SkeletonChannels';
 import FlipMove from 'react-flip-move';
 import NoResult from '../../assets/Illustration/NoResult';
-import { MagnifyingGlass } from 'phosphor-react';
 import { SetOpenHomeSearch } from '../../redux/slices/app';
+import { useTranslation } from 'react-i18next';
+import { TRANSITION } from '../../config';
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   minHeight: 'auto',
@@ -57,6 +58,7 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
 }));
 
 const Channels = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const theme = useTheme();
   const { activeChannels, loadingChannels, pinnedChannels, unreadChannels, currentChannel } = useSelector(
@@ -64,65 +66,69 @@ const Channels = () => {
   );
   const { openHomeSearch } = useSelector(state => state.app);
   const { openTopicPanel } = useSelector(state => state.topic);
-  const [listTab, setListTab] = useState([
-    { label: 'All', value: TabValueChannel.All, count: 0 },
-    { label: 'Group', value: TabValueChannel.Group, count: 0 },
-    { label: 'Unread', value: TabValueChannel.Unread, count: 0 },
-  ]);
-  const [tabSeledected, setTabSelected] = useState(TabValueChannel.All);
-  const isEnabledTopics = currentChannel?.data?.topics_enabled && openTopicPanel;
 
-  useEffect(() => {
-    setListTab([
-      { label: 'All', value: TabValueChannel.All, count: 0 },
+  const [tabSeledected, setTabSelected] = useState(TabValueChannel.All);
+
+  const listTab = useMemo(
+    () => [
+      { label: t('channelList.all'), value: TabValueChannel.All, count: 0 },
       {
-        label: 'Group',
+        label: t('channelList.group'),
         value: TabValueChannel.Group,
         count: unreadChannels?.filter(c => c.type === ChatType.TEAM)?.length || 0,
       },
       {
-        label: 'Unread',
+        label: t('channelList.unread'),
         value: TabValueChannel.Unread,
         count: unreadChannels?.length || 0,
       },
-    ]);
-  }, [unreadChannels]);
+    ],
+    [unreadChannels, t],
+  );
 
-  const renderedChannels = useMemo(() => {
-    let displayChannels = [];
-    let displayPinnedChannels = [];
+  const isEnabledTopics = useMemo(() => {
+    return currentChannel?.data?.topics_enabled && openTopicPanel;
+  }, [currentChannel?.data?.topics_enabled, openTopicPanel]);
 
+  const filteredPinnedChannels = useMemo(() => {
     switch (tabSeledected) {
       case TabValueChannel.All:
-        displayPinnedChannels = pinnedChannels || [];
-        displayChannels = activeChannels || [];
-        break;
+        return pinnedChannels || [];
       case TabValueChannel.Group:
-        displayPinnedChannels = (pinnedChannels || []).filter(c => c.type === ChatType.TEAM);
-        displayChannels = (activeChannels || []).filter(c => c.type === ChatType.TEAM);
-        break;
+        return (pinnedChannels || []).filter(c => c.type === ChatType.TEAM);
       case TabValueChannel.Unread:
-        displayPinnedChannels = (pinnedChannels || []).filter(c => {
+        return (pinnedChannels || []).filter(c => {
           return unreadChannels.some(item => item.id === c.id);
         });
-        displayChannels = (activeChannels || []).filter(c => {
-          return unreadChannels.some(item => item.id === c.id);
-        });
-        break;
       default:
-        displayPinnedChannels = [];
-        displayChannels = [];
-        break;
+        return [];
     }
+  }, [pinnedChannels, tabSeledected, unreadChannels]);
 
+  const filteredActiveChannels = useMemo(() => {
+    switch (tabSeledected) {
+      case TabValueChannel.All:
+        return activeChannels || [];
+      case TabValueChannel.Group:
+        return (activeChannels || []).filter(c => c.type === ChatType.TEAM);
+      case TabValueChannel.Unread:
+        return (activeChannels || []).filter(c => {
+          return unreadChannels.some(item => item.id === c.id);
+        });
+      default:
+        return [];
+    }
+  }, [activeChannels, tabSeledected, unreadChannels]);
+
+  const renderedChannels = useMemo(() => {
     if (loadingChannels) {
       return <SkeletonChannels />;
     } else {
       return (
         <>
-          {displayPinnedChannels.length > 0 && (
+          {filteredPinnedChannels.length > 0 && (
             <FlipMove style={{ marginBottom: '6px' }} duration={200}>
-              {displayPinnedChannels.map(item => (
+              {filteredPinnedChannels.map(item => (
                 <div className="channelItem" key={`pinned-${item.id}`}>
                   <ChatElement channel={item} />
                 </div>
@@ -130,9 +136,9 @@ const Channels = () => {
             </FlipMove>
           )}
 
-          {displayChannels.length > 0 && (
+          {filteredActiveChannels.length > 0 && (
             <FlipMove duration={200}>
-              {displayChannels.map(item => {
+              {filteredActiveChannels.map(item => {
                 return (
                   <div className="channelItem" key={`channel-${item.id}`}>
                     <ChatElement channel={item} />
@@ -142,7 +148,7 @@ const Channels = () => {
             </FlipMove>
           )}
 
-          {displayChannels.length === 0 && displayPinnedChannels.length === 0 && (
+          {filteredActiveChannels.length === 0 && filteredPinnedChannels.length === 0 && (
             <Stack
               key="no-channels"
               sx={{ width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '50px!important' }}
@@ -157,46 +163,36 @@ const Channels = () => {
                   marginTop: '15px',
                 }}
               >
-                No channels
+                {t('channelList.no_channel')}
               </Typography>
             </Stack>
           )}
         </>
       );
     }
-  }, [activeChannels, pinnedChannels, loadingChannels, unreadChannels, tabSeledected, theme, isEnabledTopics]);
+  }, [filteredPinnedChannels, filteredActiveChannels, loadingChannels, theme, isEnabledTopics, t]);
 
-  const onToggleHomeSearch = () => {
+  const onToggleHomeSearch = useCallback(() => {
     dispatch(SetOpenHomeSearch(!openHomeSearch));
-  };
+  }, [dispatch, openHomeSearch]);
+
+  const handleTabChange = useCallback((event, newValue) => {
+    setTabSelected(newValue);
+  }, []);
 
   return (
     <Stack spacing={2} sx={{ height: '100%', width: '100%', padding: '15px' }}>
       <Stack spacing={2}>
-        {isEnabledTopics ? (
-          <Button
-            size="large"
-            variant="contained"
-            color="inherit"
-            sx={{ borderRadius: '16px', backgroundColor: theme.palette.background.neutral, boxShadow: 'none' }}
-            onClick={onToggleHomeSearch}
-          >
-            <MagnifyingGlass size={22} color={theme.palette.text.primary} />
-          </Button>
-        ) : (
-          <HomeSearch />
-        )}
+        <HomeSearch />
 
         <StyledTabs
           value={tabSeledected}
-          onChange={(event, newValue) => {
-            setTabSelected(newValue);
-          }}
-          variant="scrollable"
+          onChange={handleTabChange}
+          variant="standard"
           sx={{
-            transition: 'all 0.2s ease',
-            marginLeft: isEnabledTopics ? '-15px !important' : '0px',
-            marginRight: isEnabledTopics ? '-15px !important' : '0px',
+            transition: TRANSITION,
+            opacity: openTopicPanel ? 0.5 : 1,
+            pointerEvents: openTopicPanel ? 'none' : 'auto',
           }}
         >
           {listTab.map((item, index) => {
@@ -217,7 +213,7 @@ const Channels = () => {
       </Stack>
 
       <Stack
-        className="customScrollbar"
+        className={`customScrollbar ${openTopicPanel ? 'noScrollBar' : ''}`}
         sx={{
           overflowY: 'auto',
           overflowX: 'hidden',

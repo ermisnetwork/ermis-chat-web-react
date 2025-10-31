@@ -12,12 +12,14 @@ import { showSnackbar } from '../../redux/slices/app';
 import { useNavigate } from 'react-router-dom';
 import { PATH_DASHBOARD } from '../../routes/paths';
 import { processImageFile } from '../../utils/commons';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
 const ProfileForm = ({ onCloseDialog, openDialogProfile }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
@@ -51,7 +53,7 @@ const ProfileForm = ({ onCloseDialog, openDialogProfile }) => {
           name: data?.name ? data?.name : user_id,
           about_me: data?.about_me || '',
           avatar: file,
-        }),
+        },t),
       );
     } catch (error) {
       console.error(error);
@@ -64,7 +66,7 @@ const ProfileForm = ({ onCloseDialog, openDialogProfile }) => {
       const isImage = file.type.startsWith('image/');
 
       if (!isImage) {
-        dispatch(showSnackbar({ severity: 'error', message: 'Please upload an image file!' }));
+        dispatch(showSnackbar({ severity: 'error', message: t('Profile.snackbar_image_error') }));
         setFile(null);
       } else {
         const fileCompress = await processImageFile(file, true);
@@ -88,8 +90,8 @@ const ProfileForm = ({ onCloseDialog, openDialogProfile }) => {
       <Stack spacing={3}>
         <RHFUploadAvatar name="avatar" onDrop={handleDrop} />
 
-        <RHFTextField name="name" label="Name" placeholder={user_id} />
-        <RHFTextField multiline rows={4} name="about_me" label="About me" />
+        <RHFTextField name="name" label={t('Profile.label')} placeholder={user_id} />
+        <RHFTextField multiline rows={4} name="about_me" label={t('Profile.about_me')} />
         <Stack spacing={2} direction={'row'} alignItems="center" justifyContent="space-between">
           <Button
             onClick={() => {
@@ -99,7 +101,7 @@ const ProfileForm = ({ onCloseDialog, openDialogProfile }) => {
             color="inherit"
             variant="contained"
           >
-            Delete account
+            {t('Profile.delete_profile')}
           </Button>
           <Stack spacing={2} direction={'row'} alignItems="center" justifyContent={'end'}>
             <Button
@@ -108,10 +110,10 @@ const ProfileForm = ({ onCloseDialog, openDialogProfile }) => {
                 onCloseDialog();
               }}
             >
-              Cancel
+              {t('Profile.cancel')}
             </Button>
             <LoadingButton type="submit" variant="contained" loading={isLoading}>
-              Save
+              {t('Profile.Save')}
             </LoadingButton>
           </Stack>
         </Stack>
@@ -121,6 +123,7 @@ const ProfileForm = ({ onCloseDialog, openDialogProfile }) => {
 };
 
 const ProfileDialog = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { openDialogProfile } = useSelector(state => state.dialog);
 
@@ -139,7 +142,7 @@ const ProfileDialog = () => {
       aria-describedby="alert-dialog-slide-description"
       sx={{ p: 4 }}
     >
-      <DialogTitle>{'Profile'}</DialogTitle>
+      <DialogTitle>{t('Profile.title')}</DialogTitle>
 
       <DialogContent sx={{ mt: 4 }}>
         <ProfileForm onCloseDialog={onCloseDialog} openDialogProfile={openDialogProfile} />

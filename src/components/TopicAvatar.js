@@ -2,6 +2,7 @@ import { Box, useTheme } from '@mui/material';
 import ImageCanvas from './ImageCanvas';
 import { AvatarShape } from '../constants/commons-const';
 import AvatarDefault from './AvatarDefault';
+import { TRANSITION } from '../config';
 
 const TopicAvatar = ({ url = '', name = '', size = 40, shape = 'circle', openLightbox = false }) => {
   const theme = useTheme();
@@ -32,6 +33,7 @@ const TopicAvatar = ({ url = '', name = '', size = 40, shape = 'circle', openLig
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          transition: TRANSITION,
         }}
       >
         {emoji}

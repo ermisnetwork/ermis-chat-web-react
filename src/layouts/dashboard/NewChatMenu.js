@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Button, Fade, IconButton, Menu, MenuItem, Stack, useTheme } from '@mui/material';
 import { NewChat_Menu } from '../../data';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { OpenDialogCreateChannel, OpenDialogNewDirectMessage, OpenAddFriendDialog } from '../../redux/slices/dialog';
 import Iconify from '../../components/Iconify';
@@ -8,6 +9,7 @@ import useResponsive from '../../hooks/useResponsive';
 import { NewChatIcon, ProfileAddIcon } from '../../components/Icons';
 
 const NewChatMenu = () => {
+  const { t } = useTranslation();
   const isMobileToLg = useResponsive('down', 'lg');
   const theme = useTheme();
   const dispatch = useDispatch();
@@ -47,10 +49,11 @@ const NewChatMenu = () => {
         <Button
           size="large"
           variant="outlined"
+          sx={{ textTransform: 'uppercase' }}
           startIcon={<ProfileAddIcon size={24} color={theme.palette.primary.main} />}
           onClick={handleAddFriend}
         >
-          ADD FRIEND
+          {t('newchat.add_friend')}
         </Button>
       )}
       {isMobileToLg ? (
@@ -63,10 +66,10 @@ const NewChatMenu = () => {
           variant="contained"
           color="primary"
           startIcon={<Iconify icon="ph:plus-bold" width={20} height={20} />}
-          sx={{ marginRight: '15px!important' }}
+          sx={{ marginRight: '15px!important', textTransform: 'uppercase' }}
           onClick={handleClick}
         >
-          NEW CHAT
+          {t('newchat.new_chat')}
         </Button>
       )}
 
@@ -101,7 +104,7 @@ const NewChatMenu = () => {
                   spacing={2}
                 >
                   {el.icon}
-                  <span>{el.title}</span>
+                  <span>{t(el.title)}</span>
                 </Stack>
               </MenuItem>
             ))}

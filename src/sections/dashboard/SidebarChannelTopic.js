@@ -10,8 +10,10 @@ import { handleError } from '../../utils/commons';
 import FormProvider from '../../components/hook-form';
 import { useForm } from 'react-hook-form';
 import { SidebarType } from '../../constants/commons-const';
+import { useTranslation } from 'react-i18next';
 
 const SidebarChannelTopic = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const theme = useTheme();
   const formSubmitRef = useRef(null);
@@ -42,11 +44,11 @@ const SidebarChannelTopic = () => {
       dispatch(
         showSnackbar({
           severity: 'success',
-          message: `Channel topics ${enableTopics ? 'enabled' : 'disabled'} successfully.`,
+          message: `${t('sidebarChannelTopic.title')} ${enableTopics ? t('sidebarChannelTopic.enabled') : t('sidebarChannelTopic.disabled')} ${t('sidebarChannelTopic.success')}.`,
         }),
       );
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     } finally {
       setSaveLoading(false);
     }
@@ -85,7 +87,7 @@ const SidebarChannelTopic = () => {
           </IconButton>
 
           <Typography variant="subtitle2" sx={{ flex: 1, textAlign: 'center', fontSize: '18px' }}>
-            Channel Topics
+            {t('sidebarChannelTopic.title')}
           </Typography>
 
           <LoadingButton
@@ -95,7 +97,7 @@ const SidebarChannelTopic = () => {
             disabled={saveDisabled}
             loading={saveLoading}
           >
-            SAVE
+            {t('sidebarChannelTopic.save')}
           </LoadingButton>
         </Stack>
 
@@ -121,13 +123,13 @@ const SidebarChannelTopic = () => {
                     marginBottom: '5px',
                   }}
                 >
-                  TOPICS
+                  {t('sidebarChannelTopic.topics')}
                 </Typography>
                 <RHFRadio
                   name="topicEnabled"
                   options={[
-                    { value: 'true', label: 'Enable' },
-                    { value: 'false', label: 'Disable' },
+                    { value: 'true', label: t('sidebarChannelTopic.Enabled') },
+                    { value: 'false', label: t('sidebarChannelTopic.Disabled') },
                   ]}
                   labelPlacement="start"
                   optionSx={{
@@ -159,7 +161,7 @@ const SidebarChannelTopic = () => {
                     marginTop: '5px',
                   }}
                 >
-                  The group chat will be divided into topics created by admins or users.
+                  {t('sidebarChannelTopic.message')}
                 </Typography>
               </Box>
             </FormProvider>

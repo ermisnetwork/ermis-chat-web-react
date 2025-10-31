@@ -8,6 +8,7 @@ import { client } from '../../client';
 import { UpdateIsLoading } from '../../redux/slices/app';
 import UserElement from '../../components/UserElement';
 import { removeVietnameseTones } from '../../utils/commons';
+import { useTranslation } from 'react-i18next';
 
 const FriendList = ({
   searchQuery = '',
@@ -23,6 +24,7 @@ const FriendList = ({
   enableUserSearch = false,
   excludedUserIds = [],
 }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const theme = useTheme();
   const { activeChannels = [], pinnedChannels = [] } = useSelector(state => state.channel);
@@ -175,7 +177,7 @@ const FriendList = ({
               fontWeight: 600,
             }}
           >
-            No result {searchQuery ? `for "${searchQuery}"` : ''}
+            {t('friendList.noResult')} {searchQuery ? `"${searchQuery}"` : ''}
           </Typography>
         </Stack>
       );

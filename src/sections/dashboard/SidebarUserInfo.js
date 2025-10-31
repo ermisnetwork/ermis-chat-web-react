@@ -16,6 +16,7 @@ import { checkDirectBlock } from '../../utils/commons';
 import { setChannelConfirm } from '../../redux/slices/dialog';
 import { ClientEvents } from '../../constants/events-const';
 import { SetOpenTopicPanel } from '../../redux/slices/topic';
+import { useTranslation } from 'react-i18next';
 
 const StyledActionItem = styled(Stack)(({ theme }) => ({
   width: '100%',
@@ -47,10 +48,11 @@ const StyledActionItem = styled(Stack)(({ theme }) => ({
 const SidebarUserInfo = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const theme = useTheme();
   const { user_id } = useSelector(state => state.auth);
   const { userInfo } = useSelector(state => state.app);
-  const { activeChannels } = useSelector(state => state.channel);
+  const { activeChannels = [] } = useSelector(state => state.channel);
   const onlineStatus = useOnlineStatus(userInfo?.id || '');
   const [isBlocked, setIsBlocked] = useState(false);
 
@@ -109,11 +111,11 @@ const SidebarUserInfo = () => {
       const response = await channel.create();
 
       if (response) {
-        dispatch(showSnackbar({ severity: 'success', message: 'Invitation sent' }));
+        dispatch(showSnackbar({ severity: 'success', message: t('sidebarUserInfo.invitation') }));
         onNavigateToChannel(response.channel.type, response.channel.id);
       }
     } catch (error) {
-      dispatch(showSnackbar({ severity: 'error', message: 'Failed to send invite. Please retry' }));
+      dispatch(showSnackbar({ severity: 'error', message: t('sidebarUserInfo.invite_failed') }));
     }
   };
 
@@ -205,7 +207,7 @@ const SidebarUserInfo = () => {
               <StyledActionItem className="hoverItem" onClick={onStartChat}>
                 <NewChatIcon color={theme.palette.text.primary} />
                 <Typography variant="subtitle2" color={theme.palette.text.primary}>
-                  Chat
+                  {t('sidebarUserInfo.chat')}
                 </Typography>
               </StyledActionItem>
             </>
@@ -215,7 +217,7 @@ const SidebarUserInfo = () => {
               <StyledActionItem className="hoverItem" onClick={onCreateDirectChannel}>
                 <ProfileAddIcon color={theme.palette.text.primary} />
                 <Typography variant="subtitle2" color={theme.palette.text.primary}>
-                  Add to Contacts
+                  {t('sidebarUserInfo.add_contact')}
                 </Typography>
               </StyledActionItem>
             </>
@@ -226,7 +228,7 @@ const SidebarUserInfo = () => {
             <StyledActionItem className="hoverItem" onClick={onToogleBlockUser}>
               <UserOctagonIcon color={theme.palette.text.primary} colorUser={theme.palette.error.main} />
               <Typography variant="subtitle2" color={theme.palette.error.main}>
-                {isBlocked ? 'Unblock User' : 'Block User'}
+                {isBlocked ? t('sidebarUserInfo.unblock') : t('sidebarUserInfo.block')}
               </Typography>
             </StyledActionItem>
           )}

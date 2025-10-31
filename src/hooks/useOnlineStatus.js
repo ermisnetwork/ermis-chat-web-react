@@ -4,7 +4,7 @@ import { ChatType, OnlineStatusUser, RoleMember } from '../constants/commons-con
 import { ClientEvents } from '../constants/events-const';
 
 export default function useOnlineStatus(userId) {
-  const { activeChannels, pinnedChannels } = useSelector(state => state.channel);
+  const { activeChannels = [], pinnedChannels = [] } = useSelector(state => state.channel);
 
   const [onlineStatus, setOnlineStatus] = useState(OnlineStatusUser.UNKNOWN);
 

@@ -37,7 +37,7 @@ export function GetChallengeNoAuth(address) {
         }
       })
       .catch(function (error) {
-        handleError(dispatch, error);
+        handleError(dispatch, error, t);
       });
   };
 }
@@ -59,7 +59,7 @@ export function GetChallenge() {
         }
       })
       .catch(function (error) {
-        handleError(dispatch, error);
+        handleError(dispatch, error, t);
       });
   };
 }
@@ -72,7 +72,7 @@ export function ClearData() {
   };
 }
 
-export function DeleteAccount(signature) {
+export function DeleteAccount(signature, t) {
   return async (dispatch, getState) => {
     const token = localStorage.getItem(LocalStorageKey.AccessToken);
     const { user_id } = getState().auth;
@@ -92,18 +92,18 @@ export function DeleteAccount(signature) {
         if (response.status === 200) {
           dispatch(UpdateIsLoading({ isLoading: false }));
           dispatch(slice.actions.setChallenge(null));
-          dispatch(showSnackbar({ severity: 'success', message: 'Your account has been successfully deleted' }));
+          dispatch(showSnackbar({ severity: 'success', message: t('wallet.delete_account') }));
           dispatch(ClearData());
         }
       })
       .catch(function (error) {
         dispatch(UpdateIsLoading({ isLoading: false }));
-        handleError(dispatch, error);
+        handleError(dispatch, error, t);
       });
   };
 }
 
-export function DeleteAccountNoAuth(signature, address) {
+export function DeleteAccountNoAuth(signature, address, t) {
   return async (dispatch, getState) => {
     dispatch(UpdateIsLoading({ isLoading: true }));
     await axiosWalletInstance
@@ -112,13 +112,13 @@ export function DeleteAccountNoAuth(signature, address) {
         if (response.status === 200) {
           dispatch(UpdateIsLoading({ isLoading: false }));
           dispatch(slice.actions.setChallenge(null));
-          dispatch(showSnackbar({ severity: 'success', message: 'Your account has been successfully deleted' }));
+          dispatch(showSnackbar({ severity: 'success', message: t('wallet.delete_account') }));
           window.localStorage.clear();
         }
       })
       .catch(function (error) {
         dispatch(UpdateIsLoading({ isLoading: false }));
-        handleError(dispatch, error);
+        handleError(dispatch, error, t);
       });
   };
 }

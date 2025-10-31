@@ -12,6 +12,7 @@ import { setSearchMessageId } from '../../redux/slices/messages';
 import { AvatarShape, SidebarType } from '../../constants/commons-const';
 import NoResult from '../../assets/Illustration/NoResult';
 import SkeletonChannels from '../../components/SkeletonChannels';
+import { useTranslation } from 'react-i18next';
 
 const StyledMessageItem = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -30,6 +31,7 @@ const StyledMessageItem = styled(Box)(({ theme }) => ({
 const LIMIT = 25;
 
 const SidebarSearchMessage = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const theme = useTheme();
   const { currentChannel } = useSelector(state => state.channel);
@@ -70,7 +72,7 @@ const SidebarSearchMessage = () => {
         setHasMore(false);
       }
     } catch (error) {
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     } finally {
       setLoading(false);
     }
@@ -126,7 +128,7 @@ const SidebarSearchMessage = () => {
     <Stack sx={{ width: '100%', height: '100%' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ padding: '10px 15px' }}>
         <Typography variant="subtitle2" sx={{ flex: 1, fontSize: '18px' }}>
-          Search Message
+          {t('sidebarSearchMessage.title')}
         </Typography>
 
         <IconButton
@@ -146,7 +148,7 @@ const SidebarSearchMessage = () => {
           </SearchIconWrapper>
           <StyledInputBase
             autoFocus
-            placeholder="Search…"
+            placeholder={t('sidebarSearchMessage.search')}
             inputProps={{ 'aria-label': 'search' }}
             onChange={onSearchMessage}
             value={searchTerm}
@@ -239,7 +241,7 @@ const SidebarSearchMessage = () => {
                   marginTop: 2,
                 }}
               >
-                No messages found!
+                {t('sidebarSearchMessage.no_message')}
               </Typography>
               <Typography
                 variant="subtitle2"
@@ -250,7 +252,7 @@ const SidebarSearchMessage = () => {
                   fontWeight: 400,
                 }}
               >
-                We couldn’t find any messages. Try a different keyword or share something to get started.
+                {t('sidebarSearchMessage.message')}
               </Typography>
             </Stack>
           )}

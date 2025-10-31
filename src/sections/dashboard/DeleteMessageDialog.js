@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { LoadingButton } from '@mui/lab';
 import { onDeleteMessage, setMessageIdError } from '../../redux/slices/messages';
 import { handleError } from '../../utils/commons';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -11,6 +12,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const DeleteMessageDialog = () => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { openDialog, messageId } = useSelector(state => state.messages.deleteMessage);
   const { currentChannel } = useSelector(state => state.channel);
   const { currentTopic } = useSelector(state => state.topic);
@@ -34,7 +36,7 @@ const DeleteMessageDialog = () => {
       if (error.code === 'ERR_NETWORK') {
         dispatch(setMessageIdError(messageId));
       } else {
-        handleError(dispatch, error);
+        handleError(dispatch, error, t);
       }
       onCloseDialog();
       setLoadingButton(false);
@@ -49,16 +51,16 @@ const DeleteMessageDialog = () => {
       onClose={onCloseDialog}
       aria-describedby="alert-dialog-slide-description"
     >
-      <DialogTitle>Delete message</DialogTitle>
+      <DialogTitle>{t('deleteMessageDialog.title')}</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-slide-description">
-          Are you sure you want delete this message?
+          {t('deleteMessageDialog.message')}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCloseDialog}>Cancel</Button>
+        <Button onClick={onCloseDialog}>{t('deleteMessageDialog.cancel')}</Button>
         <LoadingButton onClick={onSubmit} loading={loadingButton}>
-          Yes
+          {t('deleteMessageDialog.yes')}
         </LoadingButton>
       </DialogActions>
     </Dialog>

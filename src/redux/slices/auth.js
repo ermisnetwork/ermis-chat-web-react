@@ -88,7 +88,7 @@ export function LoginUserByWallet(data) {
       })
       .catch(function (error) {
         dispatch(UpdateIsLoading({ isLoading: false }));
-        handleError(dispatch, error);
+        handleError(dispatch, error, t);
       });
   };
 }
@@ -122,7 +122,7 @@ export function RegisterUserByEmail(formValues, navigate) {
         dispatch(
           SetUserLogin({
             ...formValues,
-            message: 'Registration successful! Please login to start using the chat application!',
+            message: t('auth.password_forgot_success'),
           }),
         );
         navigate('/login');
@@ -192,7 +192,7 @@ export function ForgotPasswordByEmail(formValues) {
         dispatch(
           showSnackbar({
             severity: 'success',
-            message: 'Your password reset request has been successfully sent. Please check your email to proceed!',
+            message: t('auth.password_forgot_success'),
           }),
         );
         dispatch(UpdateIsLoading({ isLoading: false }));

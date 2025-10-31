@@ -5,14 +5,28 @@ import { useDispatch, useSelector } from 'react-redux';
 import { OpenDialogCreateChannel, OpenDialogNewDirectMessage } from '../../redux/slices/dialog';
 import useResponsive from '../../hooks/useResponsive';
 import { NewChatIcon, PeopleIcon } from '../../components/Icons';
-
+import { NewChat_Menu } from '../../data';
+import { useTranslation } from 'react-i18next';
 const GeneralApp = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobileToMd = useResponsive('down', 'md');
 
   if (isMobileToMd) return null;
 
+  const handleMenuItem = key => {
+    switch (key) {
+      case 'new_channel':
+        dispatch(OpenDialogCreateChannel());
+        break;
+      case 'new_message':
+        dispatch(OpenDialogNewDirectMessage());
+        break;
+      default:
+        break;
+    }
+  };
   return (
     <Box
       sx={{
@@ -28,15 +42,29 @@ const GeneralApp = () => {
       <Stack spacing={2} sx={{ height: '100%', width: '100%' }} alignItems="center" justifyContent={'center'}>
         <NoChat />
         <Typography variant="h4" sx={{ textAlign: 'center' }}>
-          Let the message fly!
+          {t('channel.message_large')}
         </Typography>
         <Typography variant="body2" sx={{ textAlign: 'center', color: theme.palette.text.secondary }}>
-          This space is waiting for your words — spark a conversation and build something great together.
+          {t('channel.message_small')}
         </Typography>
         <Stack direction="row" spacing={1} justifyContent="center" sx={{ marginTop: '15px' }}>
-          <Button variant="outlined" size="large" onClick={() => dispatch(OpenDialogCreateChannel())} sx={{ gap: 1 }}>
+          {NewChat_Menu.map(item => (
+            <Button 
+              key={item.key}
+              variant="outlined" 
+              size="large" 
+              onClick={() => handleMenuItem(item.key)}
+              sx={{ gap: 1 }}
+            >
+              {item.icon}
+              {t(item.title)}
+            </Button>
+          ))}
+          {/* <Button 
+            variant="outlined" 
+            size="large" onClick={() => dispatch(OpenDialogCreateChannel())} sx={{ gap: 1 }}>
             <PeopleIcon size={24} color={theme.palette.text.primary} />
-            NEW CHANNEL
+            {NewChat_Menu[0].title}
           </Button>
           <Button
             variant="outlined"
@@ -46,7 +74,7 @@ const GeneralApp = () => {
           >
             <NewChatIcon size={24} color={theme.palette.text.primary} />
             NEW MESSAGE
-          </Button>
+          </Button> */}
         </Stack>
       </Stack>
     </Box>

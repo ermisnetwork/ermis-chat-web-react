@@ -1075,7 +1075,7 @@ const onCancelCall = () => {
               event.stopPropagation();
               onSendEndCall();
             }}
-          >s
+          >
             {/* <Phone weight="fill" size={14} /> */}
             <img src={PhoneDis} style={{ width: 20, height: 20}} />
           </Button>

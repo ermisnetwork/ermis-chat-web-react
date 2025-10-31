@@ -29,6 +29,7 @@ import uuidv4 from '../../utils/uuidv4';
 import useResponsive from '../../hooks/useResponsive';
 import { LoadingSpinner } from '../../components/animate';
 import CustomCheckbox from '../../components/CustomCheckbox';
+import { useTranslation } from 'react-i18next';
 
 // ----------------------------------------------------------------------
 
@@ -52,6 +53,7 @@ const LOGIN_METHODS = [
 
 export default function NewLogin() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const isMobileToLg = useResponsive('down', 'lg');
   const dispatch = useDispatch();
   const { authProvider } = useSelector(state => state.app);
@@ -89,12 +91,12 @@ export default function NewLogin() {
 
   const phoneSchema = Yup.object().shape({
     phone: Yup.string()
-      .required('Phone number is required')
-      .matches(/^(\+?84|0)?(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-9]|9[0-9])[0-9]{7}$/, 'Invalid phone number'),
+      .required(t('new_login.phone_required'))
+      .matches(/^(\+?84|0)?(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-9]|9[0-9])[0-9]{7}$/, t('new_login.phone_invalid')),
   });
 
   const emailSchema = Yup.object().shape({
-    email: Yup.string().required('Email is required').email('Invalid email address'),
+    email: Yup.string().required(t('new_login.email_required')).email(t('new_login.email_invalid')),
   });
 
   const methods = useForm({
@@ -151,7 +153,7 @@ export default function NewLogin() {
       dispatch(
         showSnackbar({
           severity: 'error',
-          message: error.response?.data?.description || 'Failed to send OTP. Please try again.',
+          message: error.response?.data?.description || t('new_login.otp_send_failed'),
         }),
       );
     }
@@ -179,7 +181,7 @@ export default function NewLogin() {
       dispatch(
         showSnackbar({
           severity: 'error',
-          message: error.response?.data?.description || 'OTP verification failed. Please try again.',
+          message: error.response?.data?.description || t('new_login.otp_verification_failed'),
         }),
       );
     }
@@ -203,7 +205,7 @@ export default function NewLogin() {
       dispatch(
         showSnackbar({
           severity: 'success',
-          message: 'OTP has been resent successfully.',
+          message: t('new_login.otp_resent_success'),
         }),
       );
       setCountdown(60);
@@ -211,7 +213,7 @@ export default function NewLogin() {
       dispatch(
         showSnackbar({
           severity: 'error',
-          message: error.response?.data?.description || 'Failed to resend OTP. Please try again.',
+          message: error.response?.data?.description || t('new_login.otp_resend_failed'),
         }),
       );
     }
@@ -242,10 +244,10 @@ export default function NewLogin() {
           <Box>
             <Typography variant="h5" sx={{ marginBottom: '5px' }}>
               <CaretLeft size={20} style={{ marginRight: '15px', cursor: 'pointer' }} onClick={onBack} />
-              Check your message
+              {t('new_login.title')}
             </Typography>
             <Typography variant="body1">
-              Your one-time verification code was sent to{' '}
+              {t('new_login.verification_one_time_code')}{' '}
               <strong>{loginType === 'phone' ? loginData?.phone : loginData?.email}</strong>
             </Typography>
           </Box>
@@ -261,7 +263,7 @@ export default function NewLogin() {
               sx={{ mt: 2 }}
               disabled={Object.values(otpMethods.watch()).some(v => !v || v.length !== 1)}
             >
-              VERIFY OTP
+              {t('new_login.verify_otp')}
             </Button>
           </FormProvider>
           <Stack direction="row" justifyContent="flex-end" sx={{ mt: '0px!important' }}>
@@ -276,7 +278,7 @@ export default function NewLogin() {
                 onClick={onResendOtp}
                 sx={{ fontWeight: 400, padding: '5px', mt: '10px' }}
               >
-                Send again
+                {t('new_login.send_again')}
               </Button>
             )}
           </Stack>
@@ -286,12 +288,12 @@ export default function NewLogin() {
       if (loginType === 'phone') {
         return (
           <>
-            <Typography variant="h5">Enter your phone number to sign in</Typography>
+            <Typography variant="h5">{t('new_login.enter_phone')}</Typography>
 
             <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
               <RHFTextField
                 name="phone"
-                placeholder="Phone number"
+                placeholder={t('new_login.phone_placeholder')}
                 inputRef={phoneRef}
                 InputProps={{
                   startAdornment: (
@@ -314,13 +316,13 @@ export default function NewLogin() {
                 control={<CustomCheckbox checked={agree} onChange={e => setAgree(e.target.checked)} color="primary" />}
                 label={
                   <span>
-                    I agree to the{' '}
+                    {t('new_login.message_up')}{' '}
                     <Link component={RouterLink} to="https://ermis.network/terms-of-use" target="_blank">
-                      Terms of Service
+                      {t('new_login.message_down')}
                     </Link>
                     ,{' '}
                     <Link component={RouterLink} to="https://ermis.network/privacy" target="_blank">
-                      Policy
+                      {t('new_login.message_policy')}
                     </Link>
                   </span>
                 }
@@ -335,7 +337,7 @@ export default function NewLogin() {
                 sx={{ mt: 2 }}
                 disabled={!agree || !methods.watch('phone')}
               >
-                SIGN IN
+                {t('new_login.sign_in')}
               </Button>
             </FormProvider>
           </>
@@ -344,7 +346,7 @@ export default function NewLogin() {
       if (loginType === 'email') {
         return (
           <>
-            <Typography variant="h5">Enter your email address to sign in</Typography>
+            <Typography variant="h5">{t('new_login.enter_email')}</Typography>
             <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
               <RHFTextField
                 name="email"
@@ -366,13 +368,13 @@ export default function NewLogin() {
                 control={<CustomCheckbox checked={agree} onChange={e => setAgree(e.target.checked)} color="primary" />}
                 label={
                   <span>
-                    I agree to the{' '}
+                    {t('new_login.message_up')}{' '}
                     <Link component={RouterLink} to="https://ermis.network/terms-of-use" target="_blank">
-                      Terms of Service
+                      {t('new_login.message_down')}
                     </Link>
                     ,{' '}
                     <Link component={RouterLink} to="https://ermis.network/privacy" target="_blank">
-                      Policy
+                      {t('new_login.message_policy')}
                     </Link>
                   </span>
                 }
@@ -387,7 +389,7 @@ export default function NewLogin() {
                 sx={{ mt: 2 }}
                 disabled={!agree || !methods.watch('email')}
               >
-                SIGN IN
+                {t('new_login.sign_in')}
               </Button>
             </FormProvider>
           </>
@@ -444,7 +446,7 @@ export default function NewLogin() {
               },
             }}
           >
-            Or sign in with
+            {t('new_login.or_sign_in')}
           </Divider>
 
           <Stack direction="row" spacing={2} justifyContent="center">
@@ -473,7 +475,7 @@ export default function NewLogin() {
                         dispatch(
                           showSnackbar({
                             severity: 'error',
-                            message: 'Google login failed. Please try again.',
+                            message: t('new_login.snackbar_google_login_failed'),
                           }),
                         );
                         setIsLoading(false);

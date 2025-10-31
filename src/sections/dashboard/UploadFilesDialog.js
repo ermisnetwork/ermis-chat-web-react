@@ -21,6 +21,7 @@ import { formatFileSize, processImageFile } from '../../utils/commons';
 import FileTypeBadge from '../../components/FileTypeBadge';
 import { ChatFooter } from '../../components/Chat';
 import ImageCanvas from '../../components/ImageCanvas';
+import { useTranslation } from 'react-i18next';
 
 const MAX_SIZE_MB = 100; // Giới hạn 100MB
 
@@ -93,7 +94,7 @@ const VideoPlayer = ({ attachment }) => {
 const UploadFilesDialog = ({ setMessages }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
-
+  const { t } = useTranslation();
   const { openDialog, files, uploadType } = useSelector(state => state.messages.filesMessage);
   const { currentChannel } = useSelector(state => state.channel);
   const { currentTopic } = useSelector(state => state.topic);
@@ -144,7 +145,7 @@ const UploadFilesDialog = ({ setMessages }) => {
               size: file.size,
               error: isFileTooLarge,
               url: '',
-              message: isFileTooLarge ? 'File size exceeds the limit. Maximum allowed: 100MB' : '',
+              message: isFileTooLarge ? t('uploadFilesDialog.file_size_maximum') : '',
             };
             return data;
           });
@@ -194,7 +195,7 @@ const UploadFilesDialog = ({ setMessages }) => {
                       ...item,
                       loading: false,
                       error: true,
-                      message: 'Upload failed. Please try again',
+                      message: t('uploadFilesDialog.upload_file_failed'),
                     };
                   }
                   return item;
@@ -275,13 +276,13 @@ const UploadFilesDialog = ({ setMessages }) => {
 
       const { image, video, file } = counts;
 
-      if (image === 1 && !video && !file) return 'Sent an photo';
-      if (video === 1 && !image && !file) return 'Sent a video';
-      if (image && video && !file) return `Sent ${image + video} photos and videos`;
-      if (image && !video && !file) return `Sent ${image} photos`;
-      if (video && !image && !file) return `Sent ${video} videos`;
+      if (image === 1 && !video && !file) return t('uploadFilesDialog.sent_photo');
+      if (video === 1 && !image && !file) return t('uploadFilesDialog.sent_video');
+      if (image && video && !file) return `${t('uploadFilesDialog.sent')} ${image + video} ${t('uploadFilesDialog.photos_videos')}`;
+      if (image && !video && !file) return `${t('uploadFilesDialog.sent')} ${image} ${t('uploadFilesDialog.photos')}`;
+      if (video && !image && !file) return `${t('uploadFilesDialog.sent')} ${video} ${t('uploadFilesDialog.videos')}`;
 
-      return `Sent ${attachments.length} ${attachments.length === 1 ? 'file' : 'files'}`;
+      return `${t('uploadFilesDialog.sent')} ${attachments.length} ${attachments.length === 1 ? t('uploadFilesDialog.file') : t('uploadFilesDialog.files')}`;
     };
 
     return getTitleByMimeType(attachments.filter(item => !item.error));

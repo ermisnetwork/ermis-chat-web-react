@@ -10,18 +10,19 @@ import { Eye, EyeSlash } from 'phosphor-react';
 import { LoginUserByEmail } from '../../redux/slices/auth';
 import { useDispatch, useSelector } from 'react-redux';
 import { SetUserLogin, showSnackbar } from '../../redux/slices/app';
+import { useTranslation } from 'react-i18next';
 
 // ----------------------------------------------------------------------
 
 export default function LoginEmail() {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
-
   const { isLoading, user } = useSelector(state => state.app);
 
   const LoginSchema = Yup.object().shape({
-    email: Yup.string().required('Email is required').email('Email must be a valid email address'),
-    password: Yup.string().required('Password is required'),
+    email: Yup.string().required(t('login_email.email_required')).email(t('login_email.email_invalid')),
+    password: Yup.string().required(t('login_email.password_required')),
   });
 
   const defaultValues = {
@@ -70,12 +71,12 @@ export default function LoginEmail() {
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={3}>
-        <RHFTextField name="email" label="Email address" />
+        <RHFTextField name="email" label={t('login_email.email_label')} />
 
         <RHFTextField
           name="password"
           label="Password"
-          type={showPassword ? 'text' : 'password'}
+          type={showPassword ? t('login_email.text') : t('login_email.password_label')}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -90,7 +91,7 @@ export default function LoginEmail() {
 
       <Stack alignItems="flex-end" sx={{ my: 2 }}>
         <Link component={RouterLink} to="/forgot-password" variant="body2" color="inherit" underline="always">
-          Forgot password?
+          {t('login_email.title')}
         </Link>
       </Stack>
 
@@ -110,7 +111,7 @@ export default function LoginEmail() {
           },
         }}
       >
-        Login
+        {t('login_email.login')}
       </LoadingButton>
     </FormProvider>
   );

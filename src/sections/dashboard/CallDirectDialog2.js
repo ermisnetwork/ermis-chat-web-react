@@ -11,10 +11,12 @@ import {
   styled,
   Box,
   Paper,
+  Menu,
+  MenuItem,
+  ListItemText,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useDispatch, useSelector } from 'react-redux';
-import { formatString } from '../../utils/commons';
 import { callClient } from '../../client';
 import { CallStatus, CallType } from '../../constants/commons-const';
 import { DisconnectCallDirect, setCallDirectStatus, StartCallDirect } from '../../redux/slices/callDirect';
@@ -29,19 +31,29 @@ import {
   VideoCamera,
   VideoCameraSlash,
   X,
+  CaretDown,
+  ArrowsOut,
+  ArrowsIn,
 } from 'phosphor-react';
 import { Howl } from 'howler';
 import { showSnackbar } from '../../redux/slices/app';
+import { useTranslation } from 'react-i18next';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const StyledCallDirectDialog = styled(Dialog)(({ theme }) => ({
+const StyledCallDirectDialog = styled(Dialog, {
+  shouldForwardProp: prop => prop !== 'isFullScreen',
+})(({ theme, isFullScreen }) => ({
   '& .MuiDialog-container': {
     '& .MuiPaper-root': {
-      width: '500px',
-      height: '550px',
+      width: isFullScreen ? '100vw' : '500px',
+      height: isFullScreen ? '100vh' : '550px',
+      maxWidth: isFullScreen ? '100vw' : 'none',
+      maxHeight: isFullScreen ? '100vh' : 'none',
+      margin: isFullScreen ? 0 : 'auto',
+      borderRadius: isFullScreen ? 0 : theme.shape.borderRadius,
       background: theme.palette.mode === 'light' ? '#F0F4FA' : theme.palette.background.paper,
       '&:hover .hoverShow': {
         opacity: 1,
@@ -50,7 +62,7 @@ const StyledCallDirectDialog = styled(Dialog)(({ theme }) => ({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: '70px',
+        marginTop: isFullScreen ? '120px' : '70px',
       },
 
       '& .MuiDialogActions-root': {
@@ -72,6 +84,7 @@ const StyledCallDirectDialog = styled(Dialog)(({ theme }) => ({
 const StyledButton = styled(Box)(({ theme }) => ({
   textAlign: 'center',
   width: '70px',
+  position: 'relative',
   '& .MuiButton-root': {
     minWidth: '45px',
     height: '45px',
@@ -89,15 +102,44 @@ const StyledButton = styled(Box)(({ theme }) => ({
   ' & .spanTitle': {
     fontSize: '12px',
     display: 'block',
-    // color: theme.palette.grey[500],
     '&.whiteColor': {
       color: '#fff',
+    },
+  },
+  '& .deviceToggle': {
+    position: 'absolute',
+    top: '14px',
+    right: '2px',
+    minWidth: '20px',
+    width: '20px',
+    height: '20px',
+    borderRadius: '50%',
+    padding: 0,
+    backgroundColor: theme.palette.grey[500],
+    color: '#fff',
+    border: '1px solid #fff',
+    '&:hover': {
+      backgroundColor: theme.palette.grey[700],
+    },
+  },
+}));
+
+const StyledMenu = styled(Menu)(({ theme }) => ({
+  '& .MuiPaper-root': {
+    minWidth: '200px',
+    marginTop: '8px',
+  },
+  '& .MuiMenuItem-root': {
+    padding: '8px 16px',
+    '&.selected': {
+      backgroundColor: theme.palette.action.selected,
     },
   },
 }));
 
 const CallDirectDialog2 = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const localVideoRef = useRef(null);
   const localAudioRef = useRef(null);
@@ -121,6 +163,17 @@ const CallDirectDialog2 = () => {
   const [remoteMicOn, setRemoteMicOn] = useState(true);
   const [minimized, setMinimized] = useState(false);
   const [isUpgradeCall, setIsUpgradeCall] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  // Device management states
+  const [availableAudioDevices, setAvailableAudioDevices] = useState([]);
+  const [availableVideoDevices, setAvailableVideoDevices] = useState([]);
+  const [selectedAudioDevice, setSelectedAudioDevice] = useState(null);
+  const [selectedVideoDevice, setSelectedVideoDevice] = useState(null);
+
+  // Menu states for device selection
+  const [micMenuAnchor, setMicMenuAnchor] = useState(null);
+  const [cameraMenuAnchor, setCameraMenuAnchor] = useState(null);
 
   const onCancelCall = () => {
     setMicOn(true);
@@ -134,6 +187,12 @@ const CallDirectDialog2 = () => {
     setRemoteMicOn(true);
     setMinimized(false);
     setIsUpgradeCall(false);
+    setIsFullScreen(false);
+
+    // Close device menus
+    setMicMenuAnchor(null);
+    setCameraMenuAnchor(null);
+
     dispatch(DisconnectCallDirect());
     stopRing();
 
@@ -151,8 +210,6 @@ const CallDirectDialog2 = () => {
     }
   };
 
-  // console.log(localAudioRef);
-  
   const startTimer = () => {
     timerIntervalRef.current = setInterval(() => {
       setTime(prevTime => prevTime + 1);
@@ -180,9 +237,29 @@ const CallDirectDialog2 = () => {
     }
   };
 
+  // Load available devices when call starts
+  const loadDevices = async () => {
+    if (callClient) {
+      try {
+        const { audioDevices, videoDevices } = await callClient.getDevices();
+
+        setAvailableAudioDevices(audioDevices);
+        setAvailableVideoDevices(videoDevices);
+
+        // Set default selected devices
+        const { audioDevice, videoDevice } = callClient.getSelectedDevices();
+        setSelectedAudioDevice(audioDevice || audioDevices[0] || null);
+        setSelectedVideoDevice(videoDevice || videoDevices[0] || null);
+      } catch (error) {
+        console.error('Failed to load devices:', error);
+      }
+    }
+  };
+
   useEffect(() => {
     if (callDirectData && callDirectStatus === CallStatus.RINGING) {
       startRing();
+      loadDevices(); // Load devices when call starts
     }
   }, [callDirectData, callDirectStatus]);
 
@@ -195,14 +272,12 @@ const CallDirectDialog2 = () => {
     };
 
     callClient.onLocalStream = stream => {
-      // Hiển thị local video nếu có track video
       const videoTrack = stream.getVideoTracks()[0];
       if (videoTrack && localVideoRef.current) {
         const videoStream = new MediaStream([videoTrack]);
         localVideoRef.current.srcObject = videoStream;
       }
 
-      // // Hiển thị local audio nếu có track audio
       const audioTrack = stream.getAudioTracks()[0];
       if (audioTrack && localAudioRef.current) {
         const audioStream = new MediaStream([audioTrack]);
@@ -225,8 +300,6 @@ const CallDirectDialog2 = () => {
       }
     };
 
-    // console.log(receiverInfo);
-    
     callClient.onConnectionMessageChange = msg => {
       setConnectionStatus(msg);
     };
@@ -235,7 +308,6 @@ const CallDirectDialog2 = () => {
       dispatch(setCallDirectStatus(status));
       switch (status) {
         case CallStatus.RINGING:
-          // startRing();
           break;
         case CallStatus.CONNECTED:
           startTimer();
@@ -245,7 +317,7 @@ const CallDirectDialog2 = () => {
         case CallStatus.ENDED:
           onCancelCall();
           break;
-        default: // CallStatus.ERROR
+        default:
           onCancelCall();
           break;
       }
@@ -274,7 +346,12 @@ const CallDirectDialog2 = () => {
     callClient.onError = msg => {
       dispatch(showSnackbar({ severity: 'error', message: msg }));
     };
-    // Cleanup khi unmount
+
+    callClient.onDeviceChange = (audioDevices, videoDevices) => {
+      setAvailableAudioDevices(audioDevices);
+      setAvailableVideoDevices(videoDevices);
+    };
+
     return () => {
       if (callClient) {
         callClient.onCallEvent = undefined;
@@ -286,6 +363,7 @@ const CallDirectDialog2 = () => {
         callClient.onUpgradeCall = undefined;
         callClient.onScreenShareChange = undefined;
         callClient.onError = undefined;
+        callClient.onDeviceChange = undefined;
       }
     };
   }, [dispatch, callClient, user_id]);
@@ -331,6 +409,51 @@ const CallDirectDialog2 = () => {
     }
   };
 
+  // Device selection handlers
+  const handleMicMenuOpen = event => {
+    event.stopPropagation();
+    setMicMenuAnchor(event.currentTarget);
+  };
+
+  const handleMicMenuClose = () => {
+    setMicMenuAnchor(null);
+  };
+
+  const handleCameraMenuOpen = event => {
+    event.stopPropagation();
+    setCameraMenuAnchor(event.currentTarget);
+  };
+
+  const handleCameraMenuClose = () => {
+    setCameraMenuAnchor(null);
+  };
+
+  const handleAudioDeviceSelect = async device => {
+    try {
+      const success = await callClient.switchAudioDevice(device.deviceId);
+      if (success) {
+        setSelectedAudioDevice(device);
+        dispatch(showSnackbar({ severity: 'success', message: `Switched to ${device.label}` }));
+      }
+    } catch (error) {
+      dispatch(showSnackbar({ severity: 'error', message: 'Failed to switch microphone' }));
+    }
+    handleMicMenuClose();
+  };
+
+  const handleVideoDeviceSelect = async device => {
+    try {
+      const success = await callClient.switchVideoDevice(device.deviceId);
+      if (success) {
+        setSelectedVideoDevice(device);
+        dispatch(showSnackbar({ severity: 'success', message: `Switched to ${device.label}` }));
+      }
+    } catch (error) {
+      dispatch(showSnackbar({ severity: 'error', message: 'Failed to switch camera' }));
+    }
+    handleCameraMenuClose();
+  };
+
   const renderButton = () => {
     return (
       <>
@@ -344,8 +467,9 @@ const CallDirectDialog2 = () => {
           >
             <ChatCircleDots weight="fill" size={20} />
           </Button>
-          <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>chat</span>
+          <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>{t('callDirectDialog.chat')}</span>
         </StyledButton>
+
         <StyledButton>
           <Button
             className={`moreButton ${micOn && callDirectStatus === CallStatus.CONNECTED ? 'active' : ''}`}
@@ -360,8 +484,17 @@ const CallDirectDialog2 = () => {
               <MicrophoneSlash size={20} weight="fill" color={theme.palette.error.main} />
             )}
           </Button>
-          <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>{micOn ? 'mute' : 'unmute'}</span>
+          {/* Device selection arrow for microphone */}
+          {callDirectStatus === CallStatus.CONNECTED && availableAudioDevices.length > 1 && (
+            <Button className="deviceToggle" onClick={handleMicMenuOpen} size="small">
+              <CaretDown size={14} />
+            </Button>
+          )}
+          <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>
+            {micOn ? t('callDirectDialog.mute') : t('callDirectDialog.unmute')}
+          </span>
         </StyledButton>
+
         <StyledButton>
           <Button
             className={`moreButton ${localCameraOn && callDirectStatus === CallStatus.CONNECTED ? 'active' : ''}`}
@@ -376,8 +509,14 @@ const CallDirectDialog2 = () => {
               <VideoCameraSlash weight="fill" size={20} color={theme.palette.error.main} />
             )}
           </Button>
+          {/* Device selection arrow for camera */}
+          {callDirectStatus === CallStatus.CONNECTED && availableVideoDevices.length > 1 && (
+            <Button className="deviceToggle" onClick={handleCameraMenuOpen} size="small">
+              <CaretDown size={8} />
+            </Button>
+          )}
           <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>
-            {localCameraOn ? 'stop video' : 'start video'}
+            {localCameraOn ? t('callDirectDialog.stop_video') : t('callDirectDialog.start_video')}
           </span>
         </StyledButton>
 
@@ -391,7 +530,9 @@ const CallDirectDialog2 = () => {
             >
               <Screencast weight="fill" size={20} />
             </Button>
-            <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>screencast</span>
+            <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>
+              {t('callDirectDialog.screencast')}
+            </span>
           </StyledButton>
         )}
 
@@ -401,13 +542,13 @@ const CallDirectDialog2 = () => {
               <Button onClick={onSendRejectCall} variant="contained" color="error">
                 <PhoneDisconnect weight="fill" size={20} />
               </Button>
-              <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>decline</span>
+              <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>{t('callDirectDialog.decline')}</span>
             </StyledButton>
             <StyledButton>
               <LoadingButton onClick={onSendAcceptCall} variant="contained" color="success" loading={loadingButton}>
                 <Phone weight="fill" size={20} />
               </LoadingButton>
-              <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>accept</span>
+              <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>{t('callDirectDialog.accept')}</span>
             </StyledButton>
           </>
         )}
@@ -417,7 +558,7 @@ const CallDirectDialog2 = () => {
             <Button onClick={onSendEndCall} variant="contained" color="error">
               <PhoneDisconnect weight="fill" size={20} />
             </Button>
-            <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>end call</span>
+            <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>{t('callDirectDialog.end_call')}</span>
           </StyledButton>
         )}
 
@@ -426,7 +567,7 @@ const CallDirectDialog2 = () => {
             <Button onClick={onCancelCall} variant="contained" color="error">
               <X weight="fill" size={20} />
             </Button>
-            <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>cancel</span>
+            <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>{t('callDirectDialog.cancel')}</span>
           </StyledButton>
         )}
       </>
@@ -436,6 +577,27 @@ const CallDirectDialog2 = () => {
   const onMinimize = () => setMinimized(true);
   const onRestore = () => setMinimized(false);
 
+  const onToggleFullScreen = () => {
+    setIsFullScreen(!isFullScreen);
+  };
+
+  // Handle ESC key to exit fullscreen
+  useEffect(() => {
+    const handleKeyDown = event => {
+      if (event.key === 'Escape' && isFullScreen) {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsFullScreen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown, true);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [isFullScreen]);
+
   return (
     <>
       <StyledCallDirectDialog
@@ -443,8 +605,35 @@ const CallDirectDialog2 = () => {
         TransitionComponent={Transition}
         keepMounted
         sx={{ visibility: minimized ? 'hidden' : '' }}
+        isFullScreen={isFullScreen}
       >
         <DialogContent sx={{ padding: 0 }}>
+          {/* Full screen toggle button - only show when connected and video call */}
+          {callDirectStatus === CallStatus.CONNECTED && (localCameraOn || remoteCameraOn) && (
+            <Button
+              onClick={onToggleFullScreen}
+              sx={{
+                position: 'absolute',
+                top: '15px',
+                right: '15px',
+                zIndex: 4,
+                minWidth: '40px',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                padding: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                color: '#fff',
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                },
+              }}
+              className={remoteCameraOn ? 'hoverShow' : ''}
+            >
+              {isFullScreen ? <ArrowsIn size={20} /> : <ArrowsOut size={20} />}
+            </Button>
+          )}
+
           <Typography
             variant="body1"
             sx={{
@@ -461,7 +650,7 @@ const CallDirectDialog2 = () => {
             }}
             className={callDirectStatus === CallStatus.CONNECTED && remoteCameraOn ? 'hoverShow' : ''}
           >
-            {user_id === callerInfo?.id ? formatString(receiverInfo?.name) : formatString(callerInfo?.name)}
+            {user_id === callerInfo?.id ? receiverInfo?.name : callerInfo?.name}
           </Typography>
 
           {callDirectStatus === CallStatus.CONNECTED && !remoteMicOn && (
@@ -516,9 +705,9 @@ const CallDirectDialog2 = () => {
             }}
           >
             {callDirectStatus === CallStatus.RINGING ? (
-              'ringing'
+              t('callDirectDialog.ringing')
             ) : (
-              <span style={{ color: theme.palette.success.main }}>Connected</span>
+              <span style={{ color: theme.palette.success.main }}>{t('callDirectDialog.Connected')}</span>
             )}
             {[CallStatus.RINGING].includes(callDirectStatus) && (
               <>
@@ -553,8 +742,8 @@ const CallDirectDialog2 = () => {
 
           <Stack
             sx={{
-              width: '150px',
-              height: '100px',
+              width: isFullScreen ? '280px' : '150px',
+              height: isFullScreen ? '200px' : '100px',
               position: 'absolute',
               bottom: '90px',
               right: '15px',
@@ -601,7 +790,7 @@ const CallDirectDialog2 = () => {
                   color: '#DFE3E8',
                 }}
               >
-                Request to switch to a video call
+                {t('callDirectDialog.request_switch_video_call')}
               </Stack>
             )}
 
@@ -625,13 +814,57 @@ const CallDirectDialog2 = () => {
               <LoadingButton onClick={onSwitchToVideoCall} variant="contained" color="success">
                 <Phone weight="fill" size={20} />
               </LoadingButton>
-              <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>accept</span>
+              <span className={`spanTitle ${remoteCameraOn ? 'whiteColor' : ''}`}>{t('callDirectDialog.accept')}</span>
             </StyledButton>
           ) : (
             renderButton()
           )}
         </DialogActions>
       </StyledCallDirectDialog>
+
+      {/* Audio Device Selection Menu */}
+      <StyledMenu
+        anchorEl={micMenuAnchor}
+        open={Boolean(micMenuAnchor)}
+        onClose={handleMicMenuClose}
+        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+      >
+        {availableAudioDevices.map(device => (
+          <MenuItem
+            key={device.deviceId}
+            onClick={() => handleAudioDeviceSelect(device)}
+            className={selectedAudioDevice?.deviceId === device.deviceId ? 'selected' : ''}
+          >
+            <ListItemText
+              primaryTypographyProps={{ fontSize: '12px' }}
+              primary={device.label || `Microphone ${device.deviceId.slice(0, 5)}`}
+            />
+          </MenuItem>
+        ))}
+      </StyledMenu>
+
+      {/* Video Device Selection Menu */}
+      <StyledMenu
+        anchorEl={cameraMenuAnchor}
+        open={Boolean(cameraMenuAnchor)}
+        onClose={handleCameraMenuClose}
+        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+      >
+        {availableVideoDevices.map(device => (
+          <MenuItem
+            key={device.deviceId}
+            onClick={() => handleVideoDeviceSelect(device)}
+            className={selectedVideoDevice?.deviceId === device.deviceId ? 'selected' : ''}
+          >
+            <ListItemText
+              primaryTypographyProps={{ fontSize: '12px' }}
+              primary={device.label || `Camera ${device.deviceId.slice(0, 5)}`}
+            />
+          </MenuItem>
+        ))}
+      </StyledMenu>
 
       {minimized && (
         <Paper

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MediaType } from '../constants/commons-const';
 import { useTheme } from '@mui/material';
 import LightboxMedia from './LightboxMedia';
+import { TRANSITION } from '../config';
 
 const ImageCanvas = ({ dataUrl, width, height, styleCustom, openLightbox }) => {
   const theme = useTheme();
@@ -78,6 +79,7 @@ const ImageCanvas = ({ dataUrl, width, height, styleCustom, openLightbox }) => {
           height: height,
           objectFit: 'cover',
           cursor: openLightbox ? 'pointer' : 'inherit',
+          transition: TRANSITION,
           ...styleCustom,
         }}
         onClick={onOpenLightbox}

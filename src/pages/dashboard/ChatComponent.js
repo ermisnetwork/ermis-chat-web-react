@@ -1,5 +1,5 @@
 import { Stack, Box, Typography, Chip, Alert } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import { ChatHeader, ChatFooter } from '../../components/Chat';
 import useResponsive from '../../hooks/useResponsive';
@@ -44,7 +44,7 @@ import {
   SetMemberCapabilities,
   WatchCurrentChannel,
 } from '../../redux/slices/channel';
-import { Clock, Trash } from 'phosphor-react';
+import { Trash, WarningCircle } from 'phosphor-react';
 import ScrollToBottom from '../../components/ScrollToBottom';
 import DeleteMessageDialog from '../../sections/dashboard/DeleteMessageDialog';
 import {
@@ -70,15 +70,29 @@ import UploadFilesDialog from '../../sections/dashboard/UploadFilesDialog';
 import Dropzone from 'react-dropzone';
 import CreatePollDialog from '../../sections/dashboard/CreatePollDialog';
 import PollResultDialog from '../../sections/dashboard/PollResultDialog';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import UsersTyping from '../../components/UsersTyping';
 import NoMessageBox from '../../components/NoMessageBox';
 import { setSidebar, SetUserInfo } from '../../redux/slices/app';
-import TopicPanel from './TopicPanel';
 import ClosedTopicBackdrop from '../../components/ClosedTopicBackdrop';
-import { SetIsClosedTopic, SetOpenTopicPanel } from '../../redux/slices/topic';
+import { SetIsClosedTopic } from '../../redux/slices/topic';
+import { useTranslation } from 'react-i18next';
+import useMessageSound from '../../hooks/useMessageSound';
 
-const StyledMessage = styled(motion(Stack))(({ theme }) => ({
+const messageMotion = {
+  layout: true,
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+  transition: {
+    type: 'spring',
+    stiffness: 400,
+    damping: 20,
+    mass: 0.4,
+  },
+};
+
+const StyledMessage = styled(Stack)(({ theme }) => ({
   '&:hover': {
     '& .messageActions': {
       visibility: 'visible',
@@ -104,175 +118,213 @@ const StyledMessage = styled(motion(Stack))(({ theme }) => ({
 
 const MESSAGE_LIMIT = 25;
 
-const MessageList = ({
-  messageListRef,
-  messages,
-  lastReadMessageId,
-  targetId,
-  setTargetId,
-  isDirect,
-  setShowChipUnread,
-  onScrollToReplyMsg,
-  highlightMsg,
-  setHighlightMsg,
-  currentChat,
-}) => {
-  const users = client.state.users ? Object.values(client.state.users) : [];
-  const dispatch = useDispatch();
-  const messageRefs = useRef({});
-  const unreadRefs = useRef([]);
-  const theme = useTheme();
-  const isLgToXl = useResponsive('between', null, 'lg', 'xl');
-  const isMobileToLg = useResponsive('down', 'lg');
-  const { user_id } = useSelector(state => state.auth);
-  const { activeChannels, pinnedChannels, isGuest, isBlocked, isBanned } = useSelector(state => state.channel);
+const MessageList = React.memo(
+  ({
+    messageListRef,
+    messages,
+    lastReadMessageId,
+    targetId,
+    setTargetId,
+    isDirect,
+    setShowChipUnread,
+    onScrollToReplyMsg,
+    highlightMsg,
+    setHighlightMsg,
+    currentChat,
+  }) => {
+    const { t } = useTranslation();
+    const users = client.state.users ? Object.values(client.state.users) : [];
+    const dispatch = useDispatch();
+    const messageRefs = useRef({});
+    const unreadRefs = useRef([]);
+    const theme = useTheme();
+    const isLgToXl = useResponsive('between', null, 'lg', 'xl');
+    const isMobileToLg = useResponsive('down', 'lg');
+    const { user_id } = useSelector(state => state.auth);
+    const {
+      activeChannels = [],
+      pinnedChannels = [],
+      isGuest,
+      isBlocked,
+      isBanned,
+    } = useSelector(state => state.channel);
 
-  const lastReadIndex = messages.findIndex(msg => msg.id === lastReadMessageId);
+    const lastReadIndex = useMemo(
+      () => messages.findIndex(msg => msg.id === lastReadMessageId),
+      [messages, lastReadMessageId],
+    );
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      let messageElement;
-      if (targetId) {
-        messageElement = messageRefs.current[targetId];
+    useEffect(() => {
+      if (messages.length > 0) {
+        let messageElement;
+        if (targetId) {
+          messageElement = messageRefs.current[targetId];
+        }
+        if (messageElement) {
+          messageElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+          setTimeout(() => {
+            setTargetId('');
+            setHighlightMsg('');
+            dispatch(setSearchMessageId(''));
+          }, 1000);
+        }
       }
-      if (messageElement) {
-        messageElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, [messages, targetId]);
 
-        setTimeout(() => {
-          setTargetId('');
-          setHighlightMsg('');
-          dispatch(setSearchMessageId(''));
-        }, 1000);
+    useEffect(() => {
+      if (messageListRef.current) {
+        const chatBoxHeight = messageListRef.current.offsetHeight;
+
+        // Tính tổng chiều cao của các tin nhắn chưa đọc
+        const totalUnreadHeight = unreadRefs.current.reduce((acc, msgRef) => {
+          return acc + (msgRef?.offsetHeight || 0);
+        }, 0);
+
+        // So sánh chiều cao tổng của tin nhắn chưa đọc với chiều cao hộp chat
+        setShowChipUnread(totalUnreadHeight > chatBoxHeight);
       }
-    }
-  }, [messages, targetId]);
+    }, [messageListRef, unreadRefs]);
 
-  useEffect(() => {
-    if (messageListRef.current) {
-      const chatBoxHeight = messageListRef.current.offsetHeight;
+    const setMessageRef = useCallback(
+      (id, element, index) => {
+        messageRefs.current[id] = element;
 
-      // Tính tổng chiều cao của các tin nhắn chưa đọc
-      const totalUnreadHeight = unreadRefs.current.reduce((acc, msgRef) => {
-        return acc + (msgRef?.offsetHeight || 0);
-      }, 0);
+        if (lastReadIndex && lastReadIndex >= 0 && index > lastReadIndex) {
+          unreadRefs.current[index - lastReadIndex - 1] = element;
+        }
+      },
+      [lastReadIndex],
+    );
 
-      // So sánh chiều cao tổng của tin nhắn chưa đọc với chiều cao hộp chat
-      setShowChipUnread(totalUnreadHeight > chatBoxHeight);
-    }
-  }, [messageListRef, unreadRefs]);
+    const getForwardChannelName = useCallback(
+      forwardCid => {
+        if (!forwardCid) return '';
 
-  const setMessageRef = (id, element, index) => {
-    messageRefs.current[id] = element;
+        if (activeChannels.length || pinnedChannels.length) {
+          const parts = forwardCid.split(':');
+          const channelId = parts.slice(1).join(':');
 
-    if (lastReadIndex && lastReadIndex >= 0 && index > lastReadIndex) {
-      unreadRefs.current[index - lastReadIndex - 1] = element;
-    }
-  };
+          const channel = [...activeChannels, ...pinnedChannels].find(ch => ch.id === channelId);
 
-  const getForwardChannelName = forwardCid => {
-    if (!forwardCid) return '';
+          if (channel) {
+            return formatString(channel.data.name);
+          }
+          return '';
+        }
 
-    if (activeChannels.length || pinnedChannels.length) {
-      const parts = forwardCid.split(':');
-      const channelId = parts.slice(1).join(':');
+        return '';
+      },
+      [activeChannels, pinnedChannels],
+    );
 
-      const channel = [...activeChannels, ...pinnedChannels].find(ch => ch.id === channelId);
+    const renderMessage = useCallback(
+      el => {
+        const isMyMessage = checkMyMessage(user_id, el.user.id);
+        const messageType = el.type;
+        const forwardChannelName = getForwardChannelName(el?.forward_cid);
+        const quotedMessage = el?.quoted_message;
 
-      if (channel) {
-        return formatString(channel.data.name);
-      }
-      return '';
-    }
+        // Handle deleted messages
+        if (el.deleted_at) {
+          return (
+            <Stack direction="row" justifyContent={isMyMessage ? 'end' : 'start'} alignItems="center">
+              <Box
+                px={1.5}
+                py={1.5}
+                sx={{
+                  backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[300] : theme.palette.grey[700],
+                  borderRadius: 1.5,
+                  width: 'max-content',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: theme.palette.grey[600],
+                }}
+              >
+                <Trash size={16} color={theme.palette.grey[600]} />
+                &nbsp;&nbsp;{t('chatComponent.message_delete')}
+              </Box>
+            </Stack>
+          );
+        }
 
-    return '';
-  };
+        // Handle quoted messages
+        if (quotedMessage) {
+          return <ReplyMsg el={{ ...el, isMyMessage }} all_members={users} onScrollToReplyMsg={onScrollToReplyMsg} />;
+        }
 
-  const renderMessage = el => {
-    const isMyMessage = checkMyMessage(user_id, el.user.id);
-    const messageType = el.type;
-    const forwardChannelName = getForwardChannelName(el?.forward_cid);
-    const quotedMessage = el?.quoted_message;
+        // Handle different message types
+        switch (messageType) {
+          case MessageType.Regular:
+            if (el.attachments && el.attachments.length > 0) {
+              // Nếu trong attachmens có type linkPreview thì hiển thị Attachmens UI. Chỉ hiển thị LinkPreview UI nếu msg chỉ là link
+              if (
+                el.attachments.some(attachment =>
+                  ['video', 'image', 'file', 'voiceRecording'].includes(attachment.type),
+                )
+              ) {
+                return <AttachmentMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
+              } else {
+                const linkPreview = el.attachments[0]; // chỉ hiển thị linkPreview đầu tiên
+                const isLinkPreview = linkPreview?.title;
 
-    if (el.deleted_at) {
-      return (
-        <Stack direction="row" justifyContent={isMyMessage ? 'end' : 'start'} alignItems="center">
-          <Box
-            px={1.5}
-            py={1.5}
-            sx={{
-              backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[300] : theme.palette.grey[700],
-              borderRadius: 1.5,
-              width: 'max-content',
-              fontSize: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              color: theme.palette.grey[600],
-            }}
-          >
-            <Trash size={16} color={theme.palette.grey[600]} />
-            &nbsp;&nbsp;Message deleted
-          </Box>
-        </Stack>
-      );
-    } else if (quotedMessage) {
-      return <ReplyMsg el={{ ...el, isMyMessage }} all_members={users} onScrollToReplyMsg={onScrollToReplyMsg} />;
-    } else {
-      if (messageType === MessageType.Regular) {
-        if (el.attachments && el.attachments.length > 0) {
-          // Nếu trong attachmens có type linkPreview thì hiển thị Attachmens UI. Chỉ hiển thị LinkPreview UI nếu msg chỉ là link
-          if (
-            el.attachments.some(attachment => ['video', 'image', 'file', 'voiceRecording'].includes(attachment.type))
-          ) {
-            return <AttachmentMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
-          } else {
-            const linkPreview = el.attachments[0]; // chỉ hiển thị linkPreview đầu tiên
-            const isLinkPreview = linkPreview?.title;
-
-            if (isLinkPreview) {
-              return <LinkPreviewMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
+                if (isLinkPreview) {
+                  return <LinkPreviewMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
+                } else {
+                  return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
+                }
+              }
             } else {
               return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
             }
-          }
-        } else {
-          return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
+
+          case MessageType.Reply:
+            if (el.quoted_message) {
+              return (
+                <ReplyMsg el={{ ...el, isMyMessage }} all_members={users} onScrollToReplyMsg={onScrollToReplyMsg} />
+              );
+            } else {
+              return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
+            }
+
+          case MessageType.Signal:
+            return <SignalMsg el={{ ...el, isMyMessage }} />;
+
+          case MessageType.Poll:
+            return <PollMsg el={{ ...el, isMyMessage }} all_members={users} />;
+
+          case MessageType.Sticker:
+            return <StickerMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
+
+          default:
+            return null;
         }
-      } else if (messageType === MessageType.Reply) {
-        if (el.quoted_message) {
-          return <ReplyMsg el={{ ...el, isMyMessage }} all_members={users} onScrollToReplyMsg={onScrollToReplyMsg} />;
-        } else {
-          return <TextMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
-        }
-      } else if (messageType === MessageType.Signal) {
-        return <SignalMsg el={{ ...el, isMyMessage }} />;
-      } else if (messageType === MessageType.Poll) {
-        return <PollMsg el={{ ...el, isMyMessage }} all_members={users} />;
-      } else if (messageType === MessageType.Sticker) {
-        return <StickerMsg el={{ ...el, isMyMessage }} forwardChannelName={forwardChannelName} />;
-      } else {
-        return null;
-      }
-    }
-  };
+      },
+      [user_id, getForwardChannelName, theme.palette, t, users, onScrollToReplyMsg],
+    );
 
-  const onSelectMember = user => {
-    dispatch(setSidebar({ type: SidebarType.UserInfo, open: true }));
-    dispatch(SetUserInfo(user));
-  };
+    const onSelectMember = useCallback(
+      user => {
+        dispatch(setSidebar({ type: SidebarType.UserInfo, open: true }));
+        dispatch(SetUserInfo(user));
+      },
+      [dispatch],
+    );
 
-  if (messages.length === 0) return null;
+    // Memoize filtered messages
+    const filteredMessages = useMemo(
+      () => messages.filter(item => !(item.type === MessageType.Signal && ['1', '4'].includes(item.text[0]))),
+      [messages],
+    );
 
-  return (
-    <Box sx={{ padding: isMobileToLg ? '20px' : isLgToXl ? '40px 50px' : '40px 90px' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, type: 'spring', stiffness: 100 }}
-      >
-        <Stack spacing={3} sx={{ position: 'relative' }}>
-          {messages
-            .filter(item => !(item.type === MessageType.Signal && ['1', '4'].includes(item.text[0])))
-            .map((el, idx) => {
+    if (messages.length === 0) return null;
+
+    return (
+      <Box sx={{ padding: isMobileToLg ? '20px' : isLgToXl ? '40px 50px' : '40px 90px', overflow: 'hidden' }}>
+        <Stack sx={{ position: 'relative' }}>
+          <AnimatePresence initial={false}>
+            {filteredMessages.map((el, idx) => {
               const messageType = el.type;
               let sender = el.user;
               // Nếu thiếu name/avatar thì lấy từ users list
@@ -282,12 +334,11 @@ const MessageList = ({
               }
               const isMyMessage = el.user.id === user_id;
               const name = sender?.name || sender?.id;
-              const isNewestMessage = idx === messages.length - 1;
 
               if (messageType === MessageType.System) {
-                const msgSystem = renderSystemMessage(el.text, users, isDirect, messages);
+                const msgSystem = renderSystemMessage(el.text, users, isDirect, messages, t);
                 return (
-                  <React.Fragment key={el.id}>
+                  <motion.div key={el.id} {...messageMotion}>
                     {el?.date_label && (
                       <Stack
                         direction="row"
@@ -300,24 +351,23 @@ const MessageList = ({
                     <StyledMessage
                       direction="row"
                       justifyContent="center"
-                      // key={el.id}
                       ref={element => setMessageRef(el.id, element, idx)}
                     >
                       <Typography
                         variant="body2"
                         color={theme.palette.grey[500]}
-                        sx={{ textAlign: 'center', fontWeight: 400, order: 2, width: '100%' }}
+                        sx={{ textAlign: 'center', fontWeight: 400, order: 2, width: '100%', marginBottom: '10px' }}
                         dangerouslySetInnerHTML={{ __html: msgSystem }}
                       />
                     </StyledMessage>
-                  </React.Fragment>
+                  </motion.div>
                 );
               } else {
                 const nextMsg = messages[idx + 1];
                 const showAvatar = !isMyMessage && (!nextMsg || nextMsg.user.id !== el.user.id);
 
                 return (
-                  <React.Fragment key={el.id}>
+                  <motion.div key={el.id} {...messageMotion}>
                     {el?.date_label && (
                       <Stack
                         direction="row"
@@ -333,7 +383,6 @@ const MessageList = ({
                       justifyContent={isMyMessage ? 'end' : 'start'}
                       flexWrap="wrap"
                       gap={1}
-                      // key={el.id}
                       className={isMyMessage ? 'myMessage' : ''}
                       ref={element => setMessageRef(el.id, element, idx)}
                       sx={{
@@ -343,10 +392,8 @@ const MessageList = ({
                         paddingLeft: !showAvatar ? '44px' : '0',
                         marginBottom: showAvatar ? '32px!important' : '0px!important',
                         marginTop: '0px!important',
+                        opacity: el.status === 'sending' ? 0.5 : 1,
                       }}
-                      initial={isNewestMessage ? { opacity: 0, y: 10 } : false}
-                      animate={isNewestMessage ? { opacity: 1, y: 0 } : false}
-                      transition={isNewestMessage ? { duration: 0.4, type: 'spring', stiffness: 200 } : undefined}
                     >
                       {highlightMsg === el.id && (
                         <Box
@@ -393,9 +440,8 @@ const MessageList = ({
                       <Stack
                         sx={{
                           minWidth: 'auto',
-                          maxWidth: '80%',
+                          maxWidth: '90%',
                           flex: 1,
-                          // overflow: 'hidden',
                         }}
                       >
                         {renderMessage(el)}
@@ -403,46 +449,41 @@ const MessageList = ({
                         <ReactionsMessage isMyMessage={isMyMessage} message={el} />
 
                         {el.status === 'error' && (
-                          <Stack direction="row" justifyContent="flex-end" sx={{ marginTop: '3px' }}>
-                            <Stack
-                              direction="row"
-                              justifyContent="center"
-                              alignItems="center"
-                              sx={{
-                                backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[400] : '#545c64',
-                                padding: '3px',
-                                borderRadius: '32px',
-                              }}
-                            >
-                              <Clock size={16} color={'#fff'} />
-                              <span style={{ fontSize: '12px', color: '#fff' }}>&nbsp;Sending&nbsp;</span>
-                            </Stack>
+                          <Stack
+                            direction="row"
+                            justifyContent="flex-end"
+                            sx={{ marginTop: '0px', position: 'absolute', bottom: '3px', right: '-9px' }}
+                          >
+                            <WarningCircle size={24} weight="fill" color={theme.palette.error.main} />
                           </Stack>
                         )}
                       </Stack>
 
                       {lastReadMessageId === el.id && (
                         <Stack direction="row" justifyContent="center" sx={{ width: '100%', margin: '10px 0' }}>
-                          <Chip label="Unread message" />
+                          <Chip label={t('chatComponent.unread_message')} />
                         </Stack>
                       )}
                     </StyledMessage>
-                  </React.Fragment>
+                  </motion.div>
                 );
               }
             })}
+          </AnimatePresence>
         </Stack>
-      </motion.div>
-      {!isGuest && !isBlocked && !isBanned && <ReadBy />}
-    </Box>
-  );
-};
 
+        {!isGuest && !isBlocked && !isBanned && <ReadBy />}
+      </Box>
+    );
+  },
+);
 const ChatComponent = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
   const messageListRef = useRef(null);
+  const { playNewMessageSound, cleanup } = useMessageSound();
   const { currentChannel, isBlocked, isGuest, isBanned } = useSelector(state => state.channel);
   const { user_id } = useSelector(state => state.auth);
   const { deleteMessage, messageIdError, searchMessageId, forwardMessage, filesMessage } = useSelector(
@@ -461,11 +502,12 @@ const ChatComponent = () => {
   const [highlightMsg, setHighlightMsg] = useState('');
   const [noMessageTitle, setNoMessageTitle] = useState('');
 
-  const isDirect = isChannelDirect(currentChannel);
-  const users = client.state.users ? Object.values(client.state.users) : [];
+  // Memoize derived values
+  const isDirect = useMemo(() => isChannelDirect(currentChannel), [currentChannel]);
+  const users = useMemo(() => (client.state.users ? Object.values(client.state.users) : []), [client.state.users]);
   const isLgToXl = useResponsive('between', null, 'lg', 'xl');
   const isMobileToLg = useResponsive('down', 'lg');
-  const currentChat = currentTopic ? currentTopic : currentChannel;
+  const currentChat = useMemo(() => (currentTopic ? currentTopic : currentChannel), [currentTopic, currentChannel]);
 
   useEffect(() => {
     setUsersTyping([]);
@@ -487,12 +529,12 @@ const ChatComponent = () => {
       setIsPendingInvite(checkPendingInvite(currentChat));
       setUnreadCount(currentChat.state.unreadCount);
       dispatch(SetIsGuest(isGuestInPublicChannel(currentChat)));
-      setNoMessageTitle(listMessage.length ? '' : 'No messages here yet...');
+      setNoMessageTitle(listMessage.length ? '' : t('chatComponent.no_message'));
 
       const read = currentChat.state.read[user_id];
-      const lastReadMsgId = read.unread_messages ? read.last_read_message_id : '';
+      const lastReadMsgId = read && read?.unread_messages ? read.last_read_message_id : '';
       setLastReadMessageId(lastReadMsgId);
-      let lastSend = read.last_send || DefaultLastSend;
+      let lastSend = (read && read?.last_send) || DefaultLastSend;
       let duration = currentChat.data.member_message_cooldown || 0;
 
       const onSetCooldownTime = event => {
@@ -528,9 +570,22 @@ const ChatComponent = () => {
         }
       };
 
+      if (![RoleMember.PENDING, RoleMember.SKIPPED].includes(myRoleInChannel(currentChat))) {
+        setTimeout(() => {
+          dispatch(SetMarkReadChannel(currentChat));
+        }, 100);
+      }
+
       const handleMessages = event => {
         switch (event.type) {
           case ClientEvents.MessageNew:
+            const messageType = event.message.type;
+
+            // Phát âm thanh cho tin nhắn mới (trừ tin nhắn system/signal)
+            if (![MessageType.System, MessageType.Signal].includes(messageType)) {
+              playNewMessageSound();
+            }
+
             if (user_id !== event.user.id || [MessageType.System, MessageType.Signal].includes(event.message.type)) {
               setMessages(prev => {
                 return [...prev, event.message];
@@ -727,26 +782,7 @@ const ChatComponent = () => {
       };
 
       const handleChannelTruncate = event => {
-        const channelId = event.channel_id;
-        const channelType = event.channel_type;
-        setMessages([]);
-        dispatch(WatchCurrentChannel(channelId, channelType));
-      };
-
-      const handleChannelTopicEnabled = event => {
-        const splitCID = splitChannelId(event.cid);
-        const channelId = splitCID.channelId;
-        const channelType = splitCID.channelType;
-        dispatch(WatchCurrentChannel(channelId, channelType));
-        dispatch(SetOpenTopicPanel(true));
-      };
-
-      const handleChannelTopicDisabled = event => {
-        const splitCID = splitChannelId(event.cid);
-        const channelId = splitCID.channelId;
-        const channelType = splitCID.channelType;
-        dispatch(WatchCurrentChannel(channelId, channelType));
-        dispatch(SetOpenTopicPanel(false));
+        setMessages(currentChat.state.messages || []);
       };
 
       const handleChannelTopicClosed = event => {
@@ -776,8 +812,6 @@ const ChatComponent = () => {
       currentChat.on(ClientEvents.MemberUnBanned, handleMemberUnBanned);
       currentChat.on(ClientEvents.PollChoiceNew, handleMessages);
       currentChat.on(ClientEvents.ChannelTruncate, handleChannelTruncate);
-      currentChat.on(ClientEvents.ChannelTopicEnabled, handleChannelTopicEnabled);
-      currentChat.on(ClientEvents.ChannelTopicDisabled, handleChannelTopicDisabled);
       currentChat.on(ClientEvents.ChannelTopicClosed, handleChannelTopicClosed);
       currentChat.on(ClientEvents.ChannelTopicReopen, handleChannelTopicReopen);
 
@@ -801,10 +835,11 @@ const ChatComponent = () => {
         currentChat.off(ClientEvents.MemberUnBanned, handleMemberUnBanned);
         currentChat.off(ClientEvents.PollChoiceNew, handleMessages);
         currentChat.off(ClientEvents.ChannelTruncate, handleChannelTruncate);
-        currentChat.off(ClientEvents.ChannelTopicEnabled, handleChannelTopicEnabled);
-        currentChat.off(ClientEvents.ChannelTopicDisabled, handleChannelTopicDisabled);
         currentChat.off(ClientEvents.ChannelTopicClosed, handleChannelTopicClosed);
         currentChat.off(ClientEvents.ChannelTopicReopen, handleChannelTopicReopen);
+
+        // Cleanup audio khi thay đổi chat hoặc component unmount
+        cleanup();
       };
     } else {
       if (messageListRef.current) {
@@ -833,7 +868,7 @@ const ChatComponent = () => {
     }
   }, [searchMessageId, messages]);
 
-  const fetchMoreMessages = async () => {
+  const fetchMoreMessages = useCallback(async () => {
     try {
       setLoadingMore(true);
       const msgId = messages[0]?.id;
@@ -848,38 +883,49 @@ const ChatComponent = () => {
       setLoadingMore(false);
     } catch (error) {
       setLoadingMore(false);
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
-  };
+  }, [messages, currentChat, dispatch, t]);
 
-  const queryMessages = async msgId => {
-    const channelType = currentChat.data.type;
-    const channelId = currentChat.data.id;
-    const channel = client.channel(channelType, channelId);
+  const queryMessages = useCallback(
+    async msgId => {
+      const channelType = currentChat.data.type;
+      const channelId = currentChat.data.id;
+      const channel = client.channel(channelType, channelId);
 
-    const response = await channel.query({
-      messages: { limit: MESSAGE_LIMIT, id_gt: msgId },
-    });
+      const response = await channel.query({
+        messages: { limit: MESSAGE_LIMIT, id_gt: msgId },
+      });
 
-    if (response) {
-      const messages = channel.state.messages;
+      if (response) {
+        const messages = channel.state.messages;
 
-      setMessages(messages);
-      setTargetId(msgId);
-    }
-  };
+        setMessages(messages);
+        setTargetId(msgId);
+      }
+    },
+    [currentChat],
+  );
 
-  const onScrollToReplyMsg = msgId => {
-    setHighlightMsg(msgId);
-    const message = messages.find(item => item.id === msgId);
-    if (message) {
-      setTargetId(message.id);
-    } else {
-      queryMessages(msgId);
-    }
-  };
+  const onScrollToReplyMsg = useCallback(
+    msgId => {
+      setHighlightMsg(msgId);
+      const message = messages.find(item => item.id === msgId);
+      if (message) {
+        setTargetId(message.id);
+      } else {
+        queryMessages(msgId);
+      }
+    },
+    [messages, queryMessages],
+  );
 
-  const onScrollToFirstUnread = () => {
+  const onDeleteUnread = useCallback(() => {
+    setShowChipUnread(false);
+    setUnreadCount(0);
+  }, []);
+
+  const onScrollToFirstUnread = useCallback(() => {
     if (lastReadMessageId) {
       const message = messages.find(item => item.id === lastReadMessageId);
       if (message) {
@@ -892,49 +938,63 @@ const ChatComponent = () => {
         onDeleteUnread();
       }, 1000);
     }
-  };
+  }, [lastReadMessageId, messages, queryMessages, onDeleteUnread]);
 
-  const onDeleteUnread = () => {
-    setShowChipUnread(false);
-    setUnreadCount(0);
-  };
+  const onDropFiles = useCallback(
+    (acceptedFiles, fileRejections, event) => {
+      event.stopPropagation();
+      event.preventDefault();
+      dispatch(onFilesMessage({ openDialog: true, files: acceptedFiles, uploadType: UploadType.File }));
+    },
+    [dispatch],
+  );
 
-  const onDropFiles = (acceptedFiles, fileRejections, event) => {
-    event.stopPropagation();
-    event.preventDefault();
-    dispatch(onFilesMessage({ openDialog: true, files: acceptedFiles, uploadType: UploadType.File }));
-  };
+  const addDateLabels = useCallback(
+    messages => {
+      let lastDate = null;
+      const today = dayjs().startOf('day');
+      const yesterday = today.subtract(1, 'day');
 
-  function addDateLabels(messages) {
-    let lastDate = null;
-    const today = dayjs().startOf('day');
-    const yesterday = today.subtract(1, 'day');
+      return messages.map((msg, idx) => {
+        const msgDate = dayjs(msg.created_at).startOf('day');
+        let date_label = null;
 
-    return messages.map((msg, idx) => {
-      const msgDate = dayjs(msg.created_at).startOf('day');
-      let date_label = null;
+        if (!lastDate || !msgDate.isSame(lastDate)) {
+          if (msgDate.isSame(today)) date_label = t('chatComponent.today');
+          else if (msgDate.isSame(yesterday)) date_label = t('chatComponent.yesterday');
+          else date_label = msgDate.format('DD/MM/YYYY');
+          lastDate = msgDate;
+        }
 
-      if (!lastDate || !msgDate.isSame(lastDate)) {
-        if (msgDate.isSame(today)) date_label = 'Today';
-        else if (msgDate.isSame(yesterday)) date_label = 'Yesterday';
-        else date_label = msgDate.format('DD/MM/YYYY');
-        lastDate = msgDate;
-      }
+        return date_label ? { ...msg, date_label } : msg;
+      });
+    },
+    [t],
+  );
 
-      return date_label ? { ...msg, date_label } : msg;
-    });
-  }
+  // Memoize derived values for render
+  const showChatFooter = useMemo(() => !isGuest && !isBanned && !isClosedTopic, [isGuest, isBanned, isClosedTopic]);
+  const showButtonScrollToBottom = useMemo(() => !isBlocked || !isBanned, [isBlocked, isBanned]);
+  const disabledScroll = useMemo(() => isBlocked || isBanned, [isBlocked, isBanned]);
+  const showTopicPanel = useMemo(
+    () => !isGuest && !isDirect && currentChannel?.data?.topics_enabled,
+    [isGuest, isDirect, currentChannel?.data?.topics_enabled],
+  );
 
-  const showChatFooter = !isGuest && !isBanned && !isClosedTopic;
-  const showButtonScrollToBottom = !isBlocked || !isBanned;
-  const disabledScroll = isBlocked || isBanned;
-  const showTopicPanel = !isGuest && !isDirect && currentChannel?.data?.topics_enabled;
+  // Memoize processed messages with date labels
+  const messagesWithDateLabels = useMemo(() => addDateLabels(messages), [addDateLabels, messages]);
 
   return (
     <Stack direction="row" sx={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-      {showTopicPanel && <TopicPanel />}
-
-      <Stack sx={{ minWidth: 'auto', height: '100%', position: 'relative', flex: 1, overflow: 'hidden' }}>
+      <Stack
+        sx={{
+          minWidth: 'auto',
+          height: '100%',
+          position: 'relative',
+          flex: 1,
+          overflow: 'hidden',
+        }}
+      >
         <ChatHeader />
 
         {currentChat && (
@@ -951,7 +1011,7 @@ const ChatComponent = () => {
               <Box sx={{ width: '100%' }}>
                 <Alert severity="info" sx={{ fontWeight: 400 }}>
                   <strong>{formatString(currentChat?.data.name)}</strong>
-                  &nbsp;needs to accept your invitation to see the messages you've sent
+                  &nbsp;{t('chatComponent.message')}
                 </Alert>
               </Box>
             )}
@@ -961,7 +1021,7 @@ const ChatComponent = () => {
             {(showChipUnread || unreadCount >= MESSAGE_LIMIT) && (
               <Stack direction="row" alignItems="center" justifyContent="center">
                 <Chip
-                  label={`${unreadCount} Unread messages`}
+                  label={`${unreadCount} ${t('chatComponent.unread_message')}`}
                   color="primary"
                   onClick={onScrollToFirstUnread}
                   onDelete={onDeleteUnread}
@@ -1024,7 +1084,7 @@ const ChatComponent = () => {
                     {/* <SimpleBarStyle timeout={500} clickOnTrack={false}> */}
                     <MessageList
                       messageListRef={messageListRef}
-                      messages={addDateLabels(messages)}
+                      messages={messagesWithDateLabels}
                       lastReadMessageId={lastReadMessageId}
                       targetId={targetId}
                       setTargetId={setTargetId}
@@ -1060,7 +1120,7 @@ const ChatComponent = () => {
         {isClosedTopic && <ClosedTopicBackdrop />}
         {isPendingInvite && <ChannelInvitation />}
         {isBanned && <BannedBackdrop />}
-        {isBlocked && <BlockedBackdrop />}
+        <BlockedBackdrop />
       </Stack>
       {deleteMessage.openDialog && <DeleteMessageDialog />}
       {forwardMessage.openDialog && <ForwardMessageDialog />}

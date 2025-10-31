@@ -98,7 +98,7 @@ export function FetchUserProfile() {
   };
 }
 
-export const UpdateUserProfile = formValues => {
+export const UpdateUserProfile = ( formValues, t ) => {
   return async (dispatch, getState) => {
     if (!client) return;
     const { name, about_me, avatar } = formValues;
@@ -119,12 +119,12 @@ export const UpdateUserProfile = formValues => {
 
       dispatch(slice.actions.updateUser({ user: data }));
       dispatch(slice.actions.updateMember(data));
-      dispatch(showSnackbar({ severity: 'success', message: 'Update profile successfully!' }));
+      dispatch(showSnackbar({ severity: 'success', message: t('snackbar_profile_success') }));
       dispatch(UpdateIsLoading({ isLoading: false }));
       dispatch(CloseDialogProfile());
     } catch (error) {
       dispatch(UpdateIsLoading({ isLoading: false }));
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
   };
 };
@@ -140,7 +140,7 @@ export function FetchFriends() {
         dispatch(slice.actions.fetchFriends(userIds));
       })
       .catch(err => {
-        // handleError(dispatch, err);
+        // handleError(dispatch, err, t);
       });
   };
 }

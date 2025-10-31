@@ -7,4 +7,5 @@ export const LocalStorageKey = {
   AppVersion: 'app_version',
   ApiUrl: 'api_url',
   IsCustomApiUrl: 'is_custom_api_url',
+  Locale: 'locale',
 };

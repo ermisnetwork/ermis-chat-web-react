@@ -4,9 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { PencilSimple, X } from 'phosphor-react';
 import { onEditMessage } from '../../redux/slices/messages';
 import { displayMessageWithMentionName } from '../../utils/commons';
+import { useTranslation } from 'react-i18next';
 
 const EditMessageBox = ({ editMessage }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { mentions } = useSelector(state => state.channel);
 
@@ -36,7 +38,7 @@ const EditMessageBox = ({ editMessage }) => {
               }}
             >
               <PencilSimple size={12} />
-              <span>&nbsp;&nbsp;Edit message</span>
+              <span>&nbsp;&nbsp;{t('editMessageBox.edit_messages')}</span>
             </Typography>
 
             <Typography

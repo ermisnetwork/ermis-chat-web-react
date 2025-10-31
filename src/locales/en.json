@@ -1,0 +1,803 @@
+{
+  "noResult": "No result",
+  "you": "You",
+  "sticker": "Sticker",
+  "profile": {
+    "edit": "Edit Profile",
+    "language": "Language",
+    "logout": "Log Out"
+  },
+  "newchat": {
+    "add_friend": "Add Friend",
+    "new_chat": "New Chat",
+    "channel": "New Channel",
+    "message": "New Message"
+  },
+  "renderTitle": {
+    "conversations": "Conversations",
+    "contacts": "Contacts",
+    "calls": "Calls",
+    "more": "More"
+  },
+  "channel": {
+    "message_large": "Let the message fly!",
+    "message_small": "This space is waiting for your words — spark a conversation and build something great together."
+  },
+  "Homesearch": {
+    "search": "Search Channel",
+    "your_channel": "Your Channel",
+    "public_channel": "Public Channel"
+  },
+  "chatComponent": {
+    "today": "Today",
+    "yesterday": "yesterday",
+    "message": "needs to accept your invitation to see the messages you've sent",
+    "message_delete": "Message delete",
+    "no_message": "No messages here yet...",
+    "sending": "Sending",
+    "unread_message": "Unread message"
+  },
+  "chatElement": {
+    "general": "General",
+    "blocked": "You have block this user",
+    "unpinned": "Unpin from top",
+    "pinned": "Pinned to top",
+    "delete_channel": "Delete channel",
+    "leave_channel": "Leave channel",
+    "clear_chat_history": "Clear chat history",
+    "you": "You",
+    "sticker": "Sticker",
+    "photo": "Photo",
+    "no_message": "No messages here yet"
+  },
+  "Profile": {
+    "title": "Profile",
+    "label": "Name",
+    "about_me": "About me",
+    "delete_profile": "Delete Account",
+    "update_photo": "Update photo",
+    "cancel": "Cancel",
+    "Save": "Save",
+    "snackbar_image_error": "Please upload an image file!"
+  },
+  "navbuttons": {
+    "convertions": "Convertions",
+    "contacts": "Contacts"
+  },
+  "addfriend": {
+    "title": "Add Friend",
+    "search": "Search",
+    "message": "Search for new contact by entering their phone number or email address.",
+    "nothing": "Oops! Nothing here",
+    "message_small": "Looks like no one matches your search.",
+    "noResult": "No result for",
+    "snackbar_success": "Invitation sent",
+    "snackbar_failed": "Failed to send invite. Please retry"
+  },
+  "create_channel": {
+    "title": "Create new channel",
+    "type": "TYPE",
+    "public": "Public",
+    "private": "Private",
+    "channel_required": "Channel name is required",
+    "create_success": "Channel created successfully",
+    "create_failed": "Failed to send invite. Please retry",
+    "message_public": "Public channel is open for anyone to search, view its content, and join.",
+    "message_private": "Only invited members can find and join a private channel.",
+    "info": "INFO",
+    "channel_name": "Channel Name",
+    "description": "Description",
+    "words": "words",
+    "cancel": "CANCEL",
+    "next": "NEXT",
+    "title_addMember": "Who would you like to add?",
+    "back": "BACK",
+    "create": "CREATE",
+    "search": "Search"
+  },
+  "new_message": {
+    "title": "Start a new conversation",
+    "search": "Search",
+    "create_success": "Channel created successfully",
+    "create_failed": "Failed to send invite. Please retry"
+  },
+  "contact": {
+    "search": "Search",
+    "friends_list": "Friends List",
+    "channel_list": "Channels List",
+    "channel_request": "Friend/Channel Request",
+    "noResult": "No result for"
+  },
+  "invite": {
+    "message": "Sent you a friend request",
+    "admin_invite": "Admin invites you",
+    "skip": "SKIP",
+    "accept": "ACCEPT",
+    "decline": "DECLINE",
+    "join": "JOIN"
+  },
+  "chatHeader": {
+    "general": "General",
+    "member": "member",
+    "join": "join",
+    "pin": "pin",
+    "unpin": "unpin",
+    "pin_to_top": "pin to top",
+    "info": "info",
+    "topic_info": "Topic Info",
+    "edit": "edit",
+    "edit_topic": "Edit Topic",
+    "reopen": "reopen",
+    "reopen_topic": "Reopen Topic",
+    "close": "close",
+    "close_topic": "Close Topic",
+    "delete": "delete",
+    "delete_topic": "Delete Topic",
+    "snackbar_closed_success": "Topic closed successfully",
+    "snackbar_reopened_success": "Topic reopened successfully"
+  },
+  "chat_element": {
+    "general": "General",
+    "no_message": "No messages here yet",
+    "last_message": "You have block this user"
+  },
+  "channelList": {
+    "all": "All",
+    "group": "Group",
+    "unread": "Unread",
+    "no_channel": "No channels"
+  },
+  "chatFooter": {
+    "send_message": "You do not have permission to send message in this channel",
+    "check_filterWords": "The content you entered contains blocked keywords",
+    "check_sendLinks": "Members in this channel are not allowed to send links",
+    "placeholder": "Write a message..."
+  },
+  "popover": {
+    "share_file": "Share File",
+    "create_poll": "Create Poll"
+  },
+  "create_poll": {
+    "title": "Create a poll",
+    "question": "QUESTION",
+    "question_name": "Question name",
+    "option": "Option",
+    "question_required": "Question is required",
+    "question_empty": "Option cannot be empty",
+    "options": "OPTIONS",
+    "add_option": "ADD OPTION",
+    "cancel": "CANCEL",
+    "create": "CREATE",
+    "min_options": "At least 2 options",
+    "multiple_answers": "Multiple answers"
+  },
+  "recordingAudio": {
+    "upload_error": "Upload audio failed",
+    "microphone_error": "Cannot access microphone",
+    "cancel": "CANCEL"
+  },
+  "messageSystem": {
+    "public": "public",
+    "private": "private",
+    "channel_update_name": "has changed the channel name",
+    "channel_update_name_to": "changed the channel name to",
+    "channel_update_avatar": "has changed the channel avatar",
+    "channel_update_description": "has changed the channel description",
+    "member_removed": "have been removed",
+    "member_removed_from_channel": "has been removed from this channel",
+    "member_banned": "have been banned from interacting",
+    "member_banned_by_admin": "has been banned from interacting in this channel by Channel Admin",
+    "member_unbanned": "have been unbanned",
+    "member_unbanned_channel": "have been unbanned and now can interact in this channel",
+    "member_promoted": "has been promoted as the moderator",
+    "member_promoted_channel": "has been assigned as the moderator for this channel",
+    "member_demoted": "has been removed as the moderator",
+    "member_demoted_channel": "has been removed as the moderator from this channel",
+    "channel_update_member_capabilities": "has updated member permission of channel",
+    "conversation": "conversation",
+    "channel": "channel",
+    "member_joined": "joined",
+    "joined_channel": "joined this",
+    "invite_rejected": "has declined to join channel",
+    "invite_rejected_channel": "has declined to join this channel",
+    "member_leaved": "has leaved channel",
+    "member_leaved_channel": "has leaved this channel",
+    "channel_truncate_messages": "has truncated all messages",
+    "channel_truncate_messages_all": "has truncated all messages of this channel",
+    "channel_update_public": "has made channel",
+    "channel_update_public_this": "has made this channel",
+    "channel_update_cooldown_disabled": "Cooldown has been disabled",
+    "channel_update_cooldown_enabled": "Cooldown feature enabled by Channel Admin. Cooldown duration set to",
+    "channel_update_filter_words": "has updated channel filter words",
+    "member_joined_channel": "has joined to channel",
+    "member_joined_this_channel": "has joined to this channel",
+    "message_pinned": "pinned a message",
+    "message_unpinned": "unpinned a message",
+    "seconds": "seconds",
+    "minutes": "minutes",
+    "You": "You"
+  },
+  "conversation": {
+    "copy_text": "Message copied to clipboard!",
+    "copy_failed": "Failed to copy!",
+    "snackbar_delete": "You do not have permission to delete message in this channel",
+    "snackbar_edit": "You do not have permission to edit message in this channel",
+    "snackbar_pin": "You do not have permission to pin message in this channel",
+    "snackbar_pinned": "Message pinned",
+    "snackbar_pin_failed": "Unable to pin the message. Please try again",
+    "unpin": "Unpin",
+    "pin": "pin",
+    "download": "Download",
+    "edit": "Edit",
+    "copy": "Copy",
+    "delete": "Delete",
+    "more": "More",
+    "reply": "Reply",
+    "forward": "Forward",
+    "forward_from": "Forwarded from",
+    "unknown_channel": "unknown channel",
+    "edited": "Edited",
+    "snackbar_vote": "Please select an option to vote",
+    "vote": "VOTE",
+    "result": "RESULT",
+    "votes": "votes",
+    "message_deleted": "Message deleted"
+  },
+  "muteNotificationsDialog": {
+    "title": "Mute Notifications",
+    "cancel": "Cancel",
+    "accept": "Accept",
+    "mute_15_minutes": "Mute for 15 minutes",
+    "mute_1_hour": "Mute for 1 hour",
+    "mute_8_hours": "Mute for 8 hours",
+    "until_i_turn_it_back_on": "Until i turn it back on"
+  },
+  "sidebarChannelInfo": {
+    "channel_name_required": "Channel name is required",
+    "max_characters": "Max 255 characters",
+    "description": "Description",
+    "snackbar_upload_error": "Please upload an image file!",
+    "snackbar_update_success": "Channel updated successfully",
+    "channel_name": "Channel name",
+    "snackbar_notifications_muted": "Notifications have been muted",
+    "snackbar_notifications_unmuted": "Notifications have been unmuted",
+    "save": "SAVE",
+    "copied_clipboard": "Copied to clipboard",
+    "notifications": "Notifications",
+    "unmute": "Unmute",
+    "mute": "Mute",
+    "invite_friend": "Invite Friend",
+    "unblock_user": "Unblock User",
+    "block_user": "Block User",
+    "channel_type": "Channel Type",
+    "public": "Public",
+    "private": "Private",
+    "channel_topics": "Channel Topics",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "member": "Members",
+    "permission": "Permissions",
+    "administrators": "Administrators",
+    "banned_members": "Banned Members",
+    "keyword_filtering": "Keyword Filtering",
+    "clear_chat_history": "Clear chat history",
+    "leave_channel": "Leave channel",
+    "delete_channel": "Delete channel",
+    "words": "words"
+  },
+  "callDirectDialog": {
+    "chat": "chat",
+    "mute": "mute",
+    "unmute": "unmute",
+    "stop_video": "stop video",
+    "start_video": "start video",
+    "screencast": "screencast",
+    "decline": "decline",
+    "accept": "accept",
+    "end_call": "end call",
+    "cancel": "cancel",
+    "Connected": "Connected",
+    "request_switch_video_call": "Request to switch to a video call",
+    "ringing": "ringing"
+  },
+  "sidebarChannelType": {
+    "title": "Channel Type",
+    "invite_link": "INVITE LINK",
+    "type": "TYPE",
+    "public": "Public",
+    "private": "Private",
+    "copy": "COPY",
+    "message": "Enable others to find the channel by sharing its link.",
+    "save": "SAVE",
+    "snackbar_update_success": "Channel updated successfully",
+    "snackbar_copy_success": "Copied to clipboard",
+    "snackbar_copy_failed": "Failed to copy the link. Please try again",
+    "public_message": "Public channel is open for anyone to search, view its content, and join.",
+    "private_message": "Only invited members can find and join a private channel."
+  },
+  "sidebarChannelTopic": {
+    "title": "Channel Topics",
+    "save": "SAVE",
+    "topics": "TOPICS",
+    "Enabled": "Enable",
+    "Disabled": "Disable",
+    "message": "The group chat will be divided into topics created by admins or users.",
+    "snackbar_message": "Channel topics",
+    "success": "successfully",
+    "enabled": "enabled",
+    "disabled": "disabled"
+  },
+  "sidebarMember": {
+    "title": "Members",
+    "no_result": "No result",
+    "members": "Members",
+    "invite_members": "Invited Members",
+    "search": "Search"
+  },
+  "friendList": {
+    "noResult": "No result for"
+  },
+  "contactElement": {
+    "member": "members"
+  },
+  "closedTopicBackdrop": {
+    "title": "THIS TOPIC IS CLOSED",
+    "message": "Reopen Topic",
+    "snackbar_success": "Topic reopened successfully"
+  },
+  "sidebarPermission": {
+    "title": "Permissions",
+    "off": "Off",
+    "send_messages": "Send Messages",
+    "send_links": "Send Links",
+    "edit_messages": "Edit Messages",
+    "delete_messages": "Delete Messages",
+    "react_messages": "React Messages",
+    "pin_messages": "Pin Message",
+    "create_poll": "Create Poll",
+    "vote_poll": "Vote Poll",
+    "update_cooldown_success": "Update cooldown messages successfully!",
+    "update_capabilities_success": "Update capabilities successfully!",
+    "save": "SAVE",
+    "member_actions": "MEMBER ACTIONS",
+    "slow_mode": "SLOW MODE",
+    "message": "Set how long each member has to wait before sending their next mesage."
+  },
+  "sidebarAdministrators": {
+    "title": "Administrators",
+    "snackbar_added_success": "Added moderators successfully",
+    "add": "ADD",
+    "channel_members": "Channel Members",
+    "add_moderator": "Add Moderator"
+  },
+  "sidebarBannedMembers": {
+    "title": "Banned Members",
+    "no_banned_member": "No banned member!",
+    "message": "Good vibes only - No ban here.",
+    "banned_button": "Banned",
+    "channel_members": "Channel Members",
+    "Banned": "BANNED",
+    "saveClick": "Banned members successfully"
+  },
+  "sidebarKeywordFiltering": {
+    "title": "Keywords Filtering",
+    "save": "SAVE",
+    "add_keyword": "ADD KEYWORD",
+    "add_message": "Add keywords to automatically delete messages with unwanted content in this channel",
+    "on_this_channel": "ON THIS CHANNEL",
+    "no_keyword": "No keyword yet.",
+    "max_characters": "Keyword must be more than 3 characters",
+    "keyword_exists": "Keyword already exists in the list",
+    "add_success": "Keywords added successfully!"
+  },
+  "sidebarSearchMessage": {
+    "title": "Search Message",
+    "search": "Search",
+    "no_message": "No messages found!",
+    "message": "We couldn’t find any messages. Try a different keyword or share something to get started."
+  },
+  "inviteFriendDialog": {
+   "title": "Invite members to this channel",
+   "search": "Search", 
+   "invite": "INVITE", 
+   "members": "MEMBERS",
+   "snackbar_success": "Members added successfully"
+  },
+  "newTopicDialog": {
+    "title": "Start a new topic",
+    "topic_name": "TOPIC NAME",
+    "name_placeholder": "What do you want to discuss?",
+    "topic_icon": "TOPIC ICON",
+    "create_topic": "CREATE",
+    "topic_required": "Topic name is required",
+    "topic_success": "Topic created successfully"
+  },
+  "noFile": {
+    "title": "It’s a bit empty here",
+    "message": "Share something with your friend — files, links, or media — and it’ll show up right away."
+  },
+  "channelNotFound": {
+    "title": "Channel Not Found",
+    "message_up": "The link you accessed does not correspond to any existing chat channel.",
+    "message_down": "Please check the URL or go back to the main page.",
+    "btn_message": "Go Back"
+  },
+  "channelConfirmDialog": {
+    "snackbar_leave": "You have left the channel",
+    "snackbar_remove_member": "Remove member successfully!",
+    "snackbar_delete_channel": "'Remove channel successfully!'",
+    "snackbar_delete_moder": "'Remove moder successfully!'",
+    "snackbar_delete_history": "'Conversation history delete successfully!'",
+    "snackbar_blocked": "'Successfully blocked'",
+    "snackbar_unblocked": "'Successfully unblocked'",
+    "snackbar_unbanned": "'Successfully unbanned'",
+    "snackbar_delete_topic": "'Delete topic successfully!'",
+    "snackbar_confirm_leave_channel": "'Are you sure you want to leave this channel?'",
+    "snackbar_confirm_remove_member": "'Are you sure you want to remove this member?'",
+    "snackbar_confirm_delete_one": "'Once the channel'",
+    "snackbar_confirm_delete_two": "'is deleted, all content and chat history will be permanently lost. This action cannot be undone.'",
+    "snackbar_confirm_delete_three": "'Are you sure you want to proceed'",
+    "snackbar_confirm_remove_moder": "Are you sure you want to remove this user as a moderator?",
+    "snackbar_confirm_delete_conversation": "Whole conversation history will permanently delete.",
+    "snackbar_confirm_delete": "Are you sure you want to delete?",
+    "snackbar_confirm_block": "Are you sure you want to block",
+    "snackbar_confirm_block_message": "He/she will no longer be able to send you message",
+    "snackbar_confirm_unblock": "Are you sure you want to unblock",
+    "snackbar_confirm_unblock_message": "He/she will be able to send you message again",
+    "snackbar_confirm_unban": "Are you sure you want to unban",
+    "snackbar_confirm_unban_message": "He/she will be able to send you message again",
+    "snackbar_confirm_delete_topic_one": "Once the topic",
+    "snackbar_confirm_delete_topic_two": "is deleted, all content and chat history will be permanently lost. This action cannot be undone.",
+    "snackbar_confirm_proceed": "Are you sure you want to proceed",
+    "dialog_title_leave_channel": "Leave this channel",
+    "dialog_title_remove_member_action": "Remove this member",
+    "dialog_title_delete_channel": "Are you sure you want to delete this channel?",
+    "dialog_title_remove_moderator": "Remove this moderator",
+    "dialog_title_clear_history": "Clear chat history",
+    "dialog_title_block_user": "Block this user",
+    "dialog_title_unblock_user": "Unblock this user",
+    "dialog_title_unban_user": "Unban this user",
+    "dialog_title_delete_topic": "Are you sure you want to delete this topic?",
+    "leave": "Leave",
+    "remove": "Remove",
+    "delete": "Delete",
+    "clear": "Clear",
+    "block": "Block",
+    "unblock": "Unblock",
+    "unban": "Unban",
+    "yes": "Yes",
+    "snackbar_error_delete_channel": "Failed to delete the channel. Please try again",
+    "snackbar_error_delete_chat": "Failed to delete the chat. Please try again",
+    "snackbar_error_block_user": "Failed to block the user. Please try again",
+    "snackbar_error_unblock_user": "Failed to unblock the user. Please try again",
+    "snackbar_error_unban_user": "Failed to unban the user. Please try again",
+    "snackbar_error_delete_topic": "Failed to delete the topic. Please try again",
+    "cancel": "Cancel"
+  },
+  "topicPanel": {
+    "topic_waiting": "Topic Is Waiting!",
+    "message": "We moved older messages to “General.” Kick off a new topic anytime!",
+    "New_topic": "NEW TOPIC",
+    "info_channel": "Channel Info",
+    "search": "Search Messages",
+    "add_member": "Add Members",
+    "new_topic": "New Topic",
+    "member": "members"
+  },
+  "topicElement": {
+    "sticker": "Sticker",
+    "no_message": "No messages here yet",
+    "unpinned": "Unpin from top",
+    "pinned": "Pinned to top",
+    "delete_topic": "Delete Topic",
+    "you": "You",
+    "photo": "Photo"
+  },
+  "sidebarMembers": {
+    "title": "Members",
+    "no_result": "No result for",
+    "members": "Members",
+    "invite_members": "Invited Members",
+    "search": "Search"
+  },
+  "sidebarTopicInfo": {
+    "topic_name": "TOPIC NAME",
+    "topic_icon": "TOPIC ICON",
+    "save": "SAVE",
+    "placeholder": "What do you want to discuss?",
+    "Description": "DESCRIPTION",
+    "description_placeholder": "Description",
+    "words": "words",
+    "max_characters": "Max 255 characters",
+    "channel_name_required": "Channel name is required",
+    "snackbar_update_success": "Channel updated successfully",
+    "snackbar_update_error": "Failed to update topic. Please try again"
+  },
+  "leftPanel": {
+    "sent": "sent",
+    "file": "a file",
+    "photo": "a photo",
+    "linkPreview": "a link preview",
+    "video": "a video",
+    "voiceRecording": "a voice recording",
+    "attachment": "an attachments",
+    "photo_videos": "photos and videos",
+    "files": "files",
+    "mention_all": "mentioned everyone in",
+    "mentioned_by": "You were mentioned by",
+    "in": "in",
+    "reacted": "reacted with",
+    "your_message": "to your message",
+    "alert": "This browser does not support system notifications!",
+    "chat_type_team": "You have a new channel invitation",
+    "chat_type_dm": "You have a new DM invitation",
+    "member_banned": "You have been banned from interacting in this channel",
+    "member_unbanned": "You have been unbanned in a channel"
+  },
+  "snackbar_profile_success": "Update profile successfully",
+  "channelInfoTab": {
+    "media": "Media",
+    "files": "Files",
+    "links": "Links",
+    "members": "Members"
+  },
+  "readBy": {
+    "invalid": "Invalid date",
+    "tooltip": "members have seen",
+    "member": "member",
+    "members": "members",
+    "message": "have seen the message",
+    "sent": "Sent"
+  },
+  "memberElement": {
+    "moderator": "Moderator",
+    "owner": "Owner",
+    "member": "Member",
+    "pending": "Pending"
+  },
+  "blockedBackdrop": {
+    "message": "You have blocked",
+    "unblock": "Unblock"
+  },
+  "messageSignal": {
+    "outgoing_audio_call": "Outgoing audio call",
+    "missed_audio_call": "You missed audio call",
+    "incoming_audio_call": "Incoming audio call",
+    "cancel_audio_call": "You cancel audio call",
+    "outgoing_video_call": "Outgoing video call",
+    "missed_video_call": "You missed video call",
+    "incoming_video_call": "Incoming video call",
+    "cancel_video_call": "You cancel video call",
+    "recipient_rejected_audio_call": "Recipient rejected audio call",
+    "rejected_audio_call": "You rejected audio call",
+    "recipient_rejected_video_call": "Recipient rejected video call",
+    "rejected_video_call": "You rejected video call",
+    "recipient_was_busy": "Recipient was busy",
+    "min": "min",
+    "sec": "sec"
+  },
+  "forwardMessageDialog": {
+    "title": "Forward Message",
+    "search": "Forward to...",
+    "sent": "Sent",
+    "resend": "Resend",
+    "send": "Send",
+    "noResult": "No result",
+    "snackbar_sendForward_error": "You do not have permission to send message in this channel",
+    "snackbar_sendForward_success": "Message forwarded successfully",
+    "snackbar_sendForward_failed": "Unable to forward the message. Please try again"
+  },
+  "from": "From",
+  "unpinMessageDialog": {
+    "title": "Unpin this message?",
+    "message_up": "Are you sure you want to unpin this message?",
+    "message_down": "It will no longer appear at the top of the conversation.",
+    "cancel": "Cancel",
+    "unpin": "Unpin",
+    "snackbar_submit_error": "Unable to unpin the message. Please try again",
+    "snackbar_submit_success": "Message unpinned"
+  },
+  "deleteMessageDialog": {
+    "title": "Delete this message?",
+    "message": "Are you sure you want to delete this message?",
+    "cancel": "Cancel",
+    "yes": "Yes"
+  },
+  "replyMessageBox": {
+    "reply_to": "Reply to"
+  },
+  "inviteElement": {
+    "admin_invite": "Admin invites you",
+    "join": "JOIN",
+    "decline": "DECLINE",
+    "skip": "SKIP",
+    "accept": "ACCEPT",
+    "message": "Sent you a friend request",
+    "snackbar_onSkip_success": "You have skipped the invitation successfully!",
+    "snackbar_onAccept_success": "You have accepted the invitation successfully!",
+    "snackbar_onDecline_success": "You have declined the invitation successfully!"
+  },
+  "quickReactions": {
+    "snackbar_error": "You do not have permission to react message in this channel"
+  },
+  "sidebarPermissions": {
+    "permissions": "Permissions",
+    "off": "Off",
+    "send_messages": "Send Messages",
+    "send_links": "Send Links",
+    "edit_messages": "Edit Messages",
+    "delete_messages": "Delete Messages",
+    "react_messages": "React Messages",
+    "pin_messages": "Pin Message",
+    "create_poll": "Create Poll",
+    "vote_poll": "Vote Poll",
+    "update_cooldown_success": "Update cooldown messages successfully!",
+    "update_capabilities_success": "Update capabilities successfully!",
+    "save": "SAVE",
+    "member_actions": "MEMBER ACTIONS",
+    "slow_mode": "SLOW MODE",
+    "message": "Set how long each member has to wait before sending their next mesage."
+  },
+  "editMessageBox": {
+    "edit_messages": "Edit Message"
+  },
+  "new_login": {
+    "phone_required": "Phone number is required",
+    "phone_invalid": "Invalid phone number",
+    "email_required": "Email is required",
+    "email_invalid": "Invalid email address",
+    "otp_send_failed": "Failed to send OTP. Please try again.",
+    "otp_verification_failed": "OTP verification failed. Please try again.",
+    "otp_resent_success": "OTP has been resent successfully.",
+    "otp_resend_failed": "Failed to resend OTP. Please try again.",
+    "title": "Check your message",
+    "verification_one_time_code": "Your one-time verification code was sent to",
+    "verify_otp": "VERIFY OTP",
+    "send_again": "Send again",
+    "enter_phone": "Enter your phone number to sign in",
+    "phone_placeholder": "Phone number",
+    "message_up": "I agree to the",
+    "message_down": "Terms of Service",
+    "message_policy": "Policy",
+    "sign_in": "SIGN IN",
+    "enter_email": "Enter your email address to sign in",
+    "or_sign_in": "Or sign in with",
+    "snackbar_google_login_failed": "Google login failed. Please try again."
+  },
+  "index_login": {
+    "title_one": "Welcome to Uhmm...",
+    "description_one": "Uhmm... isn’t just a chat app — it’s a decentralized hub for secure, real-time team collaboration. \nBuilt for Web3, made for you.",
+    "title_two": "Smart. Secure. On-Chain.",
+    "description_two": "Powered by blockchain, your messages stay encrypted, verified,\nand tamper-proof - with data ownership in your hands.",
+    "title_three": "Ready for the Workforce",
+    "description_three": "Designed for DAOs, startups, and global teams embracing decentralization.\nUhmm... is your all-in-one, future-proof communication layer."
+  },
+  "register": {
+    "title": "Get started with Ermis.",
+    "message": "Already have an account?",
+    "sign_in": "Sign in",
+    "email_label": "Email address",
+    "password_label": "Password",
+    "text": "text",
+    "create_account": "Create Account",
+    "email_required": "Email is required",
+    "email_valid": "Email must be a valid email address",
+    "password_required": "Password is required"
+  },
+  "forgot_password": {
+    "code_required": "Code is required",
+    "password_required": "Password is required",
+    "new_password": "New password",
+    "password": "password",
+    "text": "text",
+    "reset_passsword": "Reset Password",
+    "email_required": "Email is required",
+    "email_invalid": "Invalid email address",
+    "title": "Forgot your password?",
+    "message": "Please enter the email address associated with your account and we will email you a verification code to reset your password.",
+    "email_label": "Email address",
+    "send_request": "Send Request",
+    "return_sign_in": "Return to sign in"
+  },
+  "login_email": {
+    "title": "Forgot password?",
+    "login": "Login",
+    "email_label": "Email address",
+    "password_label": "Password",
+    "text": "text",
+    "email_required":"Email is required",
+    "email_valid":"Email must be a valid email address",
+    "password_required":"Password is required"
+  },
+  "login_wallet": {
+    "address": "Address",
+    "wallet": "Wallet",
+    "network": "Network",
+    "disconnect": "Disconnect",
+    "sign": "Sign",
+    "login_wallet": "Login via Wallet"
+  },
+  "login_token": {
+    "login": "Login",
+    "user_id": "User ID",
+    "token": "Token",
+    "user_required": "User is required",
+    "token_required": "Token is required"
+  },
+  "login_ermis": {
+    "login": "Login to Ermis"
+  },
+  "auth": {
+    "password_forgot_success": "Your password reset request has been successfully sent. Please check your email to proceed!",
+    "password_reset_success": "Your password has been successfully reset. Please use the new password to log in!"
+  },
+  "recordingAudioBox": {
+    "upload_audio_failed": "Upload audio failed",
+    "snackbar_cannot_microphone": "Cannot access microphone",
+    "cancel": "CANCEL"
+  },
+  "uploadFilesDialog": {
+    "file_size_maximum": "File size exceeds the limit. Maximum allowed: 100MB",
+    "upload_file_failed": "Upload failed. Please try again",
+    "sent_photo": "Sent an photo",
+    "sent_video": "Sent a video",
+    "sent": "Sent",
+    "photo_videos": "photos and videos",
+    "photos": "photos",
+    "videos": "videos",
+    "file": "file",
+    "files": "files"
+  },
+  "emojiPickerPopover": {
+    "emoji": "Emoji",
+    "sticker": "Stickers",
+    "title": "Sticker Picker"
+  },
+  "pollResultDialog": {
+    "title": "Poll Result",
+    "no_voted": "No one voted"
+  },
+  "delete_account": {
+    "title": "Account Deletion Confirmation",
+    "message": "Deleting your account will result in:",
+    "list_message_fisrt-strong": "Loss of all data",
+    "list_message_fisrt": ": All personal information, chat history, and contacts on the Ermis platform will be permanently deleted and cannot be recovered.",
+    "list_message_two-strong": "No impact on SDK-integrated conversations",
+    "list_message_two": ": Any conversations integrated through the SDK will remain unaffected.",
+    "message_question": "Are you sure you want to continue?",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "connect_wallet": "Connect wallet"
+  },
+  "commons": {
+    "snackbar_wrong_error": "Something went wrong",
+    "snackbar_server_error": "Internal server error"
+  },
+  "wallet": {
+    "delete_account": "Your account has been successfully deleted"
+  },
+  "channelInvitation": {
+    "message": "Accept the invite to see all messages of this",
+    "channel": "channel",
+    "conversation": "conversation",
+    "accept": "Accept",
+    "decline": "Decline",
+    "skip": "Skip"
+  },
+  "messageHistoryDialog": {
+    "title": "Message history"
+  },
+  "sidebarUserInfo": {
+    "invitation": "Invitation sent",
+    "invite_failed": "Failed to send invite. Please retry",
+    "chat": "chat",
+    "add_contact": "Add to Contacts",
+    "unblock": "Unblock User",
+    "block": "Block User"
+  },
+  "noMessageBox": {
+    "no_message": "Let start this conversations with great stories!"
+  },
+  "online": "Online",
+  "offline": "Offline"
+}

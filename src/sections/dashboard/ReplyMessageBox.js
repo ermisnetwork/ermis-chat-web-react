@@ -7,10 +7,12 @@ import { onReplyMessage } from '../../redux/slices/messages';
 import FileTypeBadge from '../../components/FileTypeBadge';
 import ImageCanvas from '../../components/ImageCanvas';
 import { MessageType } from '../../constants/commons-const';
+import { useTranslation } from 'react-i18next';
 
 const ReplyMessageBox = ({ quotesMessage }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { mentions } = useSelector(state => state.channel);
 
   const attachment = quotesMessage && quotesMessage.attachments ? quotesMessage.attachments[0] : null;
@@ -62,7 +64,7 @@ const ReplyMessageBox = ({ quotesMessage }) => {
               }}
             >
               <Quotes size={12} weight="fill" />
-              <span>&nbsp;&nbsp;Reply to&nbsp;</span>
+              <span>&nbsp;&nbsp;{t('replyMessageBox.reply_to')}&nbsp;</span>
               <strong> {name}</strong>
             </Typography>
 

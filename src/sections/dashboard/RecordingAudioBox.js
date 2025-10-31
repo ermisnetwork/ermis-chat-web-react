@@ -7,6 +7,7 @@ import { LoadingSpinner } from '../../components/animate';
 import { ElipseStopRecordIcon, SendIcon } from '../../components/Icons';
 import Iconify from '../../components/Iconify';
 import { onSetAttachmentsMessage } from '../../redux/slices/messages';
+import { useTranslation } from 'react-i18next';
 
 const blink = keyframes`
   0% { opacity: 0.5; }
@@ -22,6 +23,7 @@ const zoom = keyframes`
 
 const RecordingAudioBox = React.forwardRef((props, ref) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const streamRef = useRef(null);
   const { currentChannel } = useSelector(state => state.channel);
@@ -87,7 +89,7 @@ const RecordingAudioBox = React.forwardRef((props, ref) => {
       const response = await currentChat.sendFile(audioFile);
       setAudioUrl(response.file);
     } catch (err) {
-      dispatch(showSnackbar({ severity: 'error', message: 'Upload audio failed' }));
+      dispatch(showSnackbar({ severity: 'error', message: t('recordingAudioBox.snackbar_upload_failed') }));
     } finally {
       setAudioUploading(false);
     }
@@ -115,7 +117,7 @@ const RecordingAudioBox = React.forwardRef((props, ref) => {
       setMediaRecorder(recorder);
       setIsRecording(true);
     } catch (err) {
-      dispatch(showSnackbar({ severity: 'error', message: 'Cannot access microphone' }));
+      dispatch(showSnackbar({ severity: 'error', message: t('recordingAudioBox.snackbar_cannot_microphone') }));
     }
   };
 
@@ -202,7 +204,7 @@ const RecordingAudioBox = React.forwardRef((props, ref) => {
 
           <Box sx={{ minWidth: 'auto', flex: 1, overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
             <Button variant="text" color="info" onClick={cancelRecording}>
-              CANCEL
+              {t('recordingAudioBox.cancel')}
             </Button>
           </Box>
 

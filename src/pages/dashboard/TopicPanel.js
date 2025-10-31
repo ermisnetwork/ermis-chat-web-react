@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Button,
   IconButton,
@@ -28,20 +28,18 @@ import { ClientEvents } from '../../constants/events-const';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   AddPinnedTopic,
-  AddTopic,
   ConnectCurrentTopic,
   RemovePinnedTopic,
-  RemoveTopic,
   SetCurrentTopic,
   SetOpenTopicPanel,
 } from '../../redux/slices/topic';
 import { setSidebar } from '../../redux/slices/app';
-import { DEFAULT_PATH } from '../../config';
+import { DEFAULT_PATH, TRANSITION } from '../../config';
 import SkeletonChannels from '../../components/SkeletonChannels';
 import { client } from '../../client';
 import useResponsive from '../../hooks/useResponsive';
-import HomeSearch from '../../components/Search/HomeSearch';
 import { X } from 'phosphor-react';
+import { useTranslation } from 'react-i18next';
 
 const StyledTopicItem = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
@@ -50,13 +48,16 @@ const StyledTopicItem = styled(Box)(({ theme }) => ({
 }));
 
 const TopicEmpty = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const dispatch = useDispatch();
-  const isMobileToMd = useResponsive('down', 'md');
-  const { currentChannel } = useSelector(state => state.channel);
-  const myRole = myRoleInChannel(currentChannel);
+  const { parentChannel } = useSelector(state => state.topic);
+  const myRole = useMemo(() => myRoleInChannel(parentChannel), [parentChannel]);
 
-  if (isMobileToMd) return null;
+  const onOpenNewTopicDialog = useCallback(() => {
+    dispatch(SetOpenNewTopicDialog(true));
+  }, [dispatch]);
+
   return (
     <Stack sx={{ flex: 1, width: '100%', minHeight: 'auto', alignItems: 'center', justifyContent: 'center' }}>
       <NoTopic />
@@ -70,7 +71,7 @@ const TopicEmpty = () => {
           marginTop: 2,
         }}
       >
-        Topic Is Waiting!
+        {t('topicPanel.topic_waiting')}
       </Typography>
       <Typography
         variant="subtitle2"
@@ -81,19 +82,12 @@ const TopicEmpty = () => {
           fontWeight: 400,
         }}
       >
-        We moved older messages to “General.” Kick off a new topic anytime!
+        {t('topicPanel.message')}
       </Typography>
 
       {[RoleMember.OWNER, RoleMember.MOD].includes(myRole) && (
-        <Button
-          variant="contained"
-          size="large"
-          sx={{ marginTop: 3, width: '200px' }}
-          onClick={() => {
-            dispatch(SetOpenNewTopicDialog(true));
-          }}
-        >
-          NEW TOPIC
+        <Button variant="contained" size="large" sx={{ marginTop: 3, width: '200px' }} onClick={onOpenNewTopicDialog}>
+          {t('topicPanel.New_topic')}
         </Button>
       )}
     </Stack>
@@ -101,62 +95,126 @@ const TopicEmpty = () => {
 };
 
 const TopicHeader = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const dispatch = useDispatch();
   const isMobileToMd = useResponsive('down', 'md');
-  const { currentChannel, isGuest } = useSelector(state => state.channel);
+  const { isGuest } = useSelector(state => state.channel);
+  const { parentChannel } = useSelector(state => state.topic);
+  const { sideBar } = useSelector(state => state.app);
 
   const [anchorEl, setAnchorEl] = useState(null);
-  const myRole = myRoleInChannel(currentChannel);
+  const myRole = useMemo(() => myRoleInChannel(parentChannel), [parentChannel]);
 
-  const ACTIONS = [
-    {
-      label: 'Channel Info',
-      icon: <InfoIcon color={theme.palette.text.primary} />,
-      onClick: () => {
-        setAnchorEl(null);
-        dispatch(setSidebar({ type: SidebarType.Channel, open: true }));
-      },
-    },
-    {
-      label: 'Search Messages',
-      icon: <SearchIcon color={theme.palette.text.primary} />,
-      onClick: () => {
-        setAnchorEl(null);
-        dispatch(setSidebar({ type: SidebarType.SearchMessage, open: true }));
-        dispatch(SetCurrentTopic(null));
-        navigate(`${DEFAULT_PATH}/${currentChannel.cid}`);
-      },
-    },
-    {
-      label: 'Add Members',
-      icon: <ProfileAddIcon color={theme.palette.text.primary} />,
-      onClick: () => {
-        setAnchorEl(null);
-        dispatch(SetOpenInviteFriendDialog(true));
-      },
-    },
-    {
-      label: 'New Topic',
-      icon: <StickyNoteIcon color={theme.palette.text.primary} />,
-      onClick: () => {
-        setAnchorEl(null);
-        dispatch(SetOpenNewTopicDialog(true));
-      },
-      allowRoles: [RoleMember.OWNER, RoleMember.MOD],
-    },
-  ];
+  const onOpenPopover = useCallback(event => {
+    setAnchorEl(event.currentTarget);
+  }, []);
 
-  const onOpenPopover = event => {
-    if (isMobileToMd) {
-      setAnchorEl(event.currentTarget);
-    }
-  };
+  const onOpenPopoverMobile = useCallback(
+    event => {
+      if (isMobileToMd) {
+        setAnchorEl(event.currentTarget);
+      }
+    },
+    [isMobileToMd],
+  );
 
-  const onCloseTopicPanel = () => {
+  const onCloseTopicPanel = useCallback(() => {
     dispatch(SetOpenTopicPanel(false));
-  };
+  }, [dispatch]);
+
+  const onClosePopover = useCallback(() => {
+    setAnchorEl(null);
+  }, []);
+
+  const onInfoChannelClick = useCallback(() => {
+    if (!parentChannel) return;
+
+    setAnchorEl(null);
+    navigate(`${DEFAULT_PATH}/${parentChannel.cid}`);
+
+    setTimeout(() => {
+      dispatch(setSidebar({ type: SidebarType.Channel, open: true }));
+    }, 100);
+  }, [navigate, parentChannel?.cid, dispatch]);
+
+  const onSearchClick = useCallback(() => {
+    if (!parentChannel) return;
+
+    setAnchorEl(null);
+    dispatch(SetCurrentTopic(null));
+    navigate(`${DEFAULT_PATH}/${parentChannel.cid}`);
+
+    setTimeout(() => {
+      dispatch(setSidebar({ type: SidebarType.SearchMessage, open: true }));
+    }, 100);
+  }, [dispatch, navigate, parentChannel?.cid]);
+
+  const onAddMemberClick = useCallback(() => {
+    if (!parentChannel) return;
+
+    setAnchorEl(null);
+    navigate(`${DEFAULT_PATH}/${parentChannel.cid}`);
+
+    setTimeout(() => {
+      dispatch(SetOpenInviteFriendDialog(true));
+    }, 100);
+  }, [navigate, parentChannel?.cid, dispatch]);
+
+  const onNewTopicClick = useCallback(() => {
+    if (!parentChannel) return;
+
+    setAnchorEl(null);
+    navigate(`${DEFAULT_PATH}/${parentChannel.cid}`);
+
+    setTimeout(() => {
+      dispatch(SetOpenNewTopicDialog(true));
+    }, 100);
+  }, [navigate, parentChannel?.cid, dispatch]);
+
+  const ACTIONS = useMemo(
+    () => [
+      {
+        label: t('topicPanel.info_channel'),
+        icon: <InfoIcon color={theme.palette.text.primary} />,
+        onClick: onInfoChannelClick,
+      },
+      {
+        label: t('topicPanel.search'),
+        icon: <SearchIcon color={theme.palette.text.primary} />,
+        onClick: onSearchClick,
+      },
+      {
+        label: t('topicPanel.add_member'),
+        icon: <ProfileAddIcon color={theme.palette.text.primary} />,
+        onClick: onAddMemberClick,
+      },
+      {
+        label: t('topicPanel.new_topic'),
+        icon: <StickyNoteIcon color={theme.palette.text.primary} />,
+        onClick: onNewTopicClick,
+        allowRoles: [RoleMember.OWNER, RoleMember.MOD],
+      },
+    ],
+    [t, theme.palette.text.primary, onInfoChannelClick, onSearchClick, onAddMemberClick, onNewTopicClick],
+  );
+
+  const onOpenChannelInfo = useCallback(() => {
+    if (!isGuest && parentChannel) {
+      navigate(`${DEFAULT_PATH}/${parentChannel.cid}`);
+
+      if (sideBar && sideBar.open) {
+        dispatch(setSidebar({ type: SidebarType.Channel, open: false, mode: '' }));
+      } else {
+        setTimeout(() => {
+          dispatch(setSidebar({ type: SidebarType.Channel, open: true }));
+        }, 100);
+      }
+    }
+  }, [isGuest, sideBar, dispatch, parentChannel?.cid, navigate]);
+
+  if (!parentChannel) return null;
 
   return (
     <Stack
@@ -166,87 +224,73 @@ const TopicHeader = () => {
       spacing={1}
       sx={{
         width: '100%',
-        height: '74px',
+        height: '65px',
         padding: '8px 6px',
         borderBottom: `1px solid ${theme.palette.divider}`,
       }}
     >
-      {!isMobileToMd && (
-        <IconButton onClick={onCloseTopicPanel}>
-          <X size={20} color={theme.palette.text.primary} />
-        </IconButton>
-      )}
+      <IconButton onClick={onCloseTopicPanel}>
+        <X size={20} color={theme.palette.text.primary} />
+      </IconButton>
 
-      <Box sx={{ width: '60px', height: '60px' }} onClick={onOpenPopover}>
-        <ChannelAvatar channel={currentChannel} width={60} height={60} openLightbox={true} shape={AvatarShape.Round} />
+      <Box sx={{ width: '50px', height: '50px', cursor: 'pointer' }} onClick={onOpenPopoverMobile}>
+        {parentChannel && (
+          <ChannelAvatar channel={parentChannel} width={50} height={50} openLightbox={true} shape={AvatarShape.Round} />
+        )}
       </Box>
 
-      {!isMobileToMd && (
-        <>
-          <Box
+      <Box
+        sx={{
+          overflow: 'hidden',
+          flex: 1,
+          minWidth: 'auto',
+        }}
+      >
+        <Button
+          onClick={onOpenChannelInfo}
+          sx={{
+            textTransform: 'none',
+            maxWidth: '100%',
+            minWidth: 'auto',
+            justifyContent: 'start',
+            textAlign: 'left',
+          }}
+        >
+          <Typography
+            variant="h6"
             sx={{
+              color: theme.palette.text.primary,
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              width: '100%',
               overflow: 'hidden',
-              flex: 1,
-              minWidth: 'auto',
             }}
           >
-            <Button
-              onClick={() => {
-                if (!isGuest) {
-                  dispatch(setSidebar({ type: SidebarType.Channel, open: true }));
-                }
-              }}
+            {parentChannel?.data?.name}
+            <Typography
+              variant="caption"
               sx={{
-                textTransform: 'none',
-                maxWidth: '100%',
-                minWidth: 'auto',
-                justifyContent: 'start',
-                textAlign: 'left',
+                display: 'block',
+                color: theme.palette.text.secondary,
+                fontSize: '12px',
+                fontWeight: 400,
               }}
             >
-              <Typography
-                variant="h6"
-                sx={{
-                  color: theme.palette.text.primary,
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  width: '100%',
-                  overflow: 'hidden',
-                }}
-              >
-                {currentChannel.data?.name}
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: 'block',
-                    color: theme.palette.text.secondary,
-                    fontSize: '12px',
-                    fontWeight: 400,
-                  }}
-                >
-                  {`${currentChannel.data?.member_count} members`}
-                </Typography>
-              </Typography>
-            </Button>
-          </Box>
+              {`${parentChannel?.data?.member_count || 0} ${t('topicPanel.member')}`}
+            </Typography>
+          </Typography>
+        </Button>
+      </Box>
 
-          <IconButton
-            onClick={event => {
-              setAnchorEl(event.currentTarget);
-            }}
-          >
-            <DotsThreeIcon color={theme.palette.text.primary} />
-          </IconButton>
-        </>
-      )}
+      <IconButton onClick={onOpenPopover}>
+        <DotsThreeIcon color={theme.palette.text.primary} />
+      </IconButton>
 
       <Popover
         id={Boolean(anchorEl) ? 'actions-channel-popover' : undefined}
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
-        onClose={() => {
-          setAnchorEl(null);
-        }}
+        onClose={onClosePopover}
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'right',
@@ -278,70 +322,51 @@ const TopicHeader = () => {
 };
 
 const TopicPanel = () => {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useTheme();
   const { currentChannel } = useSelector(state => state.channel);
-  const { currentTopic, topics, loadingTopics, pinnedTopics, openTopicPanel } = useSelector(state => state.topic);
-  const { openHomeSearch } = useSelector(state => state.app);
+  const { topics, loadingTopics, pinnedTopics, openTopicPanel, parentChannel } = useSelector(state => state.topic);
   const [searchParams, setSearchParams] = useSearchParams();
   const topicID = searchParams.get('topicId');
   const [idSelected, setIdSelected] = useState('');
-  const isMobileToMd = useResponsive('down', 'md');
 
-  useEffect(() => {
-    const handleTopicCreated = event => {
+  const handleTopicPinned = useCallback(
+    event => {
+      if (!event.parent_cid) return;
+
       const splitParentCID = splitChannelId(event.parent_cid);
       const parentChannelId = splitParentCID.channelId;
 
-      if (parentChannelId === currentChannel?.id) {
-        dispatch(AddTopic(event.channel_id));
-      }
-    };
-
-    const handleTopicPinned = event => {
-      const splitParentCID = splitChannelId(event.parent_cid);
-      const parentChannelId = splitParentCID.channelId;
-
-      if (parentChannelId === currentChannel?.id && event.channel_type === ChatType.TOPIC) {
+      if (parentChannelId === parentChannel?.id && event.channel_type === ChatType.TOPIC) {
         dispatch(AddPinnedTopic(event.channel_id));
       }
-    };
+    },
+    [parentChannel?.id, dispatch],
+  );
 
-    const handleTopicUnPinned = event => {
+  const handleTopicUnPinned = useCallback(
+    event => {
+      if (!event.parent_cid) return;
+
       const splitParentCID = splitChannelId(event.parent_cid);
       const parentChannelId = splitParentCID.channelId;
 
-      if (parentChannelId === currentChannel?.id && event.channel_type === ChatType.TOPIC) {
+      if (parentChannelId === parentChannel?.id && event.channel_type === ChatType.TOPIC) {
         dispatch(RemovePinnedTopic(event.channel_id));
       }
-    };
+    },
+    [parentChannel?.id, dispatch],
+  );
 
-    const handleTopicDeleted = event => {
-      if (event.channel_type === ChatType.TOPIC) {
-        dispatch(RemovePinnedTopic(event.channel_id));
-        dispatch(RemoveTopic(event.channel_id));
-        if (currentTopic?.id === event.channel_id) {
-          dispatch(SetCurrentTopic(null));
-          setIdSelected(currentChannel?.id);
-          searchParams.delete('topicId');
-          setSearchParams(searchParams, { replace: true });
-        }
-      }
-    };
-
-    client.on(ClientEvents.ChannelTopicCreated, handleTopicCreated);
+  useEffect(() => {
     client.on(ClientEvents.ChannelPinned, handleTopicPinned);
     client.on(ClientEvents.ChannelUnPinned, handleTopicUnPinned);
-    client.on(ClientEvents.ChannelDeleted, handleTopicDeleted);
 
     return () => {
-      client.off(ClientEvents.ChannelTopicCreated, handleTopicCreated);
       client.off(ClientEvents.ChannelPinned, handleTopicPinned);
       client.off(ClientEvents.ChannelUnPinned, handleTopicUnPinned);
-      client.off(ClientEvents.ChannelDeleted, handleTopicDeleted);
     };
-  }, [client, currentTopic, currentChannel]);
+  }, [handleTopicPinned, handleTopicUnPinned]);
 
   useEffect(() => {
     if (topicID) {
@@ -349,7 +374,9 @@ const TopicPanel = () => {
       setIdSelected(topicID);
     } else {
       dispatch(SetCurrentTopic(null));
-      setIdSelected(currentChannel.id);
+      if (currentChannel) {
+        setIdSelected(currentChannel.id);
+      }
     }
   }, [topicID, currentChannel]);
 
@@ -393,39 +420,37 @@ const TopicPanel = () => {
     }
   }, [topics, idSelected, loadingTopics, pinnedTopics]);
 
-  if (!currentChannel?.data?.topics_enabled || !openTopicPanel) return null;
+  // if (!parentChannel?.data?.topics_enabled || !openTopicPanel) return null;
 
   return (
     <>
       <Stack
         sx={{
-          width: isMobileToMd ? '73px' : '300px',
-          height: '100%',
-          borderRight: `1px solid ${theme.palette.divider}`,
+          width: openTopicPanel ? '300px' : '0px',
+          height: openTopicPanel ? '100%' : '0px',
+          borderLeft: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.mode === 'light' ? '#fff' : theme.palette.grey[900],
+          borderRadius: '0 16px 16px 0',
+          marginLeft: '0px!important',
+          transition: TRANSITION,
+          transform: openTopicPanel ? 'translateZ(0)' : 'translateZ(200px)',
+          opacity: openTopicPanel ? 1 : 0,
         }}
       >
-        {openHomeSearch ? (
-          <Box sx={{ padding: '15px', width: '100%', height: '100%', position: 'relative' }}>
-            <HomeSearch />
-          </Box>
-        ) : (
-          <>
-            <TopicHeader />
+        <TopicHeader />
 
-            <Stack
-              sx={{
-                flex: 1,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                minHeight: 'auto',
-                padding: '0 15px',
-              }}
-              className="customScrollbar"
-            >
-              {renderedTopics}
-            </Stack>
-          </>
-        )}
+        <Stack
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            minHeight: 'auto',
+            padding: '0 15px',
+          }}
+          className="customScrollbar"
+        >
+          {renderedTopics}
+        </Stack>
       </Stack>
 
       <NewTopicDialog />

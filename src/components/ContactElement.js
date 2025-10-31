@@ -7,6 +7,7 @@ import { AvatarShape } from '../constants/commons-const';
 import { isChannelDirect } from '../utils/commons';
 import useOnlineStatus from '../hooks/useOnlineStatus';
 import CustomCheckbox from './CustomCheckbox';
+import { useTranslation } from 'react-i18next';
 
 const StyledContactItem = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -32,6 +33,7 @@ const ContactElement = ({
   selectedUsers = [],
 }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { user_id } = useSelector(state => state.auth);
   const isDirect = isChannelDirect(channel);
 
@@ -105,7 +107,7 @@ const ContactElement = ({
               fontWeight: 400,
             }}
           >
-            {!isDirect ? `${channel.data?.member_count} members` : <>{onlineStatus}</>}
+            {!isDirect ? `${channel.data?.member_count} ${t('contactElement.member')}` : <>{t(onlineStatus)}</>}
           </Typography>
         </Stack>
       </Stack>

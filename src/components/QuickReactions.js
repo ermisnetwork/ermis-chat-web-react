@@ -5,10 +5,12 @@ import { EMOJI_QUICK } from '../constants/commons-const';
 import { handleError } from '../utils/commons';
 import { useDispatch, useSelector } from 'react-redux';
 import { LikeIcon } from './Icons';
+import { useTranslation } from 'react-i18next';
 
 export default function QuickReactions({ message }) {
   const dispatch = useDispatch();
   const theme = useTheme();
+  const { t } = useTranslation();
   const { user_id } = useSelector(state => state.auth);
   const { currentChannel } = useSelector(state => state.channel);
   const { currentTopic } = useSelector(state => state.topic);
@@ -27,7 +29,7 @@ export default function QuickReactions({ message }) {
       }
     } catch (error) {
       setAnchorEl(null);
-      handleError(dispatch, error);
+      handleError(dispatch, error, t);
     }
   };
 
@@ -53,7 +55,7 @@ export default function QuickReactions({ message }) {
             dispatch(
               showSnackbar({
                 severity: 'error',
-                message: 'You do not have permission to react message in this channel',
+                message: t('quickReactions.snackbar_error'),
               }),
             );
             return;

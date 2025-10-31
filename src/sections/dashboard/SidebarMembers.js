@@ -10,6 +10,7 @@ import { setChannelConfirm, SetOpenInviteFriendDialog } from '../../redux/slices
 import { Search, SearchIconWrapper, StyledInputBase } from '../../components/Search';
 import MemberElement from '../../components/MemberElement';
 import NoResult from '../../assets/Illustration/NoResult';
+import { useTranslation } from 'react-i18next';
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   minHeight: 'auto',
@@ -47,11 +48,12 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
 }));
 
 const LIST_TAB = [
-  { label: 'Members', value: TabValueMembers.Members },
-  { label: 'Invited Members', value: TabValueMembers.InvitedMembers },
+  { label: 'sidebarMembers.members', value: TabValueMembers.Members },
+  { label: 'sidebarMembers.invite_members', value: TabValueMembers.InvitedMembers },
 ];
 
 const TabMembers = ({ searchQuery }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const dispatch = useDispatch();
   const { currentChannel } = useSelector(state => state.channel);
@@ -106,7 +108,7 @@ const TabMembers = ({ searchQuery }) => {
               fontWeight: 600,
             }}
           >
-            No result {searchQuery ? `for "${searchQuery}"` : ''}
+            {t('sidebarMembers.no_result')} {searchQuery ? `"${searchQuery}"` : ''}
           </Typography>
         </Stack>
       )}
@@ -116,6 +118,7 @@ const TabMembers = ({ searchQuery }) => {
 
 const TabInvitedMembers = ({ searchQuery }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { currentChannel } = useSelector(state => state.channel);
   const members = Object.values(currentChannel?.state?.members || {}) || [];
@@ -158,7 +161,7 @@ const TabInvitedMembers = ({ searchQuery }) => {
               fontWeight: 600,
             }}
           >
-            No result {searchQuery ? `for "${searchQuery}"` : ''}
+            {t('sidebarMembers.no_result')} {searchQuery ? `"${searchQuery}"` : ''}
           </Typography>
         </Stack>
       )}
@@ -167,6 +170,7 @@ const TabInvitedMembers = ({ searchQuery }) => {
 };
 
 const SidebarMembers = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const theme = useTheme();
   const { currentChannel } = useSelector(state => state.channel);
@@ -198,7 +202,7 @@ const SidebarMembers = () => {
         </IconButton>
 
         <Typography variant="subtitle2" sx={{ flex: 1, textAlign: 'center', fontSize: '18px' }}>
-          Members
+          {t('sidebarMembers.title')}
         </Typography>
 
         <IconButton
@@ -214,7 +218,7 @@ const SidebarMembers = () => {
         <Search>
           <SearchIconWrapper>{<MagnifyingGlass size={18} />}</SearchIconWrapper>
           <StyledInputBase
-            placeholder="Search"
+            placeholder={t('sidebarMembers.search')}
             inputProps={{ 'aria-label': 'search' }}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
@@ -231,7 +235,7 @@ const SidebarMembers = () => {
           variant="standard"
         >
           {LIST_TAB.map((item, index) => {
-            return <Tab key={index} value={item.value} label={item.label} />;
+            return <Tab key={index} value={item.value} label={t(item.label)} />;
           })}
         </StyledTabs>
 
