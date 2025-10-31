@@ -324,7 +324,7 @@ const TopicHeader = () => {
 const TopicPanel = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { currentChannel } = useSelector(state => state.channel);
+  const { currentChannel, loadingChannels } = useSelector(state => state.channel);
   const { topics, loadingTopics, pinnedTopics, openTopicPanel, parentChannel } = useSelector(state => state.topic);
   const [searchParams, setSearchParams] = useSearchParams();
   const topicID = searchParams.get('topicId');
@@ -419,6 +419,8 @@ const TopicPanel = () => {
       );
     }
   }, [topics, idSelected, loadingTopics, pinnedTopics]);
+
+  if (loadingChannels) return null;
 
   // if (!parentChannel?.data?.topics_enabled || !openTopicPanel) return null;
 

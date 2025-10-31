@@ -45,11 +45,14 @@ const Contacts = () => {
       channels = pendingChannels;
     }
 
-    const filteredChannels = channels.filter(channel => {
-      const name = removeVietnameseTones(channel.data?.name.toLowerCase()) || '';
-      const searchTerm = removeVietnameseTones(searchQuery.toLowerCase());
-      return name.includes(searchTerm);
-    });
+    const filteredChannels =
+      channels.length > 0
+        ? channels.filter(channel => {
+            const name = channel.data?.name ? removeVietnameseTones(channel.data?.name?.toLowerCase()) : '';
+            const searchTerm = searchQuery ? removeVietnameseTones(searchQuery.toLowerCase()) : '';
+            return name.includes(searchTerm);
+          })
+        : [];
 
     // Nếu là Request thì render danh sách pendingChannels
     if (replaceHash === ContactType.Request) {

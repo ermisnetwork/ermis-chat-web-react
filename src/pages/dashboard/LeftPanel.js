@@ -428,6 +428,9 @@ const LeftPanel = () => {
           }
 
           dispatch(AddPendingChannel(event.cid));
+        } else {
+          // lời mời mình gửi
+          dispatch(WatchCurrentChannel(channelId, channelType));
         }
       };
 
@@ -507,6 +510,17 @@ const LeftPanel = () => {
         dispatch(UpdateTopic(event.cid));
       };
 
+      const handleMemberRemoved = event => {
+        const channelId = event.channel_id;
+        const channelType = event.channel_type;
+        if (event.member.user_id !== user_id) {
+          dispatch(WatchCurrentChannel(channelId, channelType));
+        } else {
+          navigate(`${DEFAULT_PATH}`);
+          dispatch(RemoveActiveChannel(channelId));
+        }
+      };
+
       client.on(ClientEvents.ChannelCreated, handleChannelCreated);
       client.on(ClientEvents.ChannelDeleted, handleChannelDeleted);
       client.on(ClientEvents.MessageNew, handleMessageNew);
@@ -515,6 +529,7 @@ const LeftPanel = () => {
       client.on(ClientEvents.MemberUnBanned, handleUnBanned);
       client.on(ClientEvents.MessageUpdated, handleMessageUpdated);
       client.on(ClientEvents.MemberAdded, handleMemberAdded);
+      client.on(ClientEvents.MemberRemoved, handleMemberRemoved);
       client.on(ClientEvents.ChannelPinned, handleChannelPinned);
       client.on(ClientEvents.ChannelUnPinned, handleChannelUnPinned);
       client.on(ClientEvents.Notification.InviteRejected, handleInviteReject);
@@ -534,6 +549,7 @@ const LeftPanel = () => {
         client.off(ClientEvents.MemberUnBanned, handleUnBanned);
         client.off(ClientEvents.MessageUpdated, handleMessageUpdated);
         client.off(ClientEvents.MemberAdded, handleMemberAdded);
+        client.off(ClientEvents.MemberRemoved, handleMemberRemoved);
         client.off(ClientEvents.ChannelPinned, handleChannelPinned);
         client.off(ClientEvents.ChannelUnPinned, handleChannelUnPinned);
         client.off(ClientEvents.Notification.InviteRejected, handleInviteReject);

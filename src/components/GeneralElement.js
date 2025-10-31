@@ -68,11 +68,10 @@ const GeneralElement = ({ idSelected }) => {
   // Memoized helper functions
   const replaceMentionsWithNames = useCallback(
     inputValue => {
-      let result = inputValue;
       users.forEach(user => {
-        result = result.replaceAll(`@${user.id}`, `@${user.name}`);
+        inputValue = inputValue.replaceAll(`@${user.id}`, `@${user.name}`);
       });
-      return result;
+      return inputValue;
     },
     [users],
   );
@@ -131,33 +130,48 @@ const GeneralElement = ({ idSelected }) => {
 
   const getLastMessage = useCallback(
     message => {
-      if (message) {
-        const date = message.updated_at || message.created_at;
-        const sender = message.user;
-        const senderId = sender?.id;
-        const isMe = user_id === senderId;
-        const senderName = isMe ? t('you') : sender?.name || senderId;
-
-        setLastMessageAt(getDisplayDate(date));
-
-        if (message.type === MessageType.System) {
-          const messageSystem = convertMessageSystem(message.text, users, false, false, t);
-          setLastMessage(`${senderName}: ${messageSystem}`);
-        } else if (message.type === MessageType.Signal) {
-          const messageSignal = convertMessageSignal(message.text, t);
-          setLastMessage(messageSignal.text || '');
-        } else if (message.type === MessageType.Sticker) {
-          setLastMessage(`${senderName}: ${t('chatElement.sticker')}`);
-        } else if (message.attachments) {
-          const attachmentLast = message.attachments[message.attachments.length - 1];
-          setLastMessage(renderAttachmentPreview(attachmentLast, senderName));
-        } else {
-          const messagePreview = replaceMentionsWithNames(message.text);
-          setLastMessage(`${senderName}: ${messagePreview}`);
-        }
-      } else {
+      if (!message) {
         setLastMessageAt(getDisplayDate(parentChannel?.data?.created_at));
         setLastMessage(t('chatElement.no_message'));
+        return;
+      }
+
+      const date = message.updated_at || message.created_at;
+      const sender = message.user;
+      const senderId = sender?.id;
+      const isMe = user_id === senderId;
+      const senderName = isMe ? t('you') : sender?.name || senderId;
+
+      setLastMessageAt(getDisplayDate(date));
+
+      switch (message.type) {
+        case MessageType.System: {
+          const messageSystem = convertMessageSystem(message.text, users, false, false, t);
+          setLastMessage(`${senderName}: ${messageSystem}`);
+          break;
+        }
+
+        case MessageType.Signal: {
+          const messageSignal = convertMessageSignal(message.text, t);
+          setLastMessage(messageSignal.text || '');
+          break;
+        }
+
+        case MessageType.Sticker: {
+          setLastMessage(`${senderName}: ${t('chatElement.sticker')}`);
+          break;
+        }
+
+        default: {
+          if (message.attachments && message.attachments.length > 0) {
+            const attachmentLast = message.attachments[message.attachments.length - 1];
+            setLastMessage(renderAttachmentPreview(attachmentLast, senderName));
+          } else {
+            const messagePreview = replaceMentionsWithNames(message.text || '');
+            setLastMessage(`${senderName}: ${messagePreview}`);
+          }
+          break;
+        }
       }
     },
     [user_id, users, t, parentChannel?.data?.created_at, renderAttachmentPreview, replaceMentionsWithNames],

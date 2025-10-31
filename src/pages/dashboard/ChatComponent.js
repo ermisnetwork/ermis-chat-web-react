@@ -738,25 +738,6 @@ const ChatComponent = () => {
         }
       };
 
-      const handleMemberAdded = event => {
-        const splitCID = splitChannelId(event.cid);
-        const channelId = splitCID.channelId;
-        const channelType = splitCID.channelType;
-
-        dispatch(WatchCurrentChannel(channelId, channelType));
-      };
-
-      const handleMemberRemoved = event => {
-        const channelId = event.channel_id;
-        const channelType = event.channel_type;
-        if (event.member.user_id !== user_id) {
-          dispatch(WatchCurrentChannel(channelId, channelType));
-        } else {
-          navigate(`${DEFAULT_PATH}`);
-          dispatch(RemoveActiveChannel(channelId));
-        }
-      };
-
       const handleMemberPromoted = event => {
         const channelId = event.channel_id;
         const channelType = event.channel_type;
@@ -804,8 +785,6 @@ const ChatComponent = () => {
       currentChat.on(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
       currentChat.on(ClientEvents.ChannelUpdated, handleChannelUpdated);
       currentChat.on(ClientEvents.MemberJoined, handleMemberJoined);
-      currentChat.on(ClientEvents.MemberAdded, handleMemberAdded);
-      currentChat.on(ClientEvents.MemberRemoved, handleMemberRemoved);
       currentChat.on(ClientEvents.MemberPromoted, handleMemberPromoted);
       currentChat.on(ClientEvents.MemberDemoted, handleMemberDemoted);
       currentChat.on(ClientEvents.MemberBanned, handleMemberBanned);
@@ -827,8 +806,6 @@ const ChatComponent = () => {
         currentChat.off(ClientEvents.Notification.InviteSkipped, handleInviteSkipped);
         currentChat.off(ClientEvents.ChannelUpdated, handleChannelUpdated);
         currentChat.off(ClientEvents.MemberJoined, handleMemberJoined);
-        currentChat.off(ClientEvents.MemberAdded, handleMemberAdded);
-        currentChat.off(ClientEvents.MemberRemoved, handleMemberRemoved);
         currentChat.off(ClientEvents.MemberPromoted, handleMemberPromoted);
         currentChat.off(ClientEvents.MemberDemoted, handleMemberDemoted);
         currentChat.off(ClientEvents.MemberBanned, handleMemberBanned);

@@ -581,7 +581,14 @@ export const ClearDataChannel = () => {
 export const AddActiveChannel = cid => {
   return async (dispatch, getState) => {
     if (!client) return;
-    const channel = client.activeChannels[cid];
+
+    const splitCID = splitChannelId(cid);
+    const channelId = splitCID.channelId;
+    const channelType = splitCID.channelType;
+
+    const channel = client.channel(channelType, channelId);
+    const response = await channel.watch();
+    // const channel = client.activeChannels[cid];
 
     dispatch(slice.actions.addActiveChannel(channel));
 
