@@ -25,7 +25,7 @@ import { DEFAULT_PATH, DOMAIN_APP } from '../../config';
 import { ChatType, EMOJI_QUICK, MessageType, TabType } from '../../constants/commons-const';
 import { convertMessageSystem } from '../../utils/messageSystem';
 import dayjs from 'dayjs';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { convertMessageSignal } from '../../utils/messageSignal';
 import { UpdateMember } from '../../redux/slices/member';
 import Channels from './Channels';
@@ -49,6 +49,8 @@ const LeftPanel = () => {
   const { currentTopic } = useSelector(state => state.topic);
   const users = client.state.users ? Object.values(client.state.users) : [];
   const [searchParams, setSearchParams] = useSearchParams();
+  const { id } = useParams();
+  const currentChannelId = id;
 
   useEffect(() => {
     dispatch(FetchChannels());
@@ -501,8 +503,11 @@ const LeftPanel = () => {
         const channel = activeChannel || pinnedChannel;
 
         if (channel) {
-          dispatch(AddTopic(event.channel_id));
           dispatch(WatchCurrentChannel(parentChannelId, parentChannelType));
+
+          if (currentChannelId === parentChannelId) {
+            dispatch(AddTopic(event.channel_id));
+          }
         }
       };
 
@@ -572,6 +577,7 @@ const LeftPanel = () => {
     users.length,
     currentTopic,
     searchParams,
+    currentChannelId,
   ]);
 
   useEffect(() => {

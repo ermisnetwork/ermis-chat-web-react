@@ -87,7 +87,7 @@ const AuthLayout = () => {
   };
 
   return (
-    <Stack direction="row" gap={3} sx={{ height: '100%', width: '100%' }}>
+    <Stack direction="row" gap={3} sx={{ height: isMobileToMd ? 'auto' : '100%', width: '100%' }}>
       {/* ---------------------lEFT--------------------- */}
       {!isMobileToMd && (
         <Stack sx={{ width: '50%', height: '100%', justifyContent: 'center' }}>
@@ -120,13 +120,13 @@ const AuthLayout = () => {
         sx={{
           width: isMobileToMd ? '100%' : '50%',
           backgroundColor: theme.palette.grey[100],
-          padding: '60px 15px 15px',
+          padding: isMobileToMd ? '20px 15px 15px' : '60px 15px 15px',
         }}
         alignItems="center"
       >
         {/* ---------------------LOGO--------------------- */}
-        <Stack sx={{ width: '100%', marginBottom: '50px' }} direction="column" alignItems={'center'}>
-          <img style={{ height: 70, width: 230 }} src={Logo} alt="Logo" />
+        <Stack sx={{ width: '100%', marginBottom: isMobileToMd ? '20px' : '50px' }} direction="column" alignItems={'center'}>
+          <img style={{ height: 70, width: isMobileToMd ? 180 : 230 }} src={Logo} alt="Logo" />
         </Stack>
         <Outlet />
       </Stack>

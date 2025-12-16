@@ -8,10 +8,11 @@ import {
   FormControlLabel,
   useTheme,
   alpha,
+  styled,
 } from '@mui/material';
 import Iconify from '../../components/Iconify';
-import { useEffect, useRef, useState } from 'react';
-import { Link, Link as RouterLink } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, Outlet, Link as RouterLink } from 'react-router-dom';
 import FormProvider, { RHFTextField } from '../../components/hook-form';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -30,6 +31,48 @@ import useResponsive from '../../hooks/useResponsive';
 import { LoadingSpinner } from '../../components/animate';
 import CustomCheckbox from '../../components/CustomCheckbox';
 import { useTranslation } from 'react-i18next';
+import { SlideLogin1, SlideLogin2, SlideLogin3 } from '../../components/Icons';
+import Slider from 'react-slick';
+import Logo from '../../assets/Images/uhm.svg';
+import SlideMobile1 from '../../assets/Images/slider-mobile1.png';
+import SlideMobile2 from '../../assets/Images/slider-mobile2.png';
+import SlideMobile3 from '../../assets/Images/slider-mobile3.png';
+import DownloadAppStore from '../../assets/Images/download-app-store.png';
+import DownloadGooglePlay from '../../assets/Images/download-google-play.png';
+import ImageCanvas from '../../components/ImageCanvas';
+
+
+const StyledSlider = styled(Slider)(({ theme }) => ({
+  width: '100%',
+  padding: '0px 15px',
+  '& .slick-dots': {
+    bottom: '0px',
+    '& li': {
+      width: 'auto',
+      height: 'auto',
+
+      '&.slick-active': {
+        '& button': {
+          width: '17px',
+          borderRadius: '16px',
+          backgroundColor: theme.palette.primary.main,
+        },
+      },
+
+      '& button': {
+        width: '6px',
+        height: '6px',
+        backgroundColor: theme.palette.background.neutral,
+        borderRadius: '50%',
+        transition: 'all 0.3s ease',
+      },
+
+      '& button:before': {
+        display: 'none',
+      },
+    },
+  },
+}));
 
 // ----------------------------------------------------------------------
 
@@ -65,6 +108,10 @@ export default function NewLogin() {
   const [agree, setAgree] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
+  const isScreenMdToXl = useResponsive('between', null, 'md', 'xl');
+  const isMobileToMd = useResponsive('down', 'md');
+  const imageSize = isMobileToMd ? 280 : isScreenMdToXl ? 350 : 520;
+
 
   useEffect(() => {
     dispatch(SetAuthProvider(new ErmisAuthProvider(API_KEY, { baseURL: BASE_URL })));
@@ -118,6 +165,38 @@ export default function NewLogin() {
       otp6: '',
     },
   });
+
+  const SLIDE = [
+    {
+      title: 'index_login.title_one',
+      description:
+        'index_login.description_one',
+      image: <ImageCanvas dataUrl={SlideMobile1} width={'280px'} height={'auto'} styleCustom={{ borderRadius: '6px' }} />,
+    },
+    {
+      title: 'index_login.title_two',
+      description:
+        'index_login.description_two',
+      image: <ImageCanvas dataUrl={SlideMobile2} width={'280px'} height={'auto'} styleCustom={{ borderRadius: '6px' }} />,
+    },
+    {
+      title: 'index_login.title_three',
+      description:
+        'index_login.description_three',
+      image: <ImageCanvas dataUrl={SlideMobile3} width={'280px'} height={'auto'} styleCustom={{ borderRadius: '6px' }} />,
+    },
+  ];
+
+  const sliderSettings = {
+    dots: true,
+    fade: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 5000,
+  };
 
   const {
     handleSubmit,
@@ -217,6 +296,57 @@ export default function NewLogin() {
         }),
       );
     }
+  };
+
+  const InstallMobileApp = () => {
+    return (
+      <Stack direction="row" gap={3} sx={{ height: '100%', width: '100%' }}>
+        {/* ---------------------lEFT--------------------- */}
+        <Stack sx={{ width: '100%', height: '100%', justifyContent: 'start' }}>
+          <StyledSlider {...sliderSettings}>
+            {SLIDE.map((slide, idx) => (
+              <Box key={idx} sx={{ textAlign: 'center', cursor: 'pointer' }}>
+                {slide.image}
+                <Typography variant="h3" sx={{ marginBottom: '5px' }}>
+                  {t(slide.title)}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: '14px', fontWeight: 400, margin: '0 auto 30px' }}
+                >
+                  {t(slide.description).split('\n').map((line, idx) => (
+                    <React.Fragment key={idx}>
+                      {line}
+                      <br />
+                    </React.Fragment>
+                  ))}
+                </Typography>
+              </Box>
+            ))}
+          </StyledSlider>
+          <Box gap={2} sx={{ display: 'flex', justifyContent: 'space-around', textAlign: 'center', mt: 5 }}>
+              <Link component={RouterLink} to="https://apps.apple.com/vn/app/uhm-chat-video/id6747392894?l=vi" variant="body2" color="inherit" underline="always">
+                <ImageCanvas
+                  dataUrl={DownloadAppStore}
+                  width={'100%'}
+                  height={'auto'}
+                  styleCustom={{ borderRadius: '6px' }}
+                />
+              </Link>
+              <Link component={RouterLink} to="https://play.google.com/store/apps/details?id=network.ermis.uhm" variant="body2" color="inherit" underline="always">
+                <ImageCanvas
+                  dataUrl={DownloadGooglePlay}
+                  width={'100%'}
+                  height={'auto'}
+                  styleCustom={{ borderRadius: '6px' }}
+                />
+              </Link>
+          </Box>
+        </Stack>
+        {/* ---------------------RIGHT--------------------- */}
+      </Stack>
+    )
   };
 
   const onLoginSuccess = data => {
@@ -398,10 +528,16 @@ export default function NewLogin() {
     }
     return null;
   };
+  
 
   const otherMethods = LOGIN_METHODS.filter(method => method.key !== loginType);
 
   return (
+    isMobileToMd ? 
+      <>
+        {InstallMobileApp()}
+      </>
+    : 
     <Stack
       spacing={4}
       sx={{

@@ -566,7 +566,7 @@ const ChatFooter = ({ setMessages, isDialog }) => {
       const input = inputRef.current;
       const cursorPos = input.selectionStart;
       const value = input.value;
-      const mentionText = `@${mention.name.toLowerCase()}`;
+      const mentionText = mention.mentionName;
 
       // Tìm vị trí @ gần nhất trước con trỏ
       const beforeCursor = value.slice(0, cursorPos);

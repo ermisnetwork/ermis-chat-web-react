@@ -34,10 +34,14 @@ export default function useMentions(value, inputRef) {
           const selectedIds = new Set(selectedMentions.map(m => m.id));
           filtered = mentions.filter(
             mention =>
-              mention.name.toLowerCase().includes(query) && !selectedIds.has(mention.id) && mention.id !== user_id,
+              mention.mentionName.toLowerCase().includes(query) &&
+              !selectedIds.has(mention.id) &&
+              mention.id !== user_id,
           );
         } else {
-          filtered = mentions.filter(mention => mention.name.toLowerCase().includes(query) && mention.id !== user_id);
+          filtered = mentions.filter(
+            mention => mention.mentionName.toLowerCase().includes(query) && mention.id !== user_id,
+          );
         }
 
         setFilteredMentions(filtered);

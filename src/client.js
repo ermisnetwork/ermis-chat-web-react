@@ -1,4 +1,4 @@
-import { ErmisChat, ErmisDirectCall } from 'ermis-chat-js-sdk';
+import { ErmisChat, ErmisCallNode } from 'ermis-chat-js-sdk';
 import { API_KEY, BASE_URL } from './config';
 import { handleError } from './utils/commons';
 import { LocalStorageKey } from './constants/localStorage-const';
@@ -36,7 +36,9 @@ const connectUser = async (projectId, user_id, token, dispatch) => {
     );
     const sessionID =
       window.localStorage.getItem(LocalStorageKey.SessionId) || `cb1a4db8-33f0-43dd-a48a-${user_id.slice(-12)}`;
-    callClient = new ErmisDirectCall(client, sessionID, customConfig);
+    const wasmPath = '/ermis_call_node_wasm_bg.wasm';
+    const relayUrl = 'https://iroh-relay.ermis.network:8443';
+    callClient = new ErmisCallNode(client, sessionID, wasmPath, relayUrl);
     return true;
   } catch (error) {
     handleError(dispatch, error);

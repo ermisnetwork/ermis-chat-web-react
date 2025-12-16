@@ -375,6 +375,7 @@ export function FetchChannels(params) {
 
     const filter = {
       type: ['messaging', 'team'],
+      include_pinned_messages: true,
     };
     const sort = [];
     const options = {
@@ -862,7 +863,7 @@ export const SetMentions = payload => {
         return {
           name,
           id: member.user_id,
-          mentionName: `@${name.toLowerCase()}`,
+          mentionName: `@${name}`,
           mentionId: `@${member.user_id}`,
           avatar,
         };
@@ -883,7 +884,7 @@ export const AddMention = mentionId => {
     const mentionData = {
       name,
       id: mentionId,
-      mentionName: `@${name.toLowerCase()}`,
+      mentionName: `@${name}`,
       mentionId: `@${mentionId}`,
     };
     dispatch(slice.actions.addMention(mentionData));

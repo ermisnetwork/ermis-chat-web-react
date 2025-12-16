@@ -163,11 +163,9 @@ const RecordingAudioBox = React.forwardRef((props, ref) => {
           gap={1}
           sx={{
             position: 'absolute',
-            top: '50%',
             left: '0px',
             right: '90px',
             zIndex: 1,
-            transform: 'translateY(-50%)',
             backgroundColor: theme.palette.background.neutral,
             paddingLeft: '10px',
             height: '47px',
@@ -232,11 +230,9 @@ const RecordingAudioBox = React.forwardRef((props, ref) => {
           gap={1}
           sx={{
             position: 'absolute',
-            top: '50%',
             left: '0px',
             right: '60px',
             zIndex: 1,
-            transform: 'translateY(-50%)',
             backgroundColor: theme.palette.background.neutral,
             paddingLeft: '5px',
             height: '47px',
@@ -275,11 +271,9 @@ const RecordingAudioBox = React.forwardRef((props, ref) => {
           justifyContent="center"
           sx={{
             position: 'absolute',
-            top: '50%',
             left: '0px',
             right: '0px',
             zIndex: 1,
-            transform: 'translateY(-50%)',
             backgroundColor: theme.palette.background.neutral,
             height: '47px',
             borderRadius: '30px',

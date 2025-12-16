@@ -464,14 +464,14 @@ const TextLine = ({ message }) => {
             {part}
           </a>
         );
-      } else if (part.match(mentionRegex) && message.mentioned_users) {
+      } else if (part.match(mentionRegex)) {
         const mentionObj = mentions.find(m => m.mentionId === part || m.mentionName === part);
         if (mentionObj) {
           const customClass =
             mentionObj.mentionId === '@all' ? 'mentionAll' : mentionObj.id === user_id ? 'mentionMe' : '';
           return (
             <span key={index} className={`mentionHighlight ${customClass}`}>
-              @{mentionObj.name}
+              {mentionObj.mentionName}
             </span>
           );
         }
