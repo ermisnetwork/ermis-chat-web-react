@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Button,
   Dialog,
@@ -193,32 +193,30 @@ const CallDirectDialog4 = () => {
 
     dispatch(DisconnectCallDirect());
     stopRing();
+    stopTimer();
 
     if (localVideoRef.current) localVideoRef.current.srcObject = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
     if (ringtone.current) {
       ringtone.current.stop();
       ringtone.current = null;
     }
   };
 
-  const startTimer = () => {
+  const startTimer = useCallback(() => {
+    stopTimer();
     timerIntervalRef.current = setInterval(() => {
       setTime(prevTime => prevTime + 1);
     }, 1000);
-  };
+  }, []);
 
-  const stopTimer = () => {
+  const stopTimer = useCallback(() => {
     if (timerIntervalRef.current) {
       setTime(0);
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
-  };
+  }, []);
 
   const formatTime = seconds => {
     const minutes = Math.floor(seconds / 60);
@@ -226,14 +224,16 @@ const CallDirectDialog4 = () => {
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const startRing = () => {
-    const audioFile = callDirectData?.type === 'incoming' ? '/call_incoming.mp3' : '/call_outgoing.mp3';
-    ringtone.current = new Howl({
-      src: [audioFile],
-      loop: true,
-    });
-    ringtone.current.play();
-  };
+  const startRing = useCallback(() => {
+    if (!ringtone.current && callDirectData) {
+      const audioFile = callDirectData?.type === 'incoming' ? '/call_incoming.mp3' : '/call_outgoing.mp3';
+      ringtone.current = new Howl({
+        src: [audioFile],
+        loop: true,
+      });
+      ringtone.current.play();
+    }
+  }, [callDirectData]);
 
   const stopRing = () => {
     if (ringtone.current) {
@@ -263,8 +263,7 @@ const CallDirectDialog4 = () => {
   useEffect(() => {
     if (callDirectData && callDirectStatus === CallStatus.RINGING) {
       startRing();
-      loadDevices(); // Load devices when call starts
-      stopTimer();
+      loadDevices();
     }
   }, [callDirectData, callDirectStatus]);
 
