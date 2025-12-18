@@ -26,7 +26,7 @@
     "dayjs": "^1.11.10",
     "emoji-mart": "^5.2.2",
     "env-cmd": "^10.1.0",
-    "ermis-chat-js-sdk": "^1.8.3",
+    "ermis-chat-js-sdk": "^1.8.6",
     "event-source-polyfill": "^1.0.31",
     "flatted": "^3.3.1",
     "framer-motion": "^7.5.3",

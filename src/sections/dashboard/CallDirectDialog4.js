@@ -212,6 +212,14 @@ const CallDirectDialog4 = () => {
     }, 1000);
   };
 
+  const stopTimer = () => {
+    if (timerIntervalRef.current) {
+      setTime(0);
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  };
+
   const formatTime = seconds => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -256,6 +264,7 @@ const CallDirectDialog4 = () => {
     if (callDirectData && callDirectStatus === CallStatus.RINGING) {
       startRing();
       loadDevices(); // Load devices when call starts
+      stopTimer();
     }
   }, [callDirectData, callDirectStatus]);
 
@@ -436,7 +445,7 @@ const CallDirectDialog4 = () => {
   const renderButton = () => {
     return (
       <>
-        <StyledButton>
+        <StyledButton className={callDirectStatus === CallStatus.CONNECTED && remoteCameraOn ? 'hoverShow' : ''}>
           <Button
             className={`moreButton`}
             variant="contained"
@@ -449,7 +458,7 @@ const CallDirectDialog4 = () => {
           <span className={`spanTitle whiteColor`}>{t('callDirectDialog.chat')}</span>
         </StyledButton>
 
-        <StyledButton>
+        <StyledButton className={callDirectStatus === CallStatus.CONNECTED && remoteCameraOn ? 'hoverShow' : ''}>
           <Button
             className={`moreButton ${micOn && callDirectStatus === CallStatus.CONNECTED ? 'active' : ''}`}
             variant="contained"
@@ -474,7 +483,7 @@ const CallDirectDialog4 = () => {
           </span>
         </StyledButton>
 
-        <StyledButton>
+        <StyledButton className={callDirectStatus === CallStatus.CONNECTED && remoteCameraOn ? 'hoverShow' : ''}>
           <Button
             className={`moreButton ${localCameraOn && callDirectStatus === CallStatus.CONNECTED ? 'active' : ''}`}
             variant="contained"
@@ -500,7 +509,7 @@ const CallDirectDialog4 = () => {
         </StyledButton>
 
         {localCameraOn && (
-          <StyledButton>
+          <StyledButton className={callDirectStatus === CallStatus.CONNECTED && remoteCameraOn ? 'hoverShow' : ''}>
             <Button
               variant="contained"
               color={isScreenShare ? 'primary' : 'inherit'}
@@ -515,13 +524,13 @@ const CallDirectDialog4 = () => {
 
         {callDirectData?.type === 'incoming' && callDirectStatus === CallStatus.RINGING && (
           <>
-            <StyledButton>
+            <StyledButton className={callDirectStatus === CallStatus.CONNECTED && remoteCameraOn ? 'hoverShow' : ''}>
               <Button onClick={onSendRejectCall} variant="contained" color="error">
                 <PhoneDisconnect weight="fill" size={20} />
               </Button>
               <span className={`spanTitle whiteColor`}>{t('callDirectDialog.decline')}</span>
             </StyledButton>
-            <StyledButton>
+            <StyledButton className={callDirectStatus === CallStatus.CONNECTED && remoteCameraOn ? 'hoverShow' : ''}>
               <LoadingButton onClick={onSendAcceptCall} variant="contained" color="success" loading={loadingButton}>
                 <Phone weight="fill" size={20} />
               </LoadingButton>
@@ -531,7 +540,7 @@ const CallDirectDialog4 = () => {
         )}
 
         {(callDirectData?.type === 'outgoing' || [CallStatus.CONNECTED].includes(callDirectStatus)) && (
-          <StyledButton>
+          <StyledButton className={callDirectStatus === CallStatus.CONNECTED && remoteCameraOn ? 'hoverShow' : ''}>
             <Button onClick={onSendEndCall} variant="contained" color="error">
               <PhoneDisconnect weight="fill" size={20} />
             </Button>
@@ -783,10 +792,7 @@ const CallDirectDialog4 = () => {
             />
           </Stack>
         </DialogContent>
-        <DialogActions
-          className={callDirectStatus === CallStatus.CONNECTED && remoteCameraOn ? 'hoverShow' : ''}
-          sx={{ justifyContent: 'center' }}
-        >
+        <DialogActions sx={{ justifyContent: 'center' }}>
           {requestVideoCall ? (
             <StyledButton>
               <LoadingButton onClick={onSwitchToVideoCall} variant="contained" color="success">

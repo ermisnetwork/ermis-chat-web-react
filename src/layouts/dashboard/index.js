@@ -105,9 +105,9 @@ const DashboardLayout = () => {
       const onConnectUser = async () => {
         const response = await connectUser(CHAT_PROJECT_ID, user_id, accessToken, dispatch);
         dispatch(SetIsUserConnected(response));
+        fetchDataInitial();
       };
       onConnectUser();
-      fetchDataInitial();
     }
   }, [isLoggedIn]);
 
